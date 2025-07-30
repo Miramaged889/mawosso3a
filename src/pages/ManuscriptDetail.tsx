@@ -156,7 +156,7 @@ const ManuscriptDetail: React.FC = () => {
                   وصف المخطوطة
                 </h3>
                 <p className="text-medium-gray leading-relaxed mb-6">
-                  {manuscript.full_description}
+                  {manuscript.content}
                 </p>
               </div>
 

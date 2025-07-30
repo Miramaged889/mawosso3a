@@ -14,7 +14,7 @@ const Benefits: React.FC = () => {
     loading,
     error,
   } = useEntries({
-    category:"5",
+    category: "5",
   });
 
   const items = (entriesData as ContentEntry[]) || [];
@@ -71,8 +71,6 @@ const Benefits: React.FC = () => {
             </p>
           </div>
         )}
-
-
 
         {/* Error State */}
         {error && (

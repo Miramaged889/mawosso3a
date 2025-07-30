@@ -5,10 +5,8 @@ import ItemCard from "../components/ItemCard";
 import SearchBar from "../components/SearchBar";
 import Breadcrumb from "../components/Breadcrumb";
 
-
 const BooksOnChinguitt: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
- 
 
   // Fetch books from API - filter by category or tags for books about Chinguitt
   const {
@@ -16,7 +14,7 @@ const BooksOnChinguitt: React.FC = () => {
     loading,
     error,
   } = useEntries({
-    category:"9",
+    category: "9",
   });
 
   const booksOnChinguitt = (entriesData as ContentEntry[]) || [];
@@ -38,7 +36,6 @@ const BooksOnChinguitt: React.FC = () => {
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
-
 
   const breadcrumbItems = [{ label: "مؤلفات عن شنقيط" }];
 
@@ -78,8 +75,6 @@ const BooksOnChinguitt: React.FC = () => {
             </p>
           </div>
         )}
-
-        
 
         {/* Error State */}
         {error && (
