@@ -1,35 +1,35 @@
-
-import { Link } from 'react-router-dom';
-
+import { Link } from "react-router-dom";
 
 const LatestNews = () => {
   const news = [
     {
-      title: 'إضافة مجموعة جديدة من مخطوطات الفقه المالكي',
-      excerpt: 'تم إضافة 25 مخطوطة نادرة في الفقه المالكي من مكتبة شنقيط التراثية...',
-      date: '15 يناير 2024',
-      category: 'العلوم الشرعية'
+      title: "إضافة مجموعة جديدة من مخطوطات الفقه المالكي",
+      excerpt:
+        "تم إضافة 25 مخطوطة نادرة في الفقه المالكي من مكتبة شنقيط التراثية...",
+      date: "15 يناير 2024",
+      category: "العلوم الشرعية",
     },
     {
       title: 'تحقيق جديد لكتاب "الدرر اللوامع" للشيخ محمد المامي',
-      excerpt: 'صدر التحقيق الجديد لكتاب الدرر اللوامع في شرح جمع الجوامع...',
-      date: '12 يناير 2024',
-      category: 'تحقيقات'
+      excerpt: "صدر التحقيق الجديد لكتاب الدرر اللوامع في شرح جمع الجوامع...",
+      date: "12 يناير 2024",
+      category: "تحقيقات",
     },
     {
-      title: 'ندوة علمية حول التراث الشنقيطي',
-      excerpt: 'تنظم الموسوعة ندوة علمية حول أهمية التراث الشنقيطي في الحضارة الإسلامية...',
-      date: '10 يناير 2024',
-      category: 'أخبار'
-    }
+      title: "ندوة علمية حول التراث الشنقيطي",
+      excerpt:
+        "تنظم الموسوعة ندوة علمية حول أهمية التراث الشنقيطي في الحضارة الإسلامية...",
+      date: "10 يناير 2024",
+      category: "أخبار",
+    },
   ];
 
   return (
     <section className="py-16 bg-ivory islamic-pattern">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-amiri font-bold text-blue-gray mb-4">
-            آخر الأخبار العلمية
+          <h2 className="text-3xl md:text-4xl font-louguiya font-bold text-blue-gray mb-4">
+            الأخبار العلمية
           </h2>
           <p className="text-lg text-medium-gray max-w-2xl mx-auto">
             تابع أحدث الإضافات والتحقيقات والأخبار العلمية في عالم التراث
@@ -50,7 +50,7 @@ const LatestNews = () => {
                   </span>
                   <span className="text-medium-gray text-sm">{item.date}</span>
                 </div>
-                <h3 className="text-xl font-amiri font-bold text-blue-gray mb-3 leading-tight">
+                <h3 className="text-xl font-louguiya font-bold text-blue-gray mb-3 leading-tight">
                   {item.title}
                 </h3>
                 <p className="text-medium-gray leading-relaxed mb-4">

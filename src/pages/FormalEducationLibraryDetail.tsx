@@ -230,12 +230,8 @@ const FormalEducationLibraryDetail: React.FC = () => {
                 عناصر ذات صلة
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {relatedItems.map((contentItem) => (
-                  <ItemCard
-                    key={contentItem.id}
-                    item={contentItem}
-                    linkPrefix="/formal-education-library"
-                  />
+                {relatedItems.map((item) => (
+                  <ItemCard key={item.id} item={item} />
                 ))}
               </div>
             </div>

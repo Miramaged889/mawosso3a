@@ -1,60 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useSearch } from '../hooks/useApi';
-import { ContentEntry } from '../services/api';
-import ItemCard from '../components/ItemCard';
-import SearchBar from '../components/SearchBar';
-import Breadcrumb from '../components/Breadcrumb';
+import React, { useState } from "react";
+import SearchBar from "../components/SearchBar";
+import ItemCard from "../components/ItemCard";
+import { ContentEntry } from "../services/api";
+import { searchItems } from "../services/api";
 
 const Search: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const [query, setQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
-
-  // Debounce search query
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(query);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [query]);
-
-  // Use search hook
-  const { data: results, loading, error } = useSearch(debouncedQuery);
-
-  useEffect(() => {
-    const q = searchParams.get('q') || '';
-    setQuery(q);
-    setDebouncedQuery(q);
-  }, [searchParams]);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<ContentEntry[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSearch = (newQuery: string) => {
     setQuery(newQuery);
-  };
+    if (newQuery.trim()) {
+      setLoading(true);
+      setError(null);
 
-  const getLinkPrefix = (item: ContentEntry) => {
-    if (item.entry_type === 'investigation') return '/tahqiq';
-    if (item.entry_type === 'book') return '/books-on-chinguitt';
-    return '/manuscripts';
+      searchItems(newQuery)
+        .then((data) => {
+          setResults(data);
+          setLoading(false);
+        })
+        .catch((err) => {
+          setError(err.message);
+          setLoading(false);
+        });
+    } else {
+      setResults([]);
+    }
   };
-
-  const breadcrumbItems = [
-    { label: 'البحث' }
-  ];
 
   return (
-    <div className="min-h-screen bg-ivory">
-      <Breadcrumb items={breadcrumbItems} />
-      
-      <div className="container mx-auto px-4 py-8">
-        {/* Header Section */}
+    <div className="min-h-screen bg-ivory py-16">
+      <div className="container mx-auto px-4">
+        {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-amiri font-bold text-blue-gray mb-4">
+          <h1 className="text-4xl md:text-5xl font-louguiya font-bold text-blue-gray mb-4">
             البحث في الموسوعة
           </h1>
-          <p className="text-lg text-medium-gray max-w-3xl mx-auto leading-relaxed">
-            ابحث في مجموعتنا الشاملة من المخطوطات والتحقيقات والمؤلفات
+          <p className="text-lg text-medium-gray max-w-2xl mx-auto">
+            ابحث في آلاف المخطوطات والكتب والتحقيقات العلمية
           </p>
         </div>
 
@@ -69,20 +54,38 @@ const Search: React.FC = () => {
             {!loading && (
               <div className="text-center mb-8">
                 <p className="text-medium-gray">
-                  نتائج البحث عن: <span className="font-bold text-heritage-gold">"{query}"</span>
+                  نتائج البحث عن:{" "}
+                  <span className="font-bold text-heritage-gold">
+                    "{query}"
+                  </span>
                 </p>
                 <p className="text-medium-gray mt-2">
-                  عدد النتائج: <span className="font-bold text-heritage-gold">{results?.length || 0}</span>
+                  عدد النتائج:{" "}
+                  <span className="font-bold text-heritage-gold">
+                    {results?.length || 0}
+                  </span>
                 </p>
               </div>
             )}
 
+            {/* Loading State */}
+            {loading && (
+              <div className="text-center py-16">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-2xl font-louguiya font-bold text-blue-gray mb-4">
+                  جاري البحث...
+                </h3>
+                <p className="text-medium-gray">
+                  يرجى الانتظار بينما نبحث في قاعدة البيانات
+                </p>
+              </div>
+            )}
 
             {/* Error State */}
             {error && (
               <div className="text-center py-16">
                 <div className="text-6xl mb-4">⚠️</div>
-                <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
+                <h3 className="text-2xl font-louguiya font-bold text-blue-gray mb-4">
                   خطأ في البحث
                 </h3>
                 <p className="text-medium-gray">
@@ -94,23 +97,23 @@ const Search: React.FC = () => {
             {!loading && !error && results && results.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {results.map((item) => (
-                  <ItemCard
-                    key={item.id}
-                    item={item}
-                    linkPrefix={getLinkPrefix(item)}
-                  />
+                  <ItemCard key={item.id} item={item} />
                 ))}
               </div>
-            ) : !loading && !error && query && (
-              <div className="text-center py-16">
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
-                  لا توجد نتائج
-                </h3>
-                <p className="text-medium-gray">
-                  لم نجد أي محتوى يطابق بحثك. جرب كلمات مفتاحية أخرى.
-                </p>
-              </div>
+            ) : (
+              !loading &&
+              !error &&
+              query && (
+                <div className="text-center py-16">
+                  <div className="text-6xl mb-4">🔍</div>
+                  <h3 className="text-2xl font-louguiya font-bold text-blue-gray mb-4">
+                    لا توجد نتائج
+                  </h3>
+                  <p className="text-medium-gray">
+                    لم نجد أي محتوى يطابق بحثك. جرب كلمات مفتاحية أخرى.
+                  </p>
+                </div>
+              )
             )}
           </>
         )}
@@ -119,7 +122,7 @@ const Search: React.FC = () => {
         {!query && (
           <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-lg shadow-md p-8">
-              <h2 className="text-2xl font-amiri font-bold text-blue-gray mb-6 text-center">
+              <h2 className="text-2xl font-louguiya font-bold text-blue-gray mb-6 text-center">
                 نصائح للبحث
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

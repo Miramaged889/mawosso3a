@@ -116,7 +116,6 @@ const ShariaSciences: React.FC = () => {
               <ItemCard
                 key={item.id}
                 item={item}
-                linkPrefix="/sharia-sciences"
               />
             ))}
           </div>

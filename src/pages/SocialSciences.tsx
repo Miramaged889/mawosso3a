@@ -7,9 +7,6 @@ import Breadcrumb from "../components/Breadcrumb";
 import { CATEGORY_IDS } from "../data/categoryMapping";
 
 const SocialSciences: React.FC = () => {
-
-
-
   const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch entries for Social Sciences from API using category ID
@@ -37,13 +34,9 @@ const SocialSciences: React.FC = () => {
     return filtered;
   }, [items, searchQuery]);
 
-
-
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
-
- 
 
   const breadcrumbItems = [{ label: "العلوم الاجتماعية" }];
 
@@ -84,8 +77,6 @@ const SocialSciences: React.FC = () => {
           </div>
         )}
 
-
-
         {/* Error State */}
         {error && (
           <div className="text-center py-16">
@@ -103,11 +94,7 @@ const SocialSciences: React.FC = () => {
         {!loading && !error && filteredItems.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredItems.map((item: ContentEntry) => (
-              <ItemCard
-                key={item.id}
-                item={item}
-                linkPrefix="/social-sciences"
-              />
+              <ItemCard key={item.id} item={item} />
             ))}
           </div>
         ) : (

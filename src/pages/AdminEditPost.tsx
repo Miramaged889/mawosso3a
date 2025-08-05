@@ -1,15 +1,27 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { useCategories, useSubcategories, useAuth } from "../hooks/useApi";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  useCategories,
+  useSubcategories,
+  useAuth,
+  useEntry,
+} from "../hooks/useApi";
 import { apiClient } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
-const AdminAddPost: React.FC = () => {
+const AdminEditPost: React.FC = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const { isAuthenticated, initialized, validateToken } = useAuth();
   const { data: categories, loading: categoriesLoading } = useCategories();
   const { data: subcategories, loading: subcategoriesLoading } =
     useSubcategories();
+  const {
+    data: post,
+    loading: postLoading,
+    error: postError,
+  } = useEntry(parseInt(id || "0"));
+
   const fileInputRefs = {
     cover_image: useRef<HTMLInputElement>(null),
   };
@@ -26,7 +38,7 @@ const AdminAddPost: React.FC = () => {
     language: "العربية",
     tags: "",
     cover_image: null as File | null,
-    pdf_file: "", // Changed to string for URL
+    pdf_file: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,6 +56,36 @@ const AdminAddPost: React.FC = () => {
       navigate("/admin");
     }
   }, [isAuthenticated, initialized, navigate]);
+
+  // Load post data when available
+  useEffect(() => {
+    if (post) {
+      setFormData({
+        title: post.title || "",
+        author: post.author || "",
+        category:
+          typeof post.category === "object" && post.category !== null
+            ? post.category.id.toString()
+            : post.category !== null && post.category !== undefined
+            ? post.category.toString()
+            : "",
+        subcategory:
+          typeof post.subcategory === "object" && post.subcategory !== null
+            ? post.subcategory.id.toString()
+            : post.subcategory !== null && post.subcategory !== undefined
+            ? post.subcategory.toString()
+            : "",
+        date: post.date || "2024-01-01",
+        description: post.description || "",
+        content: post.content || "",
+        language: post.language || "العربية",
+        tags: post.tags || "",
+        page_count: post.page_count?.toString() || post.pages?.toString() || "",
+        cover_image: null,
+        pdf_file: post.pdf_file || "",
+      });
+    }
+  }, [post]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -123,8 +165,8 @@ const AdminAddPost: React.FC = () => {
         language: formData.language.trim(),
         tags: formData.tags.trim(),
         page_count: pageCount,
-        pdf_file: formData.pdf_file.trim() || undefined, // Add PDF URL
-        published: true, // Set to published by default for posts
+        pdf_file: formData.pdf_file.trim() || undefined,
+        published: true,
       };
 
       // Only add subcategory if it's selected and valid
@@ -157,8 +199,12 @@ const AdminAddPost: React.FC = () => {
       );
 
       try {
-        await apiClient.createEntry(entryData, hasFiles ? files : undefined);
-        alert("تم حفظ المنشور بنجاح!");
+        await apiClient.updateEntry(
+          parseInt(id || "0"),
+          entryData,
+          hasFiles ? files : undefined
+        );
+        alert("تم تحديث المنشور بنجاح!");
         navigate("/admin/posts");
       } catch (apiError) {
         console.error("API Error:", apiError);
@@ -185,19 +231,45 @@ const AdminAddPost: React.FC = () => {
     }
   };
 
-
-
   const breadcrumbItems = [
     { label: "لوحة التحكم", path: "/admin" },
     { label: "إدارة المنشورات", path: "/admin/posts" },
-    { label: "إضافة منشور جديد" },
+    { label: "تعديل المنشور" },
   ];
+
+  if (postLoading) {
+    return (
+      <div className="min-h-screen bg-ivory flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">⏳</div>
+          <p className="text-lg">جاري تحميل البيانات...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (postError || !post) {
+    return (
+      <div className="min-h-screen bg-ivory flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">❌</div>
+          <p className="text-lg text-red-600">لم يتم العثور على المنشور</p>
+          <button
+            onClick={() => navigate("/admin/posts")}
+            className="mt-4 bg-olive-green text-white px-6 py-2 rounded-lg"
+          >
+            العودة إلى إدارة المنشورات
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-ivory">
       <Breadcrumb items={breadcrumbItems} />
       <div className="container mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">إضافة منشور جديد</h1>
+        <h1 className="text-2xl font-bold mb-6">تعديل المنشور</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -318,6 +390,11 @@ const AdminAddPost: React.FC = () => {
               <p className="text-sm text-gray-600 mt-1">
                 الحد الأقصى 5MB بصيغة JPG/PNG/WebP
               </p>
+              {post.cover_image && !formData.cover_image && (
+                <div className="mt-2 text-sm text-blue-600">
+                  الصورة الحالية: متوفرة
+                </div>
+              )}
             </div>
 
             <div className="border p-4 rounded bg-gray-50">
@@ -372,7 +449,7 @@ const AdminAddPost: React.FC = () => {
               disabled={isSubmitting}
               className="bg-green-600 text-white px-6 py-2 rounded"
             >
-              {isSubmitting ? "جاري الحفظ..." : "حفظ المنشور"}
+              {isSubmitting ? "جاري التحديث..." : "تحديث المنشور"}
             </button>
           </div>
         </form>
@@ -381,4 +458,4 @@ const AdminAddPost: React.FC = () => {
   );
 };
 
-export default AdminAddPost;
+export default AdminEditPost;

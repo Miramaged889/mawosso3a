@@ -11,7 +11,9 @@ const SocialSciencesDetail: React.FC = () => {
   const numericId = id ? parseInt(id) : null;
 
   const { data: item, error } = useEntry(numericId);
-  const { data: relatedData } = useEntries({ category: CATEGORY_IDS.SOCIAL_SCIENCES });
+  const { data: relatedData } = useEntries({
+    category: CATEGORY_IDS.SOCIAL_SCIENCES,
+  });
 
   // Debug image URLs
   React.useEffect(() => {
@@ -96,7 +98,7 @@ const SocialSciencesDetail: React.FC = () => {
 
   const breadcrumbItems = [
     { label: "العلوم الاجتماعية", path: "/social-sciences" },
-    { label: item.title }
+    { label: item.title },
   ];
 
   return (
@@ -156,9 +158,7 @@ const SocialSciencesDetail: React.FC = () => {
                 </p>
 
                 <div className="flex items-center gap-4 mb-6">
-                  <span className="text-sm text-medium-gray">
-                    {item.date}
-                  </span>
+                  <span className="text-sm text-medium-gray">{item.date}</span>
                   {getPageCount() > 0 && (
                     <span className="text-sm text-medium-gray">
                       {getPageCount()} صفحة
@@ -233,12 +233,8 @@ const SocialSciencesDetail: React.FC = () => {
                 عناصر ذات صلة
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {relatedItems.map((contentItem) => (
-                  <ItemCard
-                    key={contentItem.id}
-                    item={contentItem}
-                    linkPrefix="/social-sciences"
-                  />
+                {relatedItems.map((item) => (
+                  <ItemCard key={item.id} item={item} />
                 ))}
               </div>
             </div>
@@ -249,4 +245,4 @@ const SocialSciencesDetail: React.FC = () => {
   );
 };
 
-export default SocialSciencesDetail; 
+export default SocialSciencesDetail;

@@ -1,15 +1,26 @@
-import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { useCategories, useSubcategories, useAuth } from "../hooks/useApi";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  useCategories,
+  useSubcategories,
+  useAuth,
+  useEntry,
+} from "../hooks/useApi";
 import { apiClient, ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
-const AdminAddBook: React.FC = () => {
+const AdminEditBook: React.FC = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const { isAuthenticated, initialized, validateToken } = useAuth();
   const { data: categories, loading: categoriesLoading } = useCategories();
   const { data: subcategories, loading: subcategoriesLoading } =
     useSubcategories();
+  const {
+    data: book,
+    loading: bookLoading,
+    error: bookError,
+  } = useEntry(parseInt(id || "0"));
 
   const fileInputRefs = {
     cover_image: useRef<HTMLInputElement>(null),
@@ -19,21 +30,20 @@ const AdminAddBook: React.FC = () => {
     title: "",
     author: "",
     entry_type: "book" as ContentEntry["entry_type"],
-    category: 0, // تعيين القيمة الافتراضية للتصنيف إلى 0
+    category: 0,
     subcategory: 0,
-    date: "2024-01-01", // تعيين التاريخ الافتراضي
+    date: "2024-01-01",
     description: "",
     content: "",
     language: "العربية",
     tags: "",
     page_count: "",
     cover_image: null as File | null,
-    pdf_file: "", // Changed to string for URL
+    pdf_file: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
- 
   // Filter subcategories to exclude those belonging to category 10
   const availableSubcategories =
     subcategories?.filter(
@@ -49,6 +59,33 @@ const AdminAddBook: React.FC = () => {
       navigate("/admin");
     }
   }, [isAuthenticated, initialized, navigate]);
+
+  // Load book data when available
+  useEffect(() => {
+    if (book) {
+      setFormData({
+        title: book.title || "",
+        author: book.author || "",
+        entry_type: book.entry_type || "book",
+        category:
+          typeof book.category === "object" && book.category !== null
+            ? book.category.id
+            : (book.category as number) || 0,
+        subcategory:
+          typeof book.subcategory === "object" && book.subcategory !== null
+            ? book.subcategory.id
+            : (book.subcategory as number) || 0,
+        date: book.date || "2024-01-01",
+        description: book.description || "",
+        content: book.content || "",
+        language: book.language || "العربية",
+        tags: book.tags || "",
+        page_count: book.page_count?.toString() || book.pages?.toString() || "",
+        cover_image: null,
+        pdf_file: book.pdf_file || "",
+      });
+    }
+  }, [book]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -136,7 +173,7 @@ const AdminAddBook: React.FC = () => {
         content: formData.content.trim(),
         language: formData.language.trim(),
         tags: formData.tags.trim(),
-        pdf_file: formData.pdf_file.trim() || undefined, // Add PDF URL
+        pdf_file: formData.pdf_file.trim() || undefined,
         published: true,
       };
 
@@ -162,8 +199,12 @@ const AdminAddBook: React.FC = () => {
       );
 
       try {
-        await apiClient.createEntry(entryData, hasFiles ? files : undefined);
-        alert("تم حفظ العنصر بنجاح!");
+        await apiClient.updateEntry(
+          parseInt(id || "0"),
+          entryData,
+          hasFiles ? files : undefined
+        );
+        alert("تم تحديث العنصر بنجاح!");
         navigate("/admin/books");
       } catch (apiError) {
         console.error("API Error:", apiError);
@@ -190,13 +231,39 @@ const AdminAddBook: React.FC = () => {
     }
   };
 
-
-
   const breadcrumbItems = [
     { label: "لوحة التحكم", path: "/admin" },
     { label: "إدارة الكتب", path: "/admin/books" },
-    { label: "إضافة عنصر جديد" },
+    { label: "تعديل العنصر" },
   ];
+
+  if (bookLoading) {
+    return (
+      <div className="min-h-screen bg-ivory flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">⏳</div>
+          <p className="text-lg">جاري تحميل البيانات...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (bookError || !book) {
+    return (
+      <div className="min-h-screen bg-ivory flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">❌</div>
+          <p className="text-lg text-red-600">لم يتم العثور على العنصر</p>
+          <button
+            onClick={() => navigate("/admin/books")}
+            className="mt-4 bg-olive-green text-white px-6 py-2 rounded-lg"
+          >
+            العودة إلى إدارة الكتب
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-ivory">
@@ -207,11 +274,9 @@ const AdminAddBook: React.FC = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-amiri font-bold text-blue-gray mb-2">
-              إضافة عنصر جديد
+              تعديل العنصر
             </h1>
-            <p className="text-medium-gray">
-              أدخل معلومات الكتاب أو المخطوطة أو التحقيق الجديد
-            </p>
+            <p className="text-medium-gray">تعديل معلومات الكتاب أو التحقيق</p>
           </div>
 
           {/* Form */}
@@ -393,10 +458,17 @@ const AdminAddBook: React.FC = () => {
                       الملف المحدد: {formData.cover_image.name}
                     </div>
                   )}
+                  {book.cover_image && !formData.cover_image && (
+                    <div className="mt-2 text-sm text-blue-600">
+                      الصورة الحالية: متوفرة
+                    </div>
+                  )}
                 </div>
 
                 <div className="border p-4 rounded bg-gray-50">
-                  <label className="block mb-2 font-semibold">رابط ملف PDF</label>
+                  <label className="block mb-2 font-semibold">
+                    رابط ملف PDF
+                  </label>
                   <input
                     type="url"
                     name="pdf_file"
@@ -456,7 +528,7 @@ const AdminAddBook: React.FC = () => {
                   disabled={isSubmitting}
                   className="bg-olive-green text-white px-8 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? "جاري الحفظ..." : "حفظ العنصر"}
+                  {isSubmitting ? "جاري التحديث..." : "تحديث العنصر"}
                 </button>
               </div>
             </form>
@@ -467,4 +539,4 @@ const AdminAddBook: React.FC = () => {
   );
 };
 
-export default AdminAddBook;
+export default AdminEditBook;

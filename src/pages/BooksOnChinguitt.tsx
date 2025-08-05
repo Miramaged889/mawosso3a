@@ -93,11 +93,7 @@ const BooksOnChinguitt: React.FC = () => {
         {!loading && !error && filteredItems.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredItems.map((book: ContentEntry) => (
-              <ItemCard
-                key={book.id}
-                item={book}
-                linkPrefix="/books-on-chinguitt"
-              />
+              <ItemCard key={book.id} item={book} />
             ))}
           </div>
         ) : (

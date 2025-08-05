@@ -84,7 +84,6 @@ const Tahqiq: React.FC = () => {
           </div>
         )}
 
-
         {/* Error State */}
         {error && (
           <div className="text-center py-16">
@@ -102,7 +101,7 @@ const Tahqiq: React.FC = () => {
         {!loading && !error && filteredItems.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredItems.map((tahqiq: ContentEntry) => (
-              <ItemCard key={tahqiq.id} item={tahqiq} linkPrefix="/tahqiq" />
+              <ItemCard key={tahqiq.id} item={tahqiq} />
             ))}
           </div>
         ) : (

@@ -232,7 +232,7 @@ const BenefitsDetail: React.FC = () => {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {relatedItems.map((item) => (
-                  <ItemCard key={item.id} item={item} linkPrefix="/benefits" />
+                  <ItemCard key={item.id} item={item} />
                 ))}
               </div>
             </div>

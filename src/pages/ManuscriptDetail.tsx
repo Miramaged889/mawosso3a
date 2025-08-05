@@ -5,7 +5,6 @@ import { ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 import ItemCard from "../components/ItemCard";
 
-
 const ManuscriptDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const numericId = id ? parseInt(id) : null;
@@ -47,7 +46,6 @@ const ManuscriptDetail: React.FC = () => {
     if (url.startsWith("http")) return url;
     return `https://chinguitipedia.alldev.org${url}`;
   };
-
 
   if (error || !manuscript) {
     return (
@@ -130,7 +128,7 @@ const ManuscriptDetail: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-6 bg-ivory rounded-lg">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-olive-green">
-                    {manuscript.pages}
+                    {manuscript.page_count || manuscript.pages || "غير محدد"}
                   </div>
                   <div className="text-medium-gray">صفحة</div>
                 </div>
@@ -213,11 +211,7 @@ const ManuscriptDetail: React.FC = () => {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {relatedItems.map((item) => (
-                  <ItemCard
-                    key={item.id}
-                    item={item}
-                    linkPrefix="/manuscripts"
-                  />
+                  <ItemCard key={item.id} item={item} />
                 ))}
               </div>
             </div>

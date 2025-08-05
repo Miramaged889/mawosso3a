@@ -95,7 +95,7 @@ const ScientificNewsDetail: React.FC = () => {
 
   const breadcrumbItems = [
     { label: "آخر الأخبار العلمية", path: "/scientific-news" },
-    { label: news.title }
+    { label: news.title },
   ];
 
   return (
@@ -155,9 +155,7 @@ const ScientificNewsDetail: React.FC = () => {
                 </p>
 
                 <div className="flex items-center gap-4 mb-6">
-                  <span className="text-sm text-medium-gray">
-                    {news.date}
-                  </span>
+                  <span className="text-sm text-medium-gray">{news.date}</span>
                   {getPageCount() > 0 && (
                     <span className="text-sm text-medium-gray">
                       {getPageCount()} صفحة
@@ -232,12 +230,8 @@ const ScientificNewsDetail: React.FC = () => {
                 أخبار ذات صلة
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {relatedItems.map((contentItem) => (
-                  <ItemCard
-                    key={contentItem.id}
-                    item={contentItem}
-                    linkPrefix="/scientific-news"
-                  />
+                {relatedItems.map((item) => (
+                  <ItemCard key={item.id} item={item} />
                 ))}
               </div>
             </div>
@@ -248,4 +242,4 @@ const ScientificNewsDetail: React.FC = () => {
   );
 };
 
-export default ScientificNewsDetail; 
+export default ScientificNewsDetail;

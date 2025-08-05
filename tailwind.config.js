@@ -18,6 +18,7 @@ export default {
       fontFamily: {
         'cairo': ['Cairo', 'sans-serif'],
         'amiri': ['Amiri', 'serif'],
+        'louguiya': ['Louguiya', 'serif'],
       },
     },
   },

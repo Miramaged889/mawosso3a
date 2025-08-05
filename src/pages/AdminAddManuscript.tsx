@@ -10,7 +10,6 @@ const AdminAddManuscript: React.FC = () => {
   const { data: categories, loading: categoriesLoading } = useCategories();
   const fileInputRefs = {
     cover_image: useRef<HTMLInputElement>(null),
-    pdf_file: useRef<HTMLInputElement>(null),
   };
 
   const [formData, setFormData] = useState({
@@ -24,7 +23,7 @@ const AdminAddManuscript: React.FC = () => {
     tags: "",
     page_count: "",
     cover_image: null as File | null,
-    pdf_file: null as File | null,
+    pdf_file: "", // Changed to string for URL
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,15 +61,6 @@ const AdminAddManuscript: React.FC = () => {
           alert("صورة غير صالحة. الحد الأقصى 5MB وبصيغة JPG/PNG/WebP");
           if (fileInputRefs.cover_image.current) {
             fileInputRefs.cover_image.current.value = "";
-          }
-          return;
-        }
-      }
-      if (name === "pdf_file") {
-        if (file.type !== "application/pdf" || file.size > 10 * 1024 * 1024) {
-          alert("ملف PDF غير صالح. الحد الأقصى 10MB");
-          if (fileInputRefs.pdf_file.current) {
-            fileInputRefs.pdf_file.current.value = "";
           }
           return;
         }
@@ -121,32 +111,28 @@ const AdminAddManuscript: React.FC = () => {
         language: formData.language.trim(),
         tags: formData.tags.trim(),
         page_count: pageCount,
+        pdf_file: formData.pdf_file.trim() || undefined, // Add PDF URL
         published: true, // تعيين القيمة الافتراضية للنشر إلى true
       };
 
       // تجميع الملفات إذا كانت موجودة
       const files: {
         cover_image?: File;
-        pdf_file?: File;
       } = {};
 
       if (formData.cover_image) {
         files.cover_image = formData.cover_image;
       }
 
-      if (formData.pdf_file) {
-        files.pdf_file = formData.pdf_file;
-      }
-
       // إضافة معلومات تصحيح
       console.log("Entry data:", entryData);
       console.log("Files:", {
         cover_image: files.cover_image ? files.cover_image.name : "none",
-        pdf_file: files.pdf_file ? files.pdf_file.name : "none",
+        pdf_file: formData.pdf_file || "none",
       });
 
       // تحقق من وجود ملفات
-      const hasFiles = files.cover_image || files.pdf_file;
+      const hasFiles = files.cover_image;
 
       // إرسال البيانات والملفات في طلب واحد
       console.log(
@@ -300,17 +286,17 @@ const AdminAddManuscript: React.FC = () => {
             </div>
 
             <div className="border p-4 rounded bg-gray-50">
-              <label className="block mb-2 font-semibold">ملف PDF</label>
+              <label className="block mb-2 font-semibold">رابط ملف PDF</label>
               <input
-                type="file"
+                type="url"
                 name="pdf_file"
-                accept="application/pdf"
-                onChange={handleFileChange}
-                className="w-full mb-2"
-                ref={fileInputRefs.pdf_file}
+                value={formData.pdf_file}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right"
+                placeholder="https://example.com/file.pdf"
               />
               <p className="text-sm text-gray-600 mt-1">
-                الحد الأقصى 10MB بصيغة PDF
+                أدخل رابط مباشر لملف PDF
               </p>
             </div>
           </div>

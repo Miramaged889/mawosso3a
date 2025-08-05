@@ -7,25 +7,18 @@ import ItemCard from "./ItemCard";
 const LatestProjects = () => {
   const { data: latestItems, loading, error } = useLatestProjects();
 
-  const getLinkPrefix = (item: ContentEntry) => {
-    if (item.entry_type === "investigation") return "/tahqiq";
-    if (item.entry_type === "book") return "/books-on-chinguitt";
-    return "/manuscripts";
-  };
-
   if (loading) {
     return (
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-amiri font-bold text-blue-gray mb-4">
-              آخر المشاريع
+            <h2 className="text-3xl md:text-4xl font-louguiya font-bold text-blue-gray mb-4">
+              آخر المنشورات
             </h2>
             <p className="text-lg text-medium-gray max-w-2xl mx-auto">
               أحدث الإضافات من المخطوطات والتحقيقات والمؤلفات في الموسوعة
             </p>
           </div>
-
         </div>
       </section>
     );
@@ -36,8 +29,8 @@ const LatestProjects = () => {
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-amiri font-bold text-blue-gray mb-4">
-              آخر المشاريع
+            <h2 className="text-3xl md:text-4xl font-louguiya font-bold text-blue-gray mb-4">
+              آخر المنشورات
             </h2>
             <p className="text-lg text-medium-gray max-w-2xl mx-auto">
               أحدث الإضافات من المخطوطات والتحقيقات والمؤلفات في الموسوعة
@@ -55,8 +48,8 @@ const LatestProjects = () => {
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-amiri font-bold text-blue-gray mb-4">
-            آخر المشاريع
+          <h2 className="text-3xl md:text-4xl font-louguiya font-bold text-blue-gray mb-4">
+            آخر المنشورات
           </h2>
           <p className="text-lg text-medium-gray max-w-2xl mx-auto">
             أحدث الإضافات من المخطوطات والتحقيقات والمؤلفات في الموسوعة
@@ -65,11 +58,7 @@ const LatestProjects = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {(latestItems || []).slice(0, 3).map((item) => (
-            <ItemCard
-              key={item.id}
-              item={item}
-              linkPrefix={getLinkPrefix(item)}
-            />
+            <ItemCard key={item.id} item={item} />
           ))}
         </div>
 

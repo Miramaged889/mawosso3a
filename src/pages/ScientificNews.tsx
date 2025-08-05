@@ -118,7 +118,6 @@ const ScientificNews: React.FC = () => {
               <ItemCard
                 key={item.id}
                 item={item}
-                linkPrefix="/scientific-news"
               />
             ))}
           </div>

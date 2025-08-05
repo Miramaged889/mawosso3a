@@ -1,15 +1,20 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { useCategories, useSubcategories, useAuth } from "../hooks/useApi";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useCategories, useAuth, useEntry } from "../hooks/useApi";
 import { apiClient } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
-const AdminAddPost: React.FC = () => {
+const AdminEditManuscript: React.FC = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const { isAuthenticated, initialized, validateToken } = useAuth();
   const { data: categories, loading: categoriesLoading } = useCategories();
-  const { data: subcategories, loading: subcategoriesLoading } =
-    useSubcategories();
+  const {
+    data: manuscript,
+    loading: manuscriptLoading,
+    error: manuscriptError,
+  } = useEntry(parseInt(id || "0"));
+
   const fileInputRefs = {
     cover_image: useRef<HTMLInputElement>(null),
   };
@@ -17,33 +22,50 @@ const AdminAddPost: React.FC = () => {
   const [formData, setFormData] = useState({
     title: "",
     author: "",
-    category: "",
-    subcategory: "",
+    category: 10,
     date: "2024-01-01",
-    page_count: "",
     description: "",
     content: "",
     language: "العربية",
     tags: "",
+    page_count: "",
     cover_image: null as File | null,
-    pdf_file: "", // Changed to string for URL
+    pdf_file: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const selectedCategory = categories?.find(
-    (cat) => cat.id === parseInt(formData.category)
-  );
-  const availableSubcategories =
-    subcategories?.filter(
-      (sub) => sub.category === parseInt(formData.category)
-    ) || [];
 
   useEffect(() => {
     if (initialized && !isAuthenticated) {
       navigate("/admin");
     }
   }, [isAuthenticated, initialized, navigate]);
+
+  // Load manuscript data when available
+  useEffect(() => {
+    if (manuscript) {
+      setFormData({
+        title: manuscript.title || "",
+        author: manuscript.author || "",
+        category:
+          typeof manuscript.category === "object" &&
+          manuscript.category !== null
+            ? manuscript.category.id
+            : (manuscript.category as number) || 10,
+        date: manuscript.date || "2024-01-01",
+        description: manuscript.description || "",
+        content: manuscript.content || "",
+        language: manuscript.language || "العربية",
+        tags: manuscript.tags || "",
+        page_count:
+          manuscript.page_count?.toString() ||
+          manuscript.pages?.toString() ||
+          "",
+        cover_image: null,
+        pdf_file: manuscript.pdf_file || "",
+      });
+    }
+  }, [manuscript]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -53,9 +75,7 @@ const AdminAddPost: React.FC = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "category" ? value : value,
-      // Reset subcategory when category changes
-      ...(name === "category" ? { subcategory: "" } : {}),
+      [name]: name === "category" ? parseInt(value) || 0 : value,
     }));
   };
 
@@ -113,24 +133,20 @@ const AdminAddPost: React.FC = () => {
           ? null
           : parseInt(formData.page_count) || null;
 
-      const entryData: any = {
+      const entryData = {
         title: formData.title.trim(),
         author: formData.author.trim(),
-        category: parseInt(formData.category),
+        entry_type: "manuscript" as const,
+        category: formData.category,
         date: formData.date,
         description: formData.description.trim(),
         content: formData.content.trim(),
         language: formData.language.trim(),
         tags: formData.tags.trim(),
         page_count: pageCount,
-        pdf_file: formData.pdf_file.trim() || undefined, // Add PDF URL
-        published: true, // Set to published by default for posts
+        pdf_file: formData.pdf_file.trim() || undefined,
+        published: true,
       };
-
-      // Only add subcategory if it's selected and valid
-      if (formData.subcategory && formData.subcategory !== "") {
-        entryData.subcategory = parseInt(formData.subcategory);
-      }
 
       // تجميع الملفات إذا كانت موجودة
       const files: {
@@ -157,9 +173,13 @@ const AdminAddPost: React.FC = () => {
       );
 
       try {
-        await apiClient.createEntry(entryData, hasFiles ? files : undefined);
-        alert("تم حفظ المنشور بنجاح!");
-        navigate("/admin/posts");
+        await apiClient.updateEntry(
+          parseInt(id || "0"),
+          entryData,
+          hasFiles ? files : undefined
+        );
+        alert("تم تحديث المخطوطة بنجاح!");
+        navigate("/admin/manuscripts");
       } catch (apiError) {
         console.error("API Error:", apiError);
         throw apiError;
@@ -185,23 +205,49 @@ const AdminAddPost: React.FC = () => {
     }
   };
 
-
-
   const breadcrumbItems = [
     { label: "لوحة التحكم", path: "/admin" },
-    { label: "إدارة المنشورات", path: "/admin/posts" },
-    { label: "إضافة منشور جديد" },
+    { label: "إدارة المخطوطات", path: "/admin/manuscripts" },
+    { label: "تعديل المخطوطة" },
   ];
+
+  if (manuscriptLoading) {
+    return (
+      <div className="min-h-screen bg-ivory flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">⏳</div>
+          <p className="text-lg">جاري تحميل البيانات...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (manuscriptError || !manuscript) {
+    return (
+      <div className="min-h-screen bg-ivory flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">❌</div>
+          <p className="text-lg text-red-600">لم يتم العثور على المخطوطة</p>
+          <button
+            onClick={() => navigate("/admin/manuscripts")}
+            className="mt-4 bg-olive-green text-white px-6 py-2 rounded-lg"
+          >
+            العودة إلى إدارة المخطوطات
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-ivory">
       <Breadcrumb items={breadcrumbItems} />
       <div className="container mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">إضافة منشور جديد</h1>
+        <h1 className="text-2xl font-bold mb-6">تعديل المخطوطة</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block mb-2">عنوان المنشور *</label>
+              <label className="block mb-2">عنوان المخطوطة *</label>
               <input
                 type="text"
                 name="title"
@@ -209,7 +255,7 @@ const AdminAddPost: React.FC = () => {
                 onChange={handleChange}
                 className="w-full border p-3 rounded text-right"
                 required
-                placeholder="أدخل عنوان المنشور"
+                placeholder="مثال: خقهتبخهثقصتبخؤهتض"
               />
             </div>
             <div>
@@ -221,11 +267,11 @@ const AdminAddPost: React.FC = () => {
                 onChange={handleChange}
                 className="w-full border p-3 rounded text-right"
                 required
-                placeholder="أدخل اسم المؤلف"
+                placeholder="مثال: هخ2ثصيختؤىصتهنثهىهيؤبهمصضىهعب"
               />
             </div>
             <div>
-              <label className="block mb-2">التصنيف الرئيسي *</label>
+              <label className="block mb-2">التصنيف *</label>
               <select
                 name="category"
                 value={formData.category}
@@ -241,24 +287,6 @@ const AdminAddPost: React.FC = () => {
                 ))}
               </select>
             </div>
-            {availableSubcategories.length > 0 && (
-              <div>
-                <label className="block mb-2">التصنيف الفرعي</label>
-                <select
-                  name="subcategory"
-                  value={formData.subcategory}
-                  onChange={handleChange}
-                  className="w-full border p-3 rounded text-right"
-                >
-                  <option value="">اختر التصنيف الفرعي (اختياري)</option>
-                  {availableSubcategories.map((sub) => (
-                    <option key={sub.id} value={sub.id}>
-                      {sub.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
             <div>
               <label className="block mb-2">التاريخ</label>
               <input
@@ -318,6 +346,11 @@ const AdminAddPost: React.FC = () => {
               <p className="text-sm text-gray-600 mt-1">
                 الحد الأقصى 5MB بصيغة JPG/PNG/WebP
               </p>
+              {manuscript.cover_image && !formData.cover_image && (
+                <div className="mt-2 text-sm text-blue-600">
+                  الصورة الحالية: متوفرة
+                </div>
+              )}
             </div>
 
             <div className="border p-4 rounded bg-gray-50">
@@ -345,24 +378,24 @@ const AdminAddPost: React.FC = () => {
               rows={3}
               className="w-full border p-3 rounded text-right"
               required
-              placeholder="وصف مختصر للمحتوى"
+              placeholder="مثال: نخث3صةيؤبعتصثىهنيعتؤىصض3"
             ></textarea>
           </div>
           <div>
-            <label className="block mb-2">المحتوى التفصيلي</label>
+            <label className="block mb-2">المحتوى</label>
             <textarea
               name="content"
               value={formData.content}
               onChange={handleChange}
               rows={6}
               className="w-full border p-3 rounded text-right"
-              placeholder="وصف تفصيلي شامل للمحتوى"
+              placeholder="محتوى المخطوطة (اختياري)"
             ></textarea>
           </div>
           <div className="flex justify-end gap-4">
             <button
               type="button"
-              onClick={() => navigate("/admin/posts")}
+              onClick={() => navigate("/admin/manuscripts")}
               className="px-6 py-2 border rounded"
             >
               إلغاء
@@ -372,7 +405,7 @@ const AdminAddPost: React.FC = () => {
               disabled={isSubmitting}
               className="bg-green-600 text-white px-6 py-2 rounded"
             >
-              {isSubmitting ? "جاري الحفظ..." : "حفظ المنشور"}
+              {isSubmitting ? "جاري التحديث..." : "تحديث المخطوطة"}
             </button>
           </div>
         </form>
@@ -381,4 +414,4 @@ const AdminAddPost: React.FC = () => {
   );
 };
 
-export default AdminAddPost;
+export default AdminEditManuscript;
