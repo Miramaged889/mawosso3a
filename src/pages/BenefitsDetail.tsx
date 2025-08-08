@@ -81,7 +81,8 @@ const BenefitsDetail: React.FC = () => {
     if (typeof benefit.category === "object" && benefit.category?.name) {
       return benefit.category.name;
     }
-    return "غير محدد";
+    // Show tags if available, otherwise show "غير محدد"
+    return benefit.tags || "غير محدد";
   };
 
   // Get subcategory name safely

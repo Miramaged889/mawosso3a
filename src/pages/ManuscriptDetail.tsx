@@ -133,7 +133,7 @@ const ManuscriptDetail: React.FC = () => {
                 <span className="bg-heritage-gold text-white px-4 py-2 rounded-full text-sm font-semibold">
                   {typeof manuscript.category === "object"
                     ? manuscript.category.name
-                    : "غير محدد"}
+                    : manuscript.tags || "غير محدد"}
                 </span>
                 <span className="text-medium-gray">{manuscript.date}</span>
               </div>

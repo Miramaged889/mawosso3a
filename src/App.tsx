@@ -104,7 +104,6 @@ function App() {
               path="/scientific-news/:id"
               element={<ScientificNewsDetail />}
             />
-            <Route path="/varieties/:id" element={<VarietiesDetail />} />
 
             {/* Admin Routes */}
             <Route path="/admin" element={<Admin />} />

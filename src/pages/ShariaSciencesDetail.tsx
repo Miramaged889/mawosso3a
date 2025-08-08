@@ -77,7 +77,7 @@ const ShariaSciencesDetail: React.FC = () => {
     if (typeof item.category === "object" && item.category?.name) {
       return item.category.name;
     }
-    return "غير محدد";
+    return item.tags || "غير محدد";
   };
 
   // Get subcategory name safely

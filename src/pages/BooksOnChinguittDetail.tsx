@@ -92,7 +92,7 @@ const BooksOnChinguittDetail: React.FC = () => {
     if (typeof book.category === "object" && book.category?.name) {
       return book.category.name;
     }
-    return "غير محدد";
+    return book.tags || "غير محدد";
   };
 
   // Get subcategory name safely

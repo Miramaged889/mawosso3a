@@ -67,59 +67,108 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
       }
     }
 
-    // If no entry_type, try to determine from category
-    const categoryName = getCategoryName().toLowerCase();
+    // If no entry_type, try to determine from category ID
+    let categoryId = null;
 
-    if (categoryName.includes("مخطوط") || categoryName.includes("manuscript")) {
+    // Get category ID from different possible formats
+    if (typeof item.category === "object" && item.category?.id) {
+      categoryId = item.category.id;
+    } else if (typeof item.category === "number") {
+      categoryId = item.category;
+    }
+
+    // Route based on category ID
+    if (categoryId === 10) {
+      // مخطوطات
       return `/manuscripts/${item.id}`;
     }
 
-    if (
-      categoryName.includes("تحقيق") ||
-      categoryName.includes("investigation")
-    ) {
-      return `/tahqiq/${item.id}`;
-    }
-
-    if (categoryName.includes("كتاب") || categoryName.includes("book")) {
+    if (categoryId === 9) {
+      // مؤلفات عن شنقيط
       return `/books-on-chinguitt/${item.id}`;
     }
 
-    // Default fallback based on category name patterns
-    if (
-      categoryName.includes("علوم شرعية") ||
-      categoryName.includes("فقه") ||
-      categoryName.includes("حديث")
-    ) {
-      return `/sharia-sciences/${item.id}`;
+    if (categoryId === 8) {
+      // تحقيقات الشناقطة
+      return `/tahqiq/${item.id}`;
     }
 
-    if (
-      categoryName.includes("علوم لغوية") ||
-      categoryName.includes("نحو") ||
-      categoryName.includes("بلاغة")
-    ) {
-      return `/linguistic-sciences/${item.id}`;
-    }
-
-    if (
-      categoryName.includes("علوم اجتماعية") ||
-      categoryName.includes("تاريخ") ||
-      categoryName.includes("جغرافيا")
-    ) {
-      return `/social-sciences/${item.id}`;
-    }
-
-    if (categoryName.includes("مكتبة التربية النظامية")) {
-      return `/formal-education-library/${item.id}`;
-    }
-
-    if (categoryName.includes("أخبار علمية")) {
+    if (categoryId === 7) {
+      // الأخبار العلمية
       return `/scientific-news/${item.id}`;
     }
 
-    if (categoryName.includes("فوائد")) {
+    if (categoryId === 6) {
+      // مكتبة التعليم النظامي
+      return `/formal-education-library/${item.id}`;
+    }
+
+    if (categoryId === 5) {
+      // فوائد
       return `/benefits/${item.id}`;
+    }
+
+    if (categoryId === 4) {
+      // المنوعات
+      return `/varieties/${item.id}`;
+    }
+
+    if (categoryId === 3) {
+      // العلوم الاجتماعية
+      return `/social-sciences/${item.id}`;
+    }
+
+    if (categoryId === 2) {
+      // العلوم اللغوية
+      return `/linguistic-sciences/${item.id}`;
+    }
+
+    if (categoryId === 1) {
+      // العلوم الشرعية
+      return `/sharia-sciences/${item.id}`;
+    }
+
+    // Fallback: try to determine from category name if ID is not available
+    const categoryName = getCategoryName();
+
+    if (categoryName === "مخطوطات") {
+      return `/manuscripts/${item.id}`;
+    }
+
+    if (categoryName === "مؤلفات عن شنقيط") {
+      return `/books-on-chinguitt/${item.id}`;
+    }
+
+    if (categoryName === "تحقيقات الشناقطة") {
+      return `/tahqiq/${item.id}`;
+    }
+
+    if (categoryName === "الأخبار العلمية") {
+      return `/scientific-news/${item.id}`;
+    }
+
+    if (categoryName === "مكتبة التعليم النظامي") {
+      return `/formal-education-library/${item.id}`;
+    }
+
+    if (categoryName === "فوائد") {
+      return `/benefits/${item.id}`;
+    }
+
+    if (categoryName === "المنوعات") {
+      return `/varieties/${item.id}`;
+    }
+
+    if (categoryName === "العلوم الاجتماعية") {
+      return `/social-sciences/${item.id}`;
+    }
+
+    if (categoryName === "العلوم اللغوية") {
+      return `/linguistic-sciences/${item.id}`;
+    }
+
+    if (categoryName === "العلوم الشرعية") {
+      return `/sharia-sciences/${item.id}`;
     }
 
     // Default to books if no specific category is found
