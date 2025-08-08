@@ -10,41 +10,41 @@ const FormalEducationLibraryDetail: React.FC = () => {
   const numericId = id ? parseInt(id) : null;
 
   const { data: item, error } = useEntry(numericId);
-  const { data: relatedData } = useEntries({ category: "6" });
-
-  // Debug image URLs
-  React.useEffect(() => {
-    if (item) {
-      console.log("Formal Education item cover_image:", item.cover_image);
-      console.log(
-        "Formal Education item full URL:",
-        item.cover_image
-          ? item.cover_image.startsWith("http")
-            ? item.cover_image
-            : `https://chinguitipedia.alldev.org${item.cover_image}`
-          : null
-      );
-    }
-  }, [item]);
+  const { data: relatedData } = useEntries({ category: "7" });
 
   const relatedItems = React.useMemo(() => {
     if (!relatedData || !item) return [];
     return (relatedData as ContentEntry[])
       .filter(
-        (contentItem: ContentEntry) =>
-          contentItem.id !== numericId &&
-          typeof contentItem.category === "object" &&
+        (item: ContentEntry) =>
+          item.id !== numericId &&
           typeof item.category === "object" &&
-          contentItem.category?.id === item.category?.id
+          typeof item.category === "object" &&
+          item.category?.id === item.category?.id
       )
       .slice(0, 3);
   }, [relatedData, item, numericId]);
 
-  // Format image URL
+  // Enhanced image URL formatting
   const getImageUrl = (url: string | null | undefined) => {
     if (!url) return null;
     if (url.startsWith("http")) return url;
-    return `https://chinguitipedia.alldev.org${url}`;
+    // Handle both relative and absolute paths
+    if (url.startsWith("/")) {
+      return `https://chinguitipedia.alldev.org${url}`;
+    }
+    return `https://chinguitipedia.alldev.org/${url}`;
+  };
+
+  // Enhanced PDF URL formatting
+  const getPdfUrl = (url: string | null | undefined) => {
+    if (!url) return null;
+    if (url.startsWith("http")) return url;
+    // Handle both relative and absolute paths
+    if (url.startsWith("/")) {
+      return `https://chinguitipedia.alldev.org${url}`;
+    }
+    return `https://chinguitipedia.alldev.org/${url}`;
   };
 
   if (error || !item) {
@@ -69,8 +69,8 @@ const FormalEducationLibraryDetail: React.FC = () => {
     );
   }
 
-  const coverImageUrl = getImageUrl(item.cover_image);
-  const pdfFileUrl = getImageUrl(item.pdf_file);
+  const coverImageUrl = getImageUrl(item.cover_image_link);
+  const pdfFileUrl = getPdfUrl(item.pdf_file_link);
 
   // Get category name safely
   const getCategoryName = () => {
@@ -91,6 +91,13 @@ const FormalEducationLibraryDetail: React.FC = () => {
   // Get page count safely
   const getPageCount = () => {
     return item.pages || item.page_count || 0;
+  };
+
+  // Handle PDF download
+  const handlePdfDownload = () => {
+    if (pdfFileUrl) {
+      window.open(pdfFileUrl, "_blank");
+    }
   };
 
   const breadcrumbItems = [
@@ -171,8 +178,8 @@ const FormalEducationLibraryDetail: React.FC = () => {
                 <div className="flex gap-4">
                   {pdfFileUrl && (
                     <button
-                      onClick={() => window.open(pdfFileUrl, "_blank")}
-                      className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 flex items-center space-x-2 space-x-reverse"
+                      onClick={handlePdfDownload}
+                      className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 flex items-center space-x-2 space-x-reverse font-semibold"
                     >
                       <span>تحميل PDF</span>
                       <svg

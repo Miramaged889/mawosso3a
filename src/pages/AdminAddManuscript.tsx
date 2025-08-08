@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCategories, useAuth } from "../hooks/useApi";
 import { apiClient } from "../services/api";
@@ -7,23 +7,19 @@ import Breadcrumb from "../components/Breadcrumb";
 const AdminAddManuscript: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, initialized, validateToken } = useAuth();
-  const { data: categories, loading: categoriesLoading } = useCategories();
-  const fileInputRefs = {
-    cover_image: useRef<HTMLInputElement>(null),
-  };
-
+  const { data: categories } = useCategories();
   const [formData, setFormData] = useState({
     title: "",
     author: "",
-    category: 10, // تعيين القيمة الافتراضية للتصنيف إلى 10
+    category: 10, // تعيين القيمة الافتراضية للتصنيف إلى المخطوطات (10)
     date: "2024-01-01", // تعيين التاريخ الافتراضي
     description: "",
     content: "",
     language: "العربية",
     tags: "",
     page_count: "",
-    cover_image: null as File | null,
-    pdf_file: "", // Changed to string for URL
+    cover_image_link: "",
+    pdf_file_link: "", // تغيير من ملف إلى رابط
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,29 +40,6 @@ const AdminAddManuscript: React.FC = () => {
       ...prev,
       [name]: name === "category" ? parseInt(value) || 0 : value,
     }));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, files } = e.target;
-    if (files && files[0]) {
-      const file = files[0];
-      if (name === "cover_image") {
-        const validTypes = [
-          "image/jpeg",
-          "image/jpg",
-          "image/png",
-          "image/webp",
-        ];
-        if (!validTypes.includes(file.type) || file.size > 5 * 1024 * 1024) {
-          alert("صورة غير صالحة. الحد الأقصى 5MB وبصيغة JPG/PNG/WebP");
-          if (fileInputRefs.cover_image.current) {
-            fileInputRefs.cover_image.current.value = "";
-          }
-          return;
-        }
-      }
-      setFormData((prev) => ({ ...prev, [name]: file }));
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -100,7 +73,21 @@ const AdminAddManuscript: React.FC = () => {
           ? null
           : parseInt(formData.page_count) || null;
 
-      const entryData = {
+      // Generate slug from title
+      const generateSlug = (title: string) => {
+        return title
+          .toLowerCase()
+          .replace(
+            /[^\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFFa-zA-Z0-9\s]/g,
+            ""
+          )
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-")
+          .trim()
+          .replace(/^-+|-+$/g, "");
+      };
+
+      const entryData: any = {
         title: formData.title.trim(),
         author: formData.author.trim(),
         entry_type: "manuscript" as const,
@@ -111,36 +98,49 @@ const AdminAddManuscript: React.FC = () => {
         language: formData.language.trim(),
         tags: formData.tags.trim(),
         page_count: pageCount,
-        pdf_file: formData.pdf_file.trim() || undefined, // Add PDF URL
         published: true, // تعيين القيمة الافتراضية للنشر إلى true
+        slug: generateSlug(formData.title.trim()),
       };
 
-      // تجميع الملفات إذا كانت موجودة
-      const files: {
-        cover_image?: File;
-      } = {};
+      // إضافة روابط إلى البيانات إذا كانت موجودة
+      if (formData.cover_image_link.trim()) {
+        // إضافة http:// إذا لم يكن موجوداً
+        let coverImageLink = formData.cover_image_link.trim();
+        if (
+          coverImageLink &&
+          !coverImageLink.startsWith("http://") &&
+          !coverImageLink.startsWith("https://")
+        ) {
+          coverImageLink = "http://" + coverImageLink;
+        }
+        entryData.cover_image_link = coverImageLink;
+      }
 
-      if (formData.cover_image) {
-        files.cover_image = formData.cover_image;
+      if (formData.pdf_file_link.trim()) {
+        // إضافة http:// إذا لم يكن موجوداً
+        let pdfFileLink = formData.pdf_file_link.trim();
+        if (
+          pdfFileLink &&
+          !pdfFileLink.startsWith("http://") &&
+          !pdfFileLink.startsWith("https://")
+        ) {
+          pdfFileLink = "http://" + pdfFileLink;
+        }
+        entryData.pdf_file_link = pdfFileLink;
       }
 
       // إضافة معلومات تصحيح
       console.log("Entry data:", entryData);
-      console.log("Files:", {
-        cover_image: files.cover_image ? files.cover_image.name : "none",
-        pdf_file: formData.pdf_file || "none",
+      console.log("Links:", {
+        cover_image_link: formData.cover_image_link || "none",
+        pdf_file_link: formData.pdf_file_link || "none",
       });
 
-      // تحقق من وجود ملفات
-      const hasFiles = files.cover_image;
-
-      // إرسال البيانات والملفات في طلب واحد
-      console.log(
-        `Submitting entry data ${hasFiles ? "with" : "without"} files`
-      );
+      // إرسال البيانات
+      console.log("Submitting entry data with links");
 
       try {
-        await apiClient.createEntry(entryData, hasFiles ? files : undefined);
+        await apiClient.createEntry(entryData);
         alert("تم حفظ المخطوطة بنجاح!");
         navigate("/admin/manuscripts");
       } catch (apiError) {
@@ -271,29 +271,31 @@ const AdminAddManuscript: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div className="border p-4 rounded bg-gray-50">
-              <label className="block mb-2 font-semibold">صورة الغلاف</label>
+              <label className="block mb-2 font-semibold">
+                رابط صورة الغلاف
+              </label>
               <input
-                type="file"
-                name="cover_image"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="w-full mb-2"
-                ref={fileInputRefs.cover_image}
+                type="text"
+                name="cover_image_link"
+                value={formData.cover_image_link}
+                onChange={handleChange}
+                className="w-full mb-2 p-3 border rounded text-right"
+                placeholder="https://example.com/cover-image.jpg"
               />
               <p className="text-sm text-gray-600 mt-1">
-                الحد الأقصى 5MB بصيغة JPG/PNG/WebP
+                أدخل رابط مباشر لصورة الغلاف
               </p>
             </div>
 
             <div className="border p-4 rounded bg-gray-50">
               <label className="block mb-2 font-semibold">رابط ملف PDF</label>
               <input
-                type="url"
-                name="pdf_file"
-                value={formData.pdf_file}
+                type="text"
+                name="pdf_file_link"
+                value={formData.pdf_file_link}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right"
-                placeholder="https://example.com/file.pdf"
+                className="w-full mb-2 p-3 border rounded text-right"
+                placeholder="https://example.com/document.pdf"
               />
               <p className="text-sm text-gray-600 mt-1">
                 أدخل رابط مباشر لملف PDF

@@ -7,7 +7,7 @@ import Breadcrumb from "../components/Breadcrumb";
 const AdminPosts: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, initialized } = useAuth();
-  const { data: entriesData, loading, error, refetch } = useEntries();
+  const { data: entriesData, error, refetch } = useEntries();
   const { data: categories } = useCategories();
   const [deleting, setDeleting] = useState<number | null>(null);
 
@@ -58,8 +58,8 @@ const AdminPosts: React.FC = () => {
   };
 
   // Helper function to get category name
-  const getCategoryName = (category: any): string => {
-    if (!category) return "غير محدد";
+  const getCategoryName = (category: any, tags?: string): string => {
+    if (!category) return tags || "غير محدد";
 
     if (typeof category === "object" && category.name) {
       return category.name;
@@ -72,18 +72,16 @@ const AdminPosts: React.FC = () => {
     // If it's a number, look up the category name from categories data
     if (typeof category === "number" && categories) {
       const foundCategory = categories.find((cat) => cat.id === category);
-      return foundCategory ? foundCategory.name : "غير محدد";
+      return foundCategory ? foundCategory.name : tags || "غير محدد";
     }
 
-    return "غير محدد";
+    return tags || "غير محدد";
   };
 
   const breadcrumbItems = [
     { label: "لوحة التحكم", path: "/admin" },
     { label: "إدارة المنشورات" },
   ];
-
-
 
   return (
     <div className="min-h-screen bg-ivory">
@@ -161,10 +159,10 @@ const AdminPosts: React.FC = () => {
                       className={index % 2 === 0 ? "bg-ivory" : "bg-white"}
                     >
                       <td className="px-6 py-4 w-24">
-                        {getImageUrl(post.cover_image) ? (
+                        {getImageUrl(post.cover_image_link) ? (
                           <img
                             src={
-                              getImageUrl(post.cover_image) ||
+                              getImageUrl(post.cover_image_link) ||
                               "/placeholder-manuscript.png"
                             }
                             alt={post.title}
@@ -194,7 +192,7 @@ const AdminPosts: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span className="bg-heritage-gold text-white px-3 py-1 rounded-full text-sm">
-                          {getCategoryName(post.category)}
+                          {getCategoryName(post.category, post.tags)}
                         </span>
                         {post.subcategory &&
                           typeof post.subcategory === "object" && (
@@ -210,17 +208,17 @@ const AdminPosts: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex space-x-1 space-x-reverse">
-                          {post.cover_image && (
+                          {post.cover_image_link && (
                             <span className="bg-blue-500 text-white px-2 py-1 rounded text-xs">
                               صورة
                             </span>
                           )}
-                          {post.pdf_file && (
+                          {post.pdf_file_link && (
                             <span className="bg-red-500 text-white px-2 py-1 rounded text-xs">
                               PDF
                             </span>
                           )}
-                          {!post.cover_image && !post.pdf_file && (
+                          {!post.cover_image_link && !post.pdf_file_link && (
                             <span className="text-gray-400 text-xs">
                               لا توجد ملفات
                             </span>

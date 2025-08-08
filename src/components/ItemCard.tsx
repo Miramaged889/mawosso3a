@@ -12,7 +12,8 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
     if (typeof item.category === "object" && item.category?.name) {
       return item.category.name;
     }
-    return "غير محدد";
+    // Show tags if available, otherwise show "غير محدد"
+    return item.tags || "غير محدد";
   };
 
   // Get subcategory name safely
@@ -28,11 +29,26 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
     return item.pages || item.page_count || 0;
   };
 
-  // Format image URL
+  // Enhanced image URL formatting
   const getImageUrl = (url: string | null | undefined) => {
     if (!url) return null;
     if (url.startsWith("http")) return url;
-    return `https://chinguitipedia.alldev.org${url}`;
+    // Handle both relative and absolute paths
+    if (url.startsWith("/")) {
+      return `https://chinguitipedia.alldev.org${url}`;
+    }
+    return `https://chinguitipedia.alldev.org/${url}`;
+  };
+
+  // Enhanced PDF URL formatting
+  const getPdfUrl = (url: string | null | undefined) => {
+    if (!url) return null;
+    if (url.startsWith("http")) return url;
+    // Handle both relative and absolute paths
+    if (url.startsWith("/")) {
+      return `https://chinguitipedia.alldev.org${url}`;
+    }
+    return `https://chinguitipedia.alldev.org/${url}`;
   };
 
   // Determine the correct route based on entry type and category
@@ -110,9 +126,18 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
     return `/books-on-chinguitt/${item.id}`;
   };
 
-  const coverImageUrl = getImageUrl(item.cover_image);
-  const pdfFileUrl = getImageUrl(item.pdf_file);
+  const coverImageUrl = getImageUrl(item.cover_image_link);
+  const pdfFileUrl = getPdfUrl(item.pdf_file_link);
   const detailRoute = getDetailRoute();
+
+  // Handle PDF download
+  const handlePdfDownload = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (pdfFileUrl) {
+      window.open(pdfFileUrl, "_blank");
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
@@ -167,18 +192,15 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
             <span className="text-sm text-medium-gray">
               {getPageCount()} صفحة
             </span>
-            <div className="flex gap-1">
+            <div className="flex gap-2">
               {pdfFileUrl && (
-                <span
-                  title="ملف PDF متوفر"
-                  className="text-red-500 cursor-pointer"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (pdfFileUrl) window.open(pdfFileUrl, "_blank");
-                  }}
+                <button
+                  onClick={handlePdfDownload}
+                  title="تحميل PDF"
+                  className="text-red-500 hover:text-red-700 transition-colors p-1 rounded"
                 >
                   📄
-                </span>
+                </button>
               )}
               {coverImageUrl && (
                 <span title="صورة الغلاف متوفرة" className="text-blue-500">

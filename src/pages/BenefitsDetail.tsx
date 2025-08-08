@@ -10,22 +10,7 @@ const BenefitsDetail: React.FC = () => {
   const numericId = id ? parseInt(id) : null;
 
   const { data: benefit, error } = useEntry(numericId);
-  const { data: relatedData } = useEntries({ category: "5" });
-
-  // Debug image URLs
-  React.useEffect(() => {
-    if (benefit) {
-      console.log("Benefit cover_image:", benefit.cover_image);
-      console.log(
-        "Benefit full URL:",
-        benefit.cover_image
-          ? benefit.cover_image.startsWith("http")
-            ? benefit.cover_image
-            : `https://chinguitipedia.alldev.org${benefit.cover_image}`
-          : null
-      );
-    }
-  }, [benefit]);
+  const { data: relatedData } = useEntries({ category: "8" });
 
   const relatedItems = React.useMemo(() => {
     if (!relatedData || !benefit) return [];
@@ -40,11 +25,26 @@ const BenefitsDetail: React.FC = () => {
       .slice(0, 3);
   }, [relatedData, benefit, numericId]);
 
-  // Format image URL
+  // Enhanced image URL formatting
   const getImageUrl = (url: string | null | undefined) => {
     if (!url) return null;
     if (url.startsWith("http")) return url;
-    return `https://chinguitipedia.alldev.org${url}`;
+    // Handle both relative and absolute paths
+    if (url.startsWith("/")) {
+      return `https://chinguitipedia.alldev.org${url}`;
+    }
+    return `https://chinguitipedia.alldev.org/${url}`;
+  };
+
+  // Enhanced PDF URL formatting
+  const getPdfUrl = (url: string | null | undefined) => {
+    if (!url) return null;
+    if (url.startsWith("http")) return url;
+    // Handle both relative and absolute paths
+    if (url.startsWith("/")) {
+      return `https://chinguitipedia.alldev.org${url}`;
+    }
+    return `https://chinguitipedia.alldev.org/${url}`;
   };
 
   const getPageCount = () => {
@@ -73,8 +73,8 @@ const BenefitsDetail: React.FC = () => {
     );
   }
 
-  const coverImageUrl = getImageUrl(benefit.cover_image);
-  const pdfFileUrl = getImageUrl(benefit.pdf_file);
+  const coverImageUrl = getImageUrl(benefit.cover_image_link);
+  const pdfFileUrl = getPdfUrl(benefit.pdf_file_link);
 
   // Get category name safely
   const getCategoryName = () => {
@@ -90,6 +90,13 @@ const BenefitsDetail: React.FC = () => {
       return benefit.subcategory.name;
     }
     return null;
+  };
+
+  // Handle PDF download
+  const handlePdfDownload = () => {
+    if (pdfFileUrl) {
+      window.open(pdfFileUrl, "_blank");
+    }
   };
 
   const breadcrumbItems = [
@@ -172,8 +179,8 @@ const BenefitsDetail: React.FC = () => {
                 <div className="flex gap-4">
                   {pdfFileUrl && (
                     <button
-                      onClick={() => window.open(pdfFileUrl, "_blank")}
-                      className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 flex items-center space-x-2 space-x-reverse"
+                      onClick={handlePdfDownload}
+                      className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 flex items-center space-x-2 space-x-reverse font-semibold"
                     >
                       <span>تحميل PDF</span>
                       <svg

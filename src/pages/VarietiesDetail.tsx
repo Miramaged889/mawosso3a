@@ -5,12 +5,12 @@ import { ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 import ItemCard from "../components/ItemCard";
 
-const ScientificNewsDetail: React.FC = () => {
+const VarietiesDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const numericId = id ? parseInt(id) : null;
 
   const { data: item, error } = useEntry(numericId);
-  const { data: relatedData } = useEntries({ category: "6" });
+  const { data: relatedData } = useEntries({ category: "4" });
 
   const relatedItems = React.useMemo(() => {
     if (!relatedData || !item) return [];
@@ -53,16 +53,16 @@ const ScientificNewsDetail: React.FC = () => {
         <div className="text-center">
           <div className="text-6xl mb-4">❌</div>
           <h2 className="text-3xl font-amiri font-bold text-blue-gray mb-4">
-            الخبر غير موجود
+            العنصر غير موجود
           </h2>
           <p className="text-medium-gray mb-8">
-            عذراً، لم نتمكن من العثور على الخبر المطلوب.
+            عذراً، لم نتمكن من العثور على العنصر المطلوب.
           </p>
           <Link
-            to="/scientific-news"
+            to="/varieties"
             className="bg-olive-green text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
           >
-            العودة إلى الأخبار العلمية
+            العودة إلى المنوعات
           </Link>
         </div>
       </div>
@@ -77,7 +77,7 @@ const ScientificNewsDetail: React.FC = () => {
     if (typeof item.category === "object" && item.category?.name) {
       return item.category.name;
     }
-    return "غير محدد";
+    return item.tags || "غير محدد";
   };
 
   // Get subcategory name safely
@@ -101,7 +101,7 @@ const ScientificNewsDetail: React.FC = () => {
   };
 
   const breadcrumbItems = [
-    { label: "الأخبار العلمية", path: "/scientific-news" },
+    { label: "المنوعات", path: "/varieties" },
     { label: item.title },
   ];
 
@@ -131,7 +131,7 @@ const ScientificNewsDetail: React.FC = () => {
                   </div>
                 ) : (
                   <div className="h-64 md:h-full bg-gray-50 flex items-center justify-center">
-                    <div className="text-gray-400 text-6xl">📰</div>
+                    <div className="text-gray-400 text-6xl">🎭</div>
                   </div>
                 )}
               </div>
@@ -234,7 +234,7 @@ const ScientificNewsDetail: React.FC = () => {
           {relatedItems.length > 0 && (
             <div>
               <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-8 text-center">
-                أخبار ذات صلة
+                عناصر ذات صلة
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {relatedItems.map((item) => (
@@ -249,4 +249,4 @@ const ScientificNewsDetail: React.FC = () => {
   );
 };
 
-export default ScientificNewsDetail;
+export default VarietiesDetail;

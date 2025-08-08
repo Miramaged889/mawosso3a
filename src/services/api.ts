@@ -32,8 +32,8 @@ export interface ContentEntry {
   page_count?: number | null;
   language: string;
   tags?: string;
-  cover_image?: string | null;
-  pdf_file?: string | null;
+  cover_image_link?: string | null;
+  pdf_file_link?: string | null;
   created_at?: string;
   updated_at?: string;
   published?: boolean;
@@ -400,13 +400,35 @@ class ApiClient {
 
       return this.handleResponse<ContentEntry>(response);
     } else {
-      // إذا لم تكن هناك ملفات، استخدم JSON كالمعتاد
-      console.log("Sending JSON data to API:", data);
+      // إرسال البيانات كـ FormData لتجنب مشاكل التحقق
+      console.log("Sending FormData to API:", data);
+
+      const formData = new FormData();
+
+      // إضافة البيانات الأساسية
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          // تعامل خاص مع القيم الرقمية والمنطقية
+          if (typeof value === "boolean") {
+            formData.append(key, value ? "true" : "false");
+          } else if (value === null) {
+            formData.append(key, "");
+          } else {
+            formData.append(key, value.toString());
+          }
+        }
+      });
+
+      // إرسال الطلب مع FormData
+      const headers: HeadersInit = {};
+      if (this.token) {
+        headers["Authorization"] = `Token ${this.token}`;
+      }
 
       const response = await fetch(`${this.baseURL}/entries/`, {
         method: "POST",
-        headers: this.getHeaders(),
-        body: JSON.stringify(data),
+        headers: headers,
+        body: formData,
       });
 
       if (!response.ok) {

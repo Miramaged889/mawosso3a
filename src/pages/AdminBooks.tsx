@@ -7,7 +7,7 @@ import Breadcrumb from "../components/Breadcrumb";
 const AdminBooks: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, initialized } = useAuth();
-  const { data: entriesData, loading, error, refetch } = useEntries();
+  const { data: entriesData, error, refetch } = useEntries();
   const { data: categories } = useCategories();
   const [deleting, setDeleting] = useState<number | null>(null);
 
@@ -46,8 +46,8 @@ const AdminBooks: React.FC = () => {
   }, [books]);
 
   // Helper function to get category name
-  const getCategoryName = (category: any): string => {
-    if (!category) return "غير محدد";
+  const getCategoryName = (category: any, tags?: string): string => {
+    if (!category) return tags || "غير محدد";
 
     if (typeof category === "object" && category.name) {
       return category.name;
@@ -60,10 +60,10 @@ const AdminBooks: React.FC = () => {
     // If it's a number, look up the category name from categories data
     if (typeof category === "number" && categories) {
       const foundCategory = categories.find((cat) => cat.id === category);
-      return foundCategory ? foundCategory.name : "غير محدد";
+      return foundCategory ? foundCategory.name : tags || "غير محدد";
     }
 
-    return "غير محدد";
+    return tags || "غير محدد";
   };
 
   const handleDelete = async (id: number) => {
@@ -102,8 +102,6 @@ const AdminBooks: React.FC = () => {
     { label: "لوحة التحكم", path: "/admin" },
     { label: "إدارة الكتب" },
   ];
-
-
 
   return (
     <div className="min-h-screen bg-ivory">
@@ -172,10 +170,10 @@ const AdminBooks: React.FC = () => {
                       className={index % 2 === 0 ? "bg-ivory" : "bg-white"}
                     >
                       <td className="px-6 py-4 w-24">
-                        {getImageUrl(book.cover_image) ? (
+                        {getImageUrl(book.cover_image_link) ? (
                           <img
                             src={
-                              getImageUrl(book.cover_image) ||
+                              getImageUrl(book.cover_image_link) ||
                               "/placeholder-manuscript.png"
                             }
                             alt={book.title}
@@ -205,7 +203,7 @@ const AdminBooks: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span className="bg-heritage-gold text-white px-3 py-1 rounded-full text-sm">
-                          {getCategoryName(book.category)}
+                          {getCategoryName(book.category, book.tags)}
                         </span>
                         {book.subcategory &&
                           typeof book.subcategory === "object" && (

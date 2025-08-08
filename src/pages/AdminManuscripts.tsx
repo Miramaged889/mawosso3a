@@ -11,7 +11,6 @@ const AdminManuscripts: React.FC = () => {
   const { isAuthenticated, initialized } = useAuth();
   const {
     data: entriesData,
-    loading,
     error,
     refetch,
   } = useEntries({
@@ -71,8 +70,6 @@ const AdminManuscripts: React.FC = () => {
     { label: "لوحة التحكم", path: "/admin" },
     { label: "إدارة المخطوطات" },
   ];
-
-
 
   return (
     <div className="min-h-screen bg-ivory">
@@ -174,7 +171,7 @@ const AdminManuscripts: React.FC = () => {
                           <span className="bg-heritage-gold text-white px-3 py-1 rounded-full text-sm">
                             {typeof manuscript.category === "object"
                               ? manuscript.category?.name
-                              : "غير محدد"}
+                              : manuscript.tags || "غير محدد"}
                           </span>
                         </td>
                         <td className="px-6 py-4">
@@ -195,32 +192,38 @@ const AdminManuscripts: React.FC = () => {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex space-x-2 space-x-reverse">
-                            {manuscript.cover_image && (
+                            {manuscript.cover_image_link && (
                               <span
                                 className="text-blue-500 cursor-pointer"
                                 title="صورة الغلاف متوفرة"
                                 onClick={() =>
-                                  manuscript.cover_image &&
-                                  window.open(manuscript.cover_image, "_blank")
+                                  manuscript.cover_image_link &&
+                                  window.open(
+                                    manuscript.cover_image_link,
+                                    "_blank"
+                                  )
                                 }
                               >
                                 🖼️
                               </span>
                             )}
-                            {manuscript.pdf_file && (
+                            {manuscript.pdf_file_link && (
                               <span
                                 className="text-red-500 cursor-pointer"
                                 title="ملف PDF متوفر"
                                 onClick={() =>
-                                  manuscript.pdf_file &&
-                                  window.open(manuscript.pdf_file, "_blank")
+                                  manuscript.pdf_file_link &&
+                                  window.open(
+                                    manuscript.pdf_file_link,
+                                    "_blank"
+                                  )
                                 }
                               >
                                 📄
                               </span>
                             )}
-                            {!manuscript.cover_image &&
-                              !manuscript.pdf_file && (
+                            {!manuscript.cover_image_link &&
+                              !manuscript.pdf_file_link && (
                                 <span className="text-gray-400">-</span>
                               )}
                           </div>

@@ -15,13 +15,13 @@ const BooksOnChinguittDetail: React.FC = () => {
   // Debug image URLs
   React.useEffect(() => {
     if (book) {
-      console.log("Book cover_image:", book.cover_image);
+      console.log("Book cover_image_link:", book.cover_image_link);
       console.log(
         "Book full URL:",
-        book.cover_image
-          ? book.cover_image.startsWith("http")
-            ? book.cover_image
-            : `https://chinguitipedia.alldev.org${book.cover_image}`
+        book.cover_image_link
+          ? book.cover_image_link.startsWith("http")
+            ? book.cover_image_link
+            : `https://chinguitipedia.alldev.org${book.cover_image_link}`
           : null
       );
     }
@@ -40,11 +40,26 @@ const BooksOnChinguittDetail: React.FC = () => {
       .slice(0, 3);
   }, [relatedData, book, numericId]);
 
-  // Format image URL
+  // Enhanced image URL formatting
   const getImageUrl = (url: string | null | undefined) => {
     if (!url) return null;
     if (url.startsWith("http")) return url;
-    return `https://chinguitipedia.alldev.org${url}`;
+    // Handle both relative and absolute paths
+    if (url.startsWith("/")) {
+      return `https://chinguitipedia.alldev.org${url}`;
+    }
+    return `https://chinguitipedia.alldev.org/${url}`;
+  };
+
+  // Enhanced PDF URL formatting
+  const getPdfUrl = (url: string | null | undefined) => {
+    if (!url) return null;
+    if (url.startsWith("http")) return url;
+    // Handle both relative and absolute paths
+    if (url.startsWith("/")) {
+      return `https://chinguitipedia.alldev.org${url}`;
+    }
+    return `https://chinguitipedia.alldev.org/${url}`;
   };
 
   if (error || !book) {
@@ -69,8 +84,8 @@ const BooksOnChinguittDetail: React.FC = () => {
     );
   }
 
-  const coverImageUrl = getImageUrl(book.cover_image);
-  const pdfFileUrl = getImageUrl(book.pdf_file);
+  const coverImageUrl = getImageUrl(book.cover_image_link);
+  const pdfFileUrl = getPdfUrl(book.pdf_file_link);
 
   // Get category name safely
   const getCategoryName = () => {
@@ -91,6 +106,13 @@ const BooksOnChinguittDetail: React.FC = () => {
   // Get page count safely
   const getPageCount = () => {
     return book.pages || book.page_count || 0;
+  };
+
+  // Handle PDF download
+  const handlePdfDownload = () => {
+    if (pdfFileUrl) {
+      window.open(pdfFileUrl, "_blank");
+    }
   };
 
   const breadcrumbItems = [
@@ -171,8 +193,8 @@ const BooksOnChinguittDetail: React.FC = () => {
                 <div className="flex gap-4">
                   {pdfFileUrl && (
                     <button
-                      onClick={() => window.open(pdfFileUrl, "_blank")}
-                      className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 flex items-center space-x-2 space-x-reverse"
+                      onClick={handlePdfDownload}
+                      className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 flex items-center space-x-2 space-x-reverse font-semibold"
                     >
                       <span>تحميل PDF</span>
                       <svg

@@ -15,13 +15,13 @@ const ManuscriptDetail: React.FC = () => {
   // Debug image URLs
   React.useEffect(() => {
     if (manuscript) {
-      console.log("Manuscript cover_image:", manuscript.cover_image);
+      console.log("Manuscript cover_image_link:", manuscript.cover_image_link);
       console.log(
         "Manuscript full URL:",
-        manuscript.cover_image
-          ? manuscript.cover_image.startsWith("http")
-            ? manuscript.cover_image
-            : `https://chinguitipedia.alldev.org${manuscript.cover_image}`
+        manuscript.cover_image_link
+          ? manuscript.cover_image_link.startsWith("http")
+            ? manuscript.cover_image_link
+            : `https://chinguitipedia.alldev.org${manuscript.cover_image_link}`
           : null
       );
     }
@@ -40,11 +40,26 @@ const ManuscriptDetail: React.FC = () => {
       .slice(0, 3);
   }, [relatedData, manuscript, numericId]);
 
-  // Format image URL
+  // Enhanced image URL formatting
   const getImageUrl = (url: string | null | undefined) => {
     if (!url) return null;
     if (url.startsWith("http")) return url;
-    return `https://chinguitipedia.alldev.org${url}`;
+    // Handle both relative and absolute paths
+    if (url.startsWith("/")) {
+      return `https://chinguitipedia.alldev.org${url}`;
+    }
+    return `https://chinguitipedia.alldev.org/${url}`;
+  };
+
+  // Enhanced PDF URL formatting
+  const getPdfUrl = (url: string | null | undefined) => {
+    if (!url) return null;
+    if (url.startsWith("http")) return url;
+    // Handle both relative and absolute paths
+    if (url.startsWith("/")) {
+      return `https://chinguitipedia.alldev.org${url}`;
+    }
+    return `https://chinguitipedia.alldev.org/${url}`;
   };
 
   if (error || !manuscript) {
@@ -74,8 +89,15 @@ const ManuscriptDetail: React.FC = () => {
     { label: manuscript.title },
   ];
 
-  const coverImageUrl = getImageUrl(manuscript.cover_image);
-  const pdfFileUrl = getImageUrl(manuscript.pdf_file);
+  const coverImageUrl = getImageUrl(manuscript.cover_image_link);
+  const pdfFileUrl = getPdfUrl(manuscript.pdf_file_link);
+
+  // Handle PDF download
+  const handlePdfDownload = () => {
+    if (pdfFileUrl) {
+      window.open(pdfFileUrl, "_blank");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-ivory">
@@ -161,11 +183,9 @@ const ManuscriptDetail: React.FC = () => {
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-4 mt-8">
                 {pdfFileUrl && (
-                  <a
-                    href={pdfFileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-olive-green text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 flex items-center space-x-2 space-x-reverse"
+                  <button
+                    onClick={handlePdfDownload}
+                    className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 flex items-center space-x-2 space-x-reverse font-semibold"
                   >
                     <span>تحميل PDF</span>
                     <svg
@@ -181,7 +201,7 @@ const ManuscriptDetail: React.FC = () => {
                         d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                       />
                     </svg>
-                  </a>
+                  </button>
                 )}
                 <button className="bg-heritage-gold text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 flex items-center space-x-2 space-x-reverse">
                   <span>مشاركة</span>

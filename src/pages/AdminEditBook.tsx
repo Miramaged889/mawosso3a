@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   useCategories,
@@ -13,18 +13,13 @@ const AdminEditBook: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { isAuthenticated, initialized, validateToken } = useAuth();
-  const { data: categories, loading: categoriesLoading } = useCategories();
-  const { data: subcategories, loading: subcategoriesLoading } =
-    useSubcategories();
+  const { data: categories } = useCategories();
+  const { data: subcategories } = useSubcategories();
   const {
     data: book,
     loading: bookLoading,
     error: bookError,
   } = useEntry(parseInt(id || "0"));
-
-  const fileInputRefs = {
-    cover_image: useRef<HTMLInputElement>(null),
-  };
 
   const [formData, setFormData] = useState({
     title: "",
@@ -38,8 +33,8 @@ const AdminEditBook: React.FC = () => {
     language: "العربية",
     tags: "",
     page_count: "",
-    cover_image: null as File | null,
-    pdf_file: "",
+    cover_image_link: "",
+    pdf_file_link: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,8 +76,8 @@ const AdminEditBook: React.FC = () => {
         language: book.language || "العربية",
         tags: book.tags || "",
         page_count: book.page_count?.toString() || book.pages?.toString() || "",
-        cover_image: null,
-        pdf_file: book.pdf_file || "",
+        cover_image_link: book.cover_image_link || "",
+        pdf_file_link: book.pdf_file_link || "",
       });
     }
   }, [book]);
@@ -101,34 +96,6 @@ const AdminEditBook: React.FC = () => {
           : value,
       ...(name === "category" ? { subcategory: 0 } : {}),
     }));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, files } = e.target;
-    if (files && files[0]) {
-      const file = files[0];
-
-      if (name === "cover_image") {
-        const validTypes = [
-          "image/jpeg",
-          "image/jpg",
-          "image/png",
-          "image/webp",
-        ];
-        if (!validTypes.includes(file.type) || file.size > 5 * 1024 * 1024) {
-          alert("صورة غير صالحة. الحد الأقصى 5MB وبصيغة JPG/PNG/WebP");
-          if (fileInputRefs.cover_image.current) {
-            fileInputRefs.cover_image.current.value = "";
-          }
-          return;
-        }
-      }
-
-      setFormData((prev) => ({
-        ...prev,
-        [name]: file,
-      }));
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -161,7 +128,7 @@ const AdminEditBook: React.FC = () => {
           ? undefined
           : parseInt(formData.page_count) || undefined;
 
-      const entryData = {
+      const entryData: any = {
         title: formData.title.trim(),
         author: formData.author.trim(),
         entry_type: formData.entry_type,
@@ -173,37 +140,43 @@ const AdminEditBook: React.FC = () => {
         content: formData.content.trim(),
         language: formData.language.trim(),
         tags: formData.tags.trim(),
-        pdf_file: formData.pdf_file.trim() || undefined,
         published: true,
       };
 
-      // Prepare files if they exist
-      const files: {
-        cover_image?: File;
-      } = {};
+      // Add links to data if they exist
+      if (formData.cover_image_link.trim()) {
+        let coverImageLink = formData.cover_image_link.trim();
+        if (
+          coverImageLink &&
+          !coverImageLink.startsWith("http://") &&
+          !coverImageLink.startsWith("https://")
+        ) {
+          coverImageLink = "http://" + coverImageLink;
+        }
+        entryData.cover_image_link = coverImageLink;
+      }
 
-      if (formData.cover_image) {
-        files.cover_image = formData.cover_image;
+      if (formData.pdf_file_link.trim()) {
+        let pdfFileLink = formData.pdf_file_link.trim();
+        if (
+          pdfFileLink &&
+          !pdfFileLink.startsWith("http://") &&
+          !pdfFileLink.startsWith("https://")
+        ) {
+          pdfFileLink = "http://" + pdfFileLink;
+        }
+        entryData.pdf_file_link = pdfFileLink;
       }
 
       // Debug info
       console.log("Entry data:", entryData);
-      console.log("Files:", {
-        cover_image: files.cover_image ? files.cover_image.name : "none",
-        pdf_file: formData.pdf_file || "none",
+      console.log("Links:", {
+        cover_image_link: formData.cover_image_link || "none",
+        pdf_file_link: formData.pdf_file_link || "none",
       });
 
-      const hasFiles = files.cover_image;
-      console.log(
-        `Submitting entry data ${hasFiles ? "with" : "without"} files`
-      );
-
       try {
-        await apiClient.updateEntry(
-          parseInt(id || "0"),
-          entryData,
-          hasFiles ? files : undefined
-        );
+        await apiClient.updateEntry(parseInt(id || "0"), entryData);
         alert("تم تحديث العنصر بنجاح!");
         navigate("/admin/books");
       } catch (apiError) {
@@ -436,33 +409,23 @@ const AdminEditBook: React.FC = () => {
                 </div>
               </div>
 
-              {/* File Upload Section */}
+              {/* Links Section */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="border p-4 rounded bg-gray-50">
                   <label className="block mb-2 font-semibold">
-                    صورة الغلاف
+                    رابط صورة الغلاف
                   </label>
                   <input
-                    type="file"
-                    name="cover_image"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="w-full mb-2"
-                    ref={fileInputRefs.cover_image}
+                    type="text"
+                    name="cover_image_link"
+                    value={formData.cover_image_link}
+                    onChange={handleChange}
+                    className="w-full mb-2 p-3 border rounded text-right"
+                    placeholder="https://example.com/cover-image.jpg"
                   />
                   <p className="text-sm text-gray-600 mt-1">
-                    الحد الأقصى 5MB بصيغة JPG/PNG/WebP
+                    أدخل رابط مباشر لصورة الغلاف
                   </p>
-                  {formData.cover_image && (
-                    <div className="mt-2 text-sm text-gray-600">
-                      الملف المحدد: {formData.cover_image.name}
-                    </div>
-                  )}
-                  {book.cover_image && !formData.cover_image && (
-                    <div className="mt-2 text-sm text-blue-600">
-                      الصورة الحالية: متوفرة
-                    </div>
-                  )}
                 </div>
 
                 <div className="border p-4 rounded bg-gray-50">
@@ -470,12 +433,12 @@ const AdminEditBook: React.FC = () => {
                     رابط ملف PDF
                   </label>
                   <input
-                    type="url"
-                    name="pdf_file"
-                    value={formData.pdf_file}
+                    type="text"
+                    name="pdf_file_link"
+                    value={formData.pdf_file_link}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right"
-                    placeholder="https://example.com/file.pdf"
+                    className="w-full mb-2 p-3 border rounded text-right"
+                    placeholder="https://example.com/document.pdf"
                   />
                   <p className="text-sm text-gray-600 mt-1">
                     أدخل رابط مباشر لملف PDF

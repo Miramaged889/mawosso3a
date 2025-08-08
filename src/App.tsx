@@ -34,7 +34,6 @@ import Varieties from "./pages/Varieties";
 import Benefits from "./pages/Benefits";
 import FormalEducationLibrary from "./pages/FormalEducationLibrary";
 import ScientificNews from "./pages/ScientificNews";
-import TestPage from "./pages/TestPage";
 
 // Detail Pages
 import BenefitsDetail from "./pages/BenefitsDetail";
@@ -44,6 +43,7 @@ import LinguisticSciencesDetail from "./pages/LinguisticSciencesDetail";
 import ScientificNewsDetail from "./pages/ScientificNewsDetail";
 import ShariaSciencesDetail from "./pages/ShariaSciencesDetail";
 import SocialSciencesDetail from "./pages/SocialSciencesDetail";
+import VarietiesDetail from "./pages/VarietiesDetail";
 
 function App() {
   return (
@@ -88,6 +88,7 @@ function App() {
               element={<SocialSciencesDetail />}
             />
             <Route path="/varieties" element={<Varieties />} />
+            <Route path="/varieties/:id" element={<VarietiesDetail />} />
             <Route path="/benefits" element={<Benefits />} />
             <Route path="/benefits/:id" element={<BenefitsDetail />} />
             <Route
@@ -103,7 +104,7 @@ function App() {
               path="/scientific-news/:id"
               element={<ScientificNewsDetail />}
             />
-            <Route path="/test" element={<TestPage />} />
+            <Route path="/varieties/:id" element={<VarietiesDetail />} />
 
             {/* Admin Routes */}
             <Route path="/admin" element={<Admin />} />

@@ -1,14 +1,53 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import { getItemById, tahqiqat } from "../data/manuscripts";
+import { useEntry, useEntries } from "../hooks/useApi";
+import { ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 import ItemCard from "../components/ItemCard";
 
 const TahqiqDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const tahqiq = id ? getItemById(id) : null;
+  const numericId = id ? parseInt(id) : null;
 
-  if (!tahqiq) {
+  const { data: item, error } = useEntry(numericId);
+  const { data: relatedData } = useEntries({ entry_type: "investigation" });
+
+  const relatedItems = React.useMemo(() => {
+    if (!relatedData || !item) return [];
+    return (relatedData as ContentEntry[])
+      .filter(
+        (contentItem: ContentEntry) =>
+          contentItem.id !== numericId &&
+          typeof contentItem.category === "object" &&
+          typeof item.category === "object" &&
+          contentItem.category?.id === item.category?.id
+      )
+      .slice(0, 3);
+  }, [relatedData, item, numericId]);
+
+  // Enhanced image URL formatting
+  const getImageUrl = (url: string | null | undefined) => {
+    if (!url) return null;
+    if (url.startsWith("http")) return url;
+    // Handle both relative and absolute paths
+    if (url.startsWith("/")) {
+      return `https://chinguitipedia.alldev.org${url}`;
+    }
+    return `https://chinguitipedia.alldev.org/${url}`;
+  };
+
+  // Enhanced PDF URL formatting
+  const getPdfUrl = (url: string | null | undefined) => {
+    if (!url) return null;
+    if (url.startsWith("http")) return url;
+    // Handle both relative and absolute paths
+    if (url.startsWith("/")) {
+      return `https://chinguitipedia.alldev.org${url}`;
+    }
+    return `https://chinguitipedia.alldev.org/${url}`;
+  };
+
+  if (error || !item) {
     return (
       <div className="min-h-screen bg-ivory flex items-center justify-center">
         <div className="text-center">
@@ -30,13 +69,40 @@ const TahqiqDetail: React.FC = () => {
     );
   }
 
-  const relatedItems = tahqiq.relatedItems
-    ? tahqiqat.filter((item) => tahqiq.relatedItems?.includes(item.id))
-    : [];
+  const coverImageUrl = getImageUrl(item.cover_image_link);
+  const pdfFileUrl = getPdfUrl(item.pdf_file_link);
+
+  // Get category name safely
+  const getCategoryName = () => {
+    if (typeof item.category === "object" && item.category?.name) {
+      return item.category.name;
+    }
+    return "غير محدد";
+  };
+
+  // Get subcategory name safely
+  const getSubcategoryName = () => {
+    if (typeof item.subcategory === "object" && item.subcategory?.name) {
+      return item.subcategory.name;
+    }
+    return null;
+  };
+
+  // Get page count safely
+  const getPageCount = () => {
+    return item.pages || item.page_count || 0;
+  };
+
+  // Handle PDF download
+  const handlePdfDownload = () => {
+    if (pdfFileUrl) {
+      window.open(pdfFileUrl, "_blank");
+    }
+  };
 
   const breadcrumbItems = [
     { label: "تحقيقات الشناقطة", path: "/tahqiq" },
-    { label: tahqiq.title },
+    { label: item.title },
   ];
 
   return (
@@ -47,13 +113,23 @@ const TahqiqDetail: React.FC = () => {
         <div className="max-w-4xl mx-auto">
           {/* Main Content */}
           <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-12">
-            {tahqiq.coverImage && (
-              <div className="h-64 md:h-80 overflow-hidden">
+            {coverImageUrl ? (
+              <div className="h-64 md:h-80 overflow-hidden relative group">
                 <img
-                  src={tahqiq.coverImage}
-                  alt={tahqiq.title}
-                  className="w-full h-full object-cover"
+                  src={coverImageUrl}
+                  alt={item.title}
+                  className="w-full h-full object-contain bg-gray-50 group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/placeholder-manuscript.png";
+                    target.onerror = null;
+                  }}
                 />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300" />
+              </div>
+            ) : (
+              <div className="h-64 md:h-80 bg-gray-50 flex items-center justify-center">
+                <div className="text-gray-400 text-6xl">📜</div>
               </div>
             )}
 
@@ -61,30 +137,30 @@ const TahqiqDetail: React.FC = () => {
               {/* Header */}
               <div className="flex flex-wrap items-center justify-between mb-6">
                 <span className="bg-heritage-gold text-white px-4 py-2 rounded-full text-sm font-semibold">
-                  {tahqiq.category}
+                  {getCategoryName()}
                 </span>
-                <span className="text-medium-gray">{tahqiq.date}</span>
+                <span className="text-medium-gray">{item.date}</span>
               </div>
 
               {/* Title and Author */}
               <h1 className="text-3xl md:text-4xl font-amiri font-bold text-blue-gray mb-4 leading-tight">
-                {tahqiq.title}
+                {item.title}
               </h1>
               <h2 className="text-xl text-heritage-gold font-semibold mb-6">
-                {tahqiq.author}
+                {item.author}
               </h2>
 
               {/* Metadata */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-6 bg-ivory rounded-lg">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-olive-green">
-                    {tahqiq.pages}
+                    {getPageCount() || "غير محدد"}
                   </div>
                   <div className="text-medium-gray">صفحة</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-olive-green">
-                    {tahqiq.language}
+                    {item.language}
                   </div>
                   <div className="text-medium-gray">اللغة</div>
                 </div>
@@ -102,18 +178,16 @@ const TahqiqDetail: React.FC = () => {
                   وصف التحقيق
                 </h3>
                 <p className="text-medium-gray leading-relaxed mb-6">
-                  {tahqiq.fullDescription}
+                  {item.content}
                 </p>
               </div>
 
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-4 mt-8">
-                {tahqiq.pdfUrl && (
-                  <a
-                    href={tahqiq.pdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-olive-green text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 flex items-center space-x-2 space-x-reverse"
+                {pdfFileUrl && (
+                  <button
+                    onClick={handlePdfDownload}
+                    className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 flex items-center space-x-2 space-x-reverse font-semibold"
                   >
                     <span>تحميل PDF</span>
                     <svg
@@ -129,7 +203,7 @@ const TahqiqDetail: React.FC = () => {
                         d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                       />
                     </svg>
-                  </a>
+                  </button>
                 )}
                 <button className="bg-heritage-gold text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 flex items-center space-x-2 space-x-reverse">
                   <span>مشاركة</span>
