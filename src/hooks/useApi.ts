@@ -39,8 +39,8 @@ const convertManuscriptToContentEntry = (manuscript: any): ContentEntry => ({
   date: manuscript.date,
   pages: manuscript.pages,
   language: manuscript.language,
-  cover_image: manuscript.coverImage,
-  pdf_file: manuscript.pdfUrl,
+  cover_image_link: manuscript.coverImage,
+  pdf_file_link: manuscript.pdfUrl,
   created_at: manuscript.createdAt || new Date().toISOString(),
   updated_at: manuscript.createdAt || new Date().toISOString(),
   entry_type:
@@ -84,7 +84,6 @@ export const useApiData = <T>(
         timeoutPromise,
       ])) as T;
 
-      console.log("API Response:", result); // Debug log
       setData(result);
     } catch (err) {
       console.error("API Error:", err); // Debug log
@@ -265,9 +264,9 @@ export const useEntry = (id: number | null) => {
 // Hook for latest projects
 export const useLatestProjects = () => {
   return useApiData(
-    () => apiClient.getLatestProjects(),
+    () => apiClient.getEntries({ limit: 3 }),
     () => {
-      const latestItems = getLatestItems(6);
+      const latestItems = getLatestItems(3);
       return latestItems.map(convertManuscriptToContentEntry);
     }
   );

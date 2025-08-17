@@ -1,7 +1,7 @@
-import React from "react";
+
 import { Link } from "react-router-dom";
 import { useLatestProjects } from "../hooks/useApi";
-import { ContentEntry } from "../services/api";
+
 import ItemCard from "./ItemCard";
 
 const LatestProjects = () => {

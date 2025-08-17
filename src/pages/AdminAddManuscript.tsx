@@ -24,6 +24,9 @@ const AdminAddManuscript: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Filter categories to only show manuscripts category (ID 10)
+  const manuscriptCategories = categories?.filter((cat) => cat.id === 10) || [];
+
   useEffect(() => {
     if (initialized && !isAuthenticated) {
       navigate("/admin");
@@ -168,8 +171,6 @@ const AdminAddManuscript: React.FC = () => {
     }
   };
 
-
-
   const breadcrumbItems = [
     { label: "لوحة التحكم", path: "/admin" },
     { label: "إدارة المخطوطات", path: "/admin/manuscripts" },
@@ -217,7 +218,7 @@ const AdminAddManuscript: React.FC = () => {
                 required
               >
                 <option value="">اختر التصنيف</option>
-                {categories?.map((cat) => (
+                {manuscriptCategories?.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
                   </option>

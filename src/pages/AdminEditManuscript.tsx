@@ -31,6 +31,9 @@ const AdminEditManuscript: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Filter categories to only show manuscripts category (ID 10)
+  const manuscriptCategories = categories?.filter((cat) => cat.id === 10) || [];
+
   useEffect(() => {
     if (initialized && !isAuthenticated) {
       navigate("/admin");
@@ -231,7 +234,7 @@ const AdminEditManuscript: React.FC = () => {
                 onChange={handleChange}
                 className="w-full border p-3 rounded text-right"
                 required
-                placeholder="مثال: خقهتبخهثقصتبخؤهتض"
+                placeholder="أدخل عنوان المخطوطة"
               />
             </div>
             <div>
@@ -243,7 +246,7 @@ const AdminEditManuscript: React.FC = () => {
                 onChange={handleChange}
                 className="w-full border p-3 rounded text-right"
                 required
-                placeholder="مثال: هخ2ثصيختؤىصتهنثهىهيؤبهمصضىهعب"
+                placeholder="أدخل اسم المؤلف"
               />
             </div>
             <div>
@@ -256,7 +259,7 @@ const AdminEditManuscript: React.FC = () => {
                 required
               >
                 <option value="">اختر التصنيف</option>
-                {categories?.map((cat) => (
+                {manuscriptCategories?.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
                   </option>
@@ -351,7 +354,7 @@ const AdminEditManuscript: React.FC = () => {
               rows={3}
               className="w-full border p-3 rounded text-right"
               required
-              placeholder="مثال: نخث3صةيؤبعتصثىهنيعتؤىصض3"
+              placeholder="أدخل الوصف المختصر"
             ></textarea>
           </div>
           <div>

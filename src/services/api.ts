@@ -1,5 +1,5 @@
 // API Configuration and Service Layer
-const API_BASE_URL = "https://chinguitipedia.alldev.org/api";
+const API_BASE_URL = "https://mawso3a.pythonanywhere.com/api";
 
 // Types for API responses
 export interface Category {
@@ -189,7 +189,9 @@ class ApiClient {
     const response = await fetch(`${this.baseURL}/categories/`, {
       headers: this.getHeaders(),
     });
-    return this.handleResponse<Category[]>(response);
+    const data = await this.handleResponse<any>(response);
+    // Handle paginated response by extracting results array
+    return data.results || data;
   }
 
   async createCategory(data: Partial<Category>): Promise<Category> {
@@ -232,7 +234,9 @@ class ApiClient {
     const response = await fetch(`${this.baseURL}/subcategories/`, {
       headers: this.getHeaders(),
     });
-    return this.handleResponse<Subcategory[]>(response);
+    const data = await this.handleResponse<any>(response);
+    // Handle paginated response by extracting results array
+    return data.results || data;
   }
 
   async createSubcategory(data: Partial<Subcategory>): Promise<Subcategory> {
@@ -310,6 +314,10 @@ class ApiClient {
 
     // Handle different response structures
     if (result && typeof result === "object") {
+      // If the response has a 'results' property (paginated response), use that
+      if ("results" in result && Array.isArray(result.results)) {
+        return result.results as ContentEntry[];
+      }
       // If the response has a 'value' property, use that (PowerShell format)
       if ("value" in result && Array.isArray(result.value)) {
         return result.value as ContentEntry[];
@@ -523,7 +531,9 @@ class ApiClient {
         headers: this.getHeaders(),
       }
     );
-    return this.handleResponse<ContentEntry[]>(response);
+    const data = await this.handleResponse<any>(response);
+    // Handle paginated response by extracting results array
+    return data.results || data;
   }
 
   // Latest Projects
@@ -531,7 +541,9 @@ class ApiClient {
     const response = await fetch(`${this.baseURL}/latest-projects/`, {
       headers: this.getHeaders(),
     });
-    return this.handleResponse<ContentEntry[]>(response);
+    const data = await this.handleResponse<any>(response);
+    // Handle paginated response by extracting results array
+    return data.results || data;
   }
 
   // File Uploads

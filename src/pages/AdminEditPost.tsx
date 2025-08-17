@@ -38,11 +38,13 @@ const AdminEditPost: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-
   const availableSubcategories =
     subcategories?.filter(
       (sub) => sub.category === parseInt(formData.category)
     ) || [];
+
+  // Filter out manuscripts category (ID 10) from available categories
+  const availableCategories = categories?.filter((cat) => cat.id !== 10) || [];
 
   useEffect(() => {
     if (initialized && !isAuthenticated) {
@@ -279,7 +281,7 @@ const AdminEditPost: React.FC = () => {
                 required
               >
                 <option value="">اختر التصنيف</option>
-                {categories?.map((cat) => (
+                {availableCategories?.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
                   </option>
