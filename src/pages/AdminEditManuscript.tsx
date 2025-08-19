@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useCategories, useAuth, useEntry } from "../hooks/useApi";
+import { useCategories, useAuth, useEntry, useKinds } from "../hooks/useApi";
 import { apiClient } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
@@ -9,6 +9,7 @@ const AdminEditManuscript: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { isAuthenticated, initialized, validateToken } = useAuth();
   const { data: categories } = useCategories();
+  const { data: kinds } = useKinds();
   const {
     data: manuscript,
     loading: manuscriptLoading,
@@ -25,6 +26,8 @@ const AdminEditManuscript: React.FC = () => {
     language: "العربية",
     tags: "",
     page_count: "",
+    size: "",
+    kind: 0,
     cover_image_link: "",
     pdf_file_link: "",
   });
@@ -33,6 +36,9 @@ const AdminEditManuscript: React.FC = () => {
 
   // Filter categories to only show manuscripts category (ID 10)
   const manuscriptCategories = categories?.filter((cat) => cat.id === 10) || [];
+
+  // Filter kinds for manuscripts (مخطوطه)
+  const availableKinds = kinds?.filter((kind) => kind.name === "مخطوطه") || [];
 
   useEffect(() => {
     if (initialized && !isAuthenticated) {
@@ -60,6 +66,8 @@ const AdminEditManuscript: React.FC = () => {
           manuscript.page_count?.toString() ||
           manuscript.pages?.toString() ||
           "",
+        size: manuscript.size?.toString() || "",
+        kind: manuscript.kind || 0,
         cover_image_link: manuscript.cover_image_link || "",
         pdf_file_link: manuscript.pdf_file_link || "",
       });
@@ -74,7 +82,8 @@ const AdminEditManuscript: React.FC = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "category" ? parseInt(value) || 0 : value,
+      [name]:
+        name === "category" || name === "kind" ? parseInt(value) || 0 : value,
     }));
   };
 
@@ -120,6 +129,8 @@ const AdminEditManuscript: React.FC = () => {
         language: formData.language.trim(),
         tags: formData.tags.trim(),
         page_count: pageCount,
+        size: formData.size.trim() || null,
+        kind: formData.kind,
         published: true,
       };
 
@@ -267,6 +278,23 @@ const AdminEditManuscript: React.FC = () => {
               </select>
             </div>
             <div>
+              <label className="block mb-2">النوع *</label>
+              <select
+                name="kind"
+                value={formData.kind}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+                required
+              >
+                <option value="">اختر النوع</option>
+                {availableKinds.map((kind) => (
+                  <option key={kind.id} value={kind.id}>
+                    {kind.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
               <label className="block mb-2">التاريخ</label>
               <input
                 type="date"
@@ -277,7 +305,7 @@ const AdminEditManuscript: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block mb-2">عدد الصفحات</label>
+              <label className="block mb-2">عدد المواد</label>
               <input
                 type="number"
                 name="page_count"
@@ -286,6 +314,17 @@ const AdminEditManuscript: React.FC = () => {
                 className="w-full border p-3 rounded text-right"
                 min="1"
                 placeholder="اتركه فارغًا إذا كان غير معروف"
+              />
+            </div>
+            <div>
+              <label className="block mb-2">الحجم</label>
+              <input
+                type="text"
+                name="size"
+                value={formData.size}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+                placeholder="مثال: 2.5 MB"
               />
             </div>
             <div>

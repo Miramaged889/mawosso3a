@@ -5,6 +5,7 @@ import {
   useSubcategories,
   useAuth,
   useEntry,
+  useKinds,
 } from "../hooks/useApi";
 import { apiClient } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
@@ -15,6 +16,7 @@ const AdminEditPost: React.FC = () => {
   const { isAuthenticated, initialized, validateToken } = useAuth();
   const { data: categories } = useCategories();
   const { data: subcategories } = useSubcategories();
+  const { data: kinds } = useKinds();
   const {
     data: post,
     loading: postLoading,
@@ -28,6 +30,8 @@ const AdminEditPost: React.FC = () => {
     subcategory: "",
     date: "2024-01-01",
     page_count: "",
+    size: "",
+    kind: 0,
     description: "",
     content: "",
     language: "العربية",
@@ -45,6 +49,9 @@ const AdminEditPost: React.FC = () => {
 
   // Filter out manuscripts category (ID 10) from available categories
   const availableCategories = categories?.filter((cat) => cat.id !== 10) || [];
+
+  // Filter kinds for posts (بوست)
+  const availableKinds = kinds?.filter((kind) => kind.name === "بوست") || [];
 
   useEffect(() => {
     if (initialized && !isAuthenticated) {
@@ -76,6 +83,8 @@ const AdminEditPost: React.FC = () => {
         language: post.language || "العربية",
         tags: post.tags || "",
         page_count: post.page_count?.toString() || post.pages?.toString() || "",
+        size: post.size?.toString() || "",
+        kind: post.kind || 0,
         cover_image_link: post.cover_image_link || "",
         pdf_file_link: post.pdf_file_link || "",
       });
@@ -121,11 +130,14 @@ const AdminEditPost: React.FC = () => {
 
       console.log("Starting submission with valid token");
 
-      // معالجة حقل page_count بشكل صحيح
+      // معالجة حقل page_count و size بشكل صحيح
       const pageCount =
         formData.page_count.trim() === ""
           ? null
           : parseInt(formData.page_count) || null;
+
+      const sizeValue =
+        formData.size.trim() === "" ? null : parseInt(formData.size) || null;
 
       const entryData: any = {
         title: formData.title.trim(),
@@ -137,6 +149,8 @@ const AdminEditPost: React.FC = () => {
         language: formData.language.trim(),
         tags: formData.tags.trim(),
         page_count: pageCount,
+        size: sizeValue,
+        kind: formData.kind,
         published: true,
       };
 
@@ -317,7 +331,7 @@ const AdminEditPost: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block mb-2">عدد الصفحات</label>
+              <label className="block mb-2">عدد المواد</label>
               <input
                 type="number"
                 name="page_count"
@@ -327,6 +341,35 @@ const AdminEditPost: React.FC = () => {
                 min="1"
                 placeholder="اتركه فارغًا إذا كان غير معروف"
               />
+            </div>
+            <div>
+              <label className="block mb-2">الحجم (ميجابايت)</label>
+              <input
+                type="number"
+                name="size"
+                value={formData.size}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+                min="1"
+                placeholder="اتركه فارغًا إذا كان غير معروف"
+              />
+            </div>
+            <div>
+              <label className="block mb-2">النوع *</label>
+              <select
+                name="kind"
+                value={formData.kind}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+                required
+              >
+                <option value="">اختر النوع</option>
+                {availableKinds.map((kind) => (
+                  <option key={kind.id} value={kind.id}>
+                    {kind.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block mb-2">اللغة</label>

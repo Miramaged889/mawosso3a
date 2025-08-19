@@ -4,6 +4,7 @@ import {
   ContentEntry,
   Category,
   Subcategory,
+  Kind,
 } from "../services/api";
 import { categories as localCategories } from "../data/categories";
 import {
@@ -143,6 +144,23 @@ export const useSubcategories = () => {
         }
       });
       return subcategories;
+    }
+  );
+};
+
+// Hook for kinds
+export const useKinds = () => {
+  return useApiData(
+    () => apiClient.getKinds(),
+    () => {
+      // Fallback kinds data
+      const fallbackKinds: Kind[] = [
+        { id: 5, name: "كتاب", slug: "ktb" },
+        { id: 6, name: "محتوي", slug: "mhtoy" },
+        { id: 7, name: "بوست", slug: "bost" },
+        { id: 8, name: "مخطوطه", slug: "mkhtoth" },
+      ];
+      return fallbackKinds;
     }
   );
 };

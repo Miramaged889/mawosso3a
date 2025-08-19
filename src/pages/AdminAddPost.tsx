@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCategories, useSubcategories, useAuth } from "../hooks/useApi";
+import {
+  useCategories,
+  useSubcategories,
+  useAuth,
+  useKinds,
+} from "../hooks/useApi";
 import { apiClient } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
@@ -9,6 +14,7 @@ const AdminAddPost: React.FC = () => {
   const { isAuthenticated, initialized, validateToken } = useAuth();
   const { data: categories } = useCategories();
   const { data: subcategories } = useSubcategories();
+  const { data: kinds } = useKinds();
   const [formData, setFormData] = useState({
     title: "",
     author: "",
@@ -16,6 +22,8 @@ const AdminAddPost: React.FC = () => {
     subcategory: "",
     date: "2024-01-01",
     page_count: "",
+    size: "",
+    kind: 0,
     description: "",
     content: "",
     language: "العربية",
@@ -34,6 +42,9 @@ const AdminAddPost: React.FC = () => {
   // Filter out manuscripts category (ID 10) from available categories
   const availableCategories = categories?.filter((cat) => cat.id !== 10) || [];
 
+  // Filter kinds for posts (بوست)
+  const availableKinds = kinds?.filter((kind) => kind.name === "بوست") || [];
+
   useEffect(() => {
     if (initialized && !isAuthenticated) {
       navigate("/admin");
@@ -48,7 +59,8 @@ const AdminAddPost: React.FC = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "category" ? value : value,
+      [name]:
+        name === "category" || name === "kind" ? parseInt(value) || 0 : value,
       // Reset subcategory when category changes
       ...(name === "category" ? { subcategory: "" } : {}),
     }));
@@ -79,25 +91,14 @@ const AdminAddPost: React.FC = () => {
 
       console.log("Starting submission with valid token");
 
-      // معالجة حقل page_count بشكل صحيح
+      // معالجة حقل page_count و size بشكل صحيح
       const pageCount =
         formData.page_count.trim() === ""
           ? null
           : parseInt(formData.page_count) || null;
 
-      // Generate slug from title
-      const generateSlug = (title: string) => {
-        return title
-          .toLowerCase()
-          .replace(
-            /[^\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFFa-zA-Z0-9\s]/g,
-            ""
-          )
-          .replace(/\s+/g, "-")
-          .replace(/-+/g, "-")
-          .trim()
-          .replace(/^-+|-+$/g, "");
-      };
+      const sizeValue =
+        formData.size.trim() === "" ? null : parseInt(formData.size) || null;
 
       const entryData: any = {
         title: formData.title.trim(),
@@ -109,8 +110,10 @@ const AdminAddPost: React.FC = () => {
         language: formData.language.trim(),
         tags: formData.tags.trim(),
         page_count: pageCount,
+        size: sizeValue,
+        kind: formData.kind,
         published: true, // Set to published by default for posts
-        slug: generateSlug(formData.title.trim()),
+        // Remove slug - let backend generate it automatically
       };
 
       // Only add subcategory if it's selected and valid
@@ -267,7 +270,7 @@ const AdminAddPost: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block mb-2">عدد الصفحات</label>
+              <label className="block mb-2">عدد المواد</label>
               <input
                 type="number"
                 name="page_count"
@@ -277,6 +280,35 @@ const AdminAddPost: React.FC = () => {
                 min="1"
                 placeholder="اتركه فارغًا إذا كان غير معروف"
               />
+            </div>
+            <div>
+              <label className="block mb-2">الحجم (ميجابايت)</label>
+              <input
+                type="number"
+                name="size"
+                value={formData.size}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+                min="1"
+                placeholder="اتركه فارغًا إذا كان غير معروف"
+              />
+            </div>
+            <div>
+              <label className="block mb-2">النوع *</label>
+              <select
+                name="kind"
+                value={formData.kind}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+                required
+              >
+                <option value="">اختر النوع</option>
+                {availableKinds.map((kind) => (
+                  <option key={kind.id} value={kind.id}>
+                    {kind.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block mb-2">اللغة</label>

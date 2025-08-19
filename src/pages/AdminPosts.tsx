@@ -25,8 +25,13 @@ const AdminPosts: React.FC = () => {
     }
   }, [isAuthenticated, initialized, navigate]);
 
-  // Fix data structure - entriesData is directly an array, not an object with results
-  const posts = Array.isArray(entriesData) ? entriesData : [];
+  // Filter posts based on kind field (بوست)
+  const posts = (Array.isArray(entriesData) ? entriesData : []).filter(
+    (item: any) => {
+      // Only include items with kind 7 (بوست)
+      return item.kind === 7;
+    }
+  );
 
   const handleDelete = async (id: number) => {
     if (confirm("هل أنت متأكد من حذف هذا المنشور؟")) {
@@ -44,18 +49,7 @@ const AdminPosts: React.FC = () => {
     }
   };
 
-  const getEntryTypeLabel = (type?: string) => {
-    switch (type) {
-      case "manuscript":
-        return "مخطوطة";
-      case "book":
-        return "كتاب";
-      case "investigation":
-        return "تحقيق";
-      default:
-        return "منشور";
-    }
-  };
+
 
   // Helper function to get category name
   const getCategoryName = (category: any, tags?: string): string => {
@@ -145,6 +139,9 @@ const AdminPosts: React.FC = () => {
                       التاريخ
                     </th>
                     <th className="px-6 py-4 text-right font-semibold">
+                      عدد المواد
+                    </th>
+                    <th className="px-6 py-4 text-right font-semibold">
                       الملفات
                     </th>
                     <th className="px-6 py-4 text-right font-semibold">
@@ -187,9 +184,10 @@ const AdminPosts: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm">
-                          {getEntryTypeLabel(post.entry_type)}
+                          {post.kind === 7 ? "بوست" : post.kind || "غير محدد"}
                         </span>
                       </td>
+
                       <td className="px-6 py-4">
                         <span className="bg-heritage-gold text-white px-3 py-1 rounded-full text-sm">
                           {getCategoryName(post.category, post.tags)}
@@ -205,6 +203,11 @@ const AdminPosts: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 text-medium-gray text-sm">
                         {post.date}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm">
+                          {post.pages || post.page_count || 0}
+                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex space-x-1 space-x-reverse">

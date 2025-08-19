@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import WhatsAppButton from "./components/WhatsAppButton";
+import ScrollToTop from "./components/ScrollToTop";
 
 // Pages
 import Home from "./pages/Home";
@@ -12,6 +13,7 @@ import TahqiqDetail from "./pages/TahqiqDetail";
 import BooksOnChinguitt from "./pages/BooksOnChinguitt";
 
 import Search from "./pages/Search";
+import AllEntries from "./pages/AllEntries";
 import About from "./pages/About";
 import Terms from "./pages/Terms";
 import Contact from "./pages/Contact";
@@ -48,6 +50,7 @@ import VarietiesDetail from "./pages/VarietiesDetail";
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <div className="min-h-screen bg-ivory font-cairo">
         <Header />
         <main>
@@ -64,6 +67,7 @@ function App() {
             />
 
             <Route path="/search" element={<Search />} />
+            <Route path="/all-entries" element={<AllEntries />} />
             <Route path="/about" element={<About />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/contact" element={<Contact />} />

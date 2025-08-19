@@ -14,18 +14,18 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-4 space-x-reverse">
+          <div className="flex items-center space-x-1 space-x-reverse">
             <Link
               to="/"
-              className="flex items-center space-x-4 space-x-reverse"
+              className="flex items-center space-x-0 space-x-reverse"
             >
               <img
-                src="/logo.jpg"
+                src="/logo1.png"
                 alt="Chinguitipedia Logo"
-                className="w-10 h-10 rounded-full"
+                className="w-16 h-16 rounded-full"
               />
               <h1 className="text-xl font-louguiya font-bold text-blue-gray">
-                Chinguitipedia
+                الموسوعة الشنقيطية
               </h1>
             </Link>
           </div>
@@ -61,16 +61,6 @@ const Header = () => {
               }`}
             >
               تحقيقات
-            </Link>
-            <Link
-              to="/books-on-chinguitt"
-              className={`transition-colors ${
-                isActive("/books-on-chinguitt")
-                  ? "text-heritage-gold font-semibold"
-                  : "text-dark-gray hover:text-heritage-gold"
-              }`}
-            >
-              مؤلفات
             </Link>
             <Link
               to="/manuscripts"

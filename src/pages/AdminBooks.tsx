@@ -25,17 +25,10 @@ const AdminBooks: React.FC = () => {
     }
   }, [isAuthenticated, initialized, navigate]);
 
-  // Filter out manuscripts from the list and entries with category 10
+  // Filter books based on kind field (كتاب or محتوي)
   const books = (entriesData || []).filter((item: ContentEntry) => {
-    // Exclude manuscripts by entry_type
-    if (item.entry_type === "manuscript") return false;
-
-    // Exclude entries with category 10
-    if (typeof item.category === "object" && item.category?.id === 10)
-      return false;
-    if (typeof item.category === "number" && item.category === 10) return false;
-
-    return true;
+    // Only include items with kind 5 (كتاب) or 6 (محتوي)
+    return item.kind === 5 || item.kind === 6;
   });
 
   // Debug category data
@@ -79,22 +72,6 @@ const AdminBooks: React.FC = () => {
       } finally {
         setDeleting(null);
       }
-    }
-  };
-
-  const getTypeLabel = (
-    entry_type: ContentEntry["entry_type"] | undefined
-  ): string => {
-    if (!entry_type) return "غير محدد";
-    switch (entry_type) {
-      case "book":
-        return "كتاب";
-      case "investigation":
-        return "تحقيق";
-      case "manuscript":
-        return "مخطوطة";
-      default:
-        return entry_type;
     }
   };
 
@@ -159,6 +136,9 @@ const AdminBooks: React.FC = () => {
                       التاريخ
                     </th>
                     <th className="px-6 py-4 text-right font-semibold">
+                      عدد المواد
+                    </th>
+                    <th className="px-6 py-4 text-right font-semibold">
                       الإجراءات
                     </th>
                   </tr>
@@ -197,8 +177,12 @@ const AdminBooks: React.FC = () => {
                         {book.author}
                       </td>
                       <td className="px-6 py-4">
-                        <span className="bg-blue-gray text-white px-3 py-1 rounded-full text-sm">
-                          {getTypeLabel(book.entry_type)}
+                        <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm">
+                          {book.kind === 5
+                            ? "كتاب"
+                            : book.kind === 6
+                            ? "محتوي"
+                            : book.kind || "غير محدد"}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -216,6 +200,9 @@ const AdminBooks: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 text-medium-gray">
                         {book.date}
+                      </td>
+                      <td className="px-6 py-4 text-medium-gray">
+                        {book.pages || book.page_count || 0}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex space-x-2 space-x-reverse">

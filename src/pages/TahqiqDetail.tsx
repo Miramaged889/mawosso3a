@@ -47,6 +47,28 @@ const TahqiqDetail: React.FC = () => {
     return `https://chinguitipedia.alldev.org/${url}`;
   };
 
+  // Handle PDF download
+  const handlePdfDownload = () => {
+    if (pdfFileUrl) {
+      window.open(pdfFileUrl, "_blank");
+    }
+  };
+
+  // Handle share functionality
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: item?.title || "تحقيق من الشناقطة",
+        text: item?.description || "",
+        url: window.location.href,
+      });
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      navigator.clipboard.writeText(window.location.href);
+      alert("تم نسخ الرابط إلى الحافظة");
+    }
+  };
+
   if (error || !item) {
     return (
       <div className="min-h-screen bg-ivory flex items-center justify-center">
@@ -69,6 +91,11 @@ const TahqiqDetail: React.FC = () => {
     );
   }
 
+  const breadcrumbItems = [
+    { label: "تحقيقات الشناقطة", path: "/tahqiq" },
+    { label: item.title },
+  ];
+
   const coverImageUrl = getImageUrl(item.cover_image_link);
   const pdfFileUrl = getPdfUrl(item.pdf_file_link);
 
@@ -80,30 +107,10 @@ const TahqiqDetail: React.FC = () => {
     return item.tags || "غير محدد";
   };
 
-  // Get subcategory name safely
-  const getSubcategoryName = () => {
-    if (typeof item.subcategory === "object" && item.subcategory?.name) {
-      return item.subcategory.name;
-    }
-    return null;
-  };
-
   // Get page count safely
   const getPageCount = () => {
     return item.pages || item.page_count || 0;
   };
-
-  // Handle PDF download
-  const handlePdfDownload = () => {
-    if (pdfFileUrl) {
-      window.open(pdfFileUrl, "_blank");
-    }
-  };
-
-  const breadcrumbItems = [
-    { label: "تحقيقات الشناقطة", path: "/tahqiq" },
-    { label: item.title },
-  ];
 
   return (
     <div className="min-h-screen bg-ivory">
@@ -151,24 +158,44 @@ const TahqiqDetail: React.FC = () => {
               </h2>
 
               {/* Metadata */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-6 bg-ivory rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 p-6 bg-ivory rounded-lg">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-olive-green">
+                  <div className="text-xl font-bold text-olive-green">
                     {getPageCount() || "غير محدد"}
                   </div>
-                  <div className="text-medium-gray">صفحة</div>
+                  <div className="text-medium-gray text-sm">عدد المواد</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-olive-green">
-                    {item.language}
+                  <div className="text-xl font-bold text-olive-green">
+                    {item.size || "غير محدد"}
                   </div>
-                  <div className="text-medium-gray">اللغة</div>
+                  <div className="text-medium-gray text-sm">الحجم</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-olive-green">
-                    تحقيق علمي
+                  <div className="text-xl font-bold text-olive-green">
+                    {item.language || "غير محدد"}
                   </div>
-                  <div className="text-medium-gray">النوع</div>
+                  <div className="text-medium-gray text-sm">اللغة</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xl font-bold text-olive-green">
+                    {item.tags || "غير محدد"}
+                  </div>
+                  <div className="text-medium-gray text-sm">العلامات</div>
+                </div>
+              </div>
+
+              {/* Additional Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-6 bg-gray-50 rounded-lg">
+                <div>
+                  <h4 className="font-semibold text-blue-gray mb-2">التصنيف</h4>
+                  <p className="text-medium-gray">{getCategoryName()}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-blue-gray mb-2">الحالة</h4>
+                  <p className="text-medium-gray">
+                    {item.published ? "منشور" : "غير منشور"}
+                  </p>
                 </div>
               </div>
 
@@ -178,7 +205,7 @@ const TahqiqDetail: React.FC = () => {
                   وصف التحقيق
                 </h3>
                 <p className="text-medium-gray leading-relaxed mb-6">
-                  {item.content}
+                  {item.content || item.description}
                 </p>
               </div>
 
@@ -189,7 +216,7 @@ const TahqiqDetail: React.FC = () => {
                     onClick={handlePdfDownload}
                     className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 flex items-center space-x-2 space-x-reverse font-semibold"
                   >
-                    <span>تحميل PDF</span>
+                    <span>تحميل ملف</span>
                     <svg
                       className="w-5 h-5"
                       fill="none"
@@ -205,7 +232,10 @@ const TahqiqDetail: React.FC = () => {
                     </svg>
                   </button>
                 )}
-                <button className="bg-heritage-gold text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 flex items-center space-x-2 space-x-reverse">
+                <button
+                  onClick={handleShare}
+                  className="bg-heritage-gold text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 flex items-center space-x-2 space-x-reverse"
+                >
                   <span>مشاركة</span>
                   <svg
                     className="w-5 h-5"

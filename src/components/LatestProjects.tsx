@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { useLatestProjects } from "../hooks/useApi";
 
@@ -64,7 +63,7 @@ const LatestProjects = () => {
 
         <div className="text-center mt-12">
           <Link
-            to="/search"
+            to="/all-entries"
             className="bg-olive-green text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-all duration-300"
           >
             استكشف المزيد

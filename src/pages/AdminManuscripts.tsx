@@ -23,8 +23,26 @@ const AdminManuscripts: React.FC = () => {
   const manuscripts = useMemo(() => {
     const results = entriesData || [];
     console.log("API Data:", results); // Debug log to see what data is received
-    return Array.isArray(results) ? (results as ContentEntry[]) : [];
+    const allEntries = Array.isArray(results)
+      ? (results as ContentEntry[])
+      : [];
+
+    // Filter manuscripts based on kind field (مخطوطه)
+    return allEntries.filter((item: ContentEntry) => {
+      // Only include items with kind 8 (مخطوطه)
+      if (item.kind === 8) {
+        return true;
+      }
+      return false;
+    });
   }, [entriesData]);
+
+  // Format image URL
+  const getImageUrl = (url: string | null | undefined): string | undefined => {
+    if (!url) return undefined;
+    if (url.startsWith("http")) return url;
+    return `${url}`;
+  };
 
   // Filter manuscripts based on search term
   const filteredManuscripts = useMemo(() => {
@@ -129,6 +147,9 @@ const AdminManuscripts: React.FC = () => {
                 <thead className="bg-heritage-gold text-white">
                   <tr>
                     <th className="px-6 py-4 text-right font-semibold">
+                      الصورة
+                    </th>
+                    <th className="px-6 py-4 text-right font-semibold">
                       العنوان
                     </th>
                     <th className="px-6 py-4 text-right font-semibold">
@@ -138,13 +159,16 @@ const AdminManuscripts: React.FC = () => {
                       التصنيف
                     </th>
                     <th className="px-6 py-4 text-right font-semibold">
-                      التصنيف الفرعي
+                      النوع
                     </th>
                     <th className="px-6 py-4 text-right font-semibold">
                       التاريخ
                     </th>
                     <th className="px-6 py-4 text-right font-semibold">
-                      الصفحات
+                      عدد المواد
+                    </th>
+                    <th className="px-6 py-4 text-right font-semibold">
+                      الحجم
                     </th>
                     <th className="px-6 py-4 text-right font-semibold">
                       الملفات
@@ -161,6 +185,27 @@ const AdminManuscripts: React.FC = () => {
                         key={manuscript.id}
                         className={index % 2 === 0 ? "bg-ivory" : "bg-white"}
                       >
+                        <td className="px-6 py-4 w-24">
+                          {getImageUrl(manuscript.cover_image_link) ? (
+                            <img
+                              src={
+                                getImageUrl(manuscript.cover_image_link) ||
+                                "/placeholder-manuscript.png"
+                              }
+                              alt={manuscript.title}
+                              className="w-20 h-20 object-contain rounded bg-gray-50"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = "/placeholder-manuscript.png";
+                                target.onerror = null;
+                              }}
+                            />
+                          ) : (
+                            <div className="w-20 h-20 bg-gray-50 rounded flex items-center justify-center">
+                              <span className="text-2xl">�</span>
+                            </div>
+                          )}
+                        </td>
                         <td className="px-6 py-4 font-semibold text-blue-gray">
                           {manuscript.title}
                         </td>
@@ -175,20 +220,21 @@ const AdminManuscripts: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          {typeof manuscript.subcategory === "object" &&
-                          manuscript.subcategory ? (
-                            <span className="bg-blue-gray text-white px-3 py-1 rounded-full text-sm">
-                              {manuscript.subcategory.name}
-                            </span>
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
+                          <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm">
+                            {manuscript.kind === 8
+                              ? "مخطوطه"
+                              : manuscript.kind || "غير محدد"}
+                          </span>
                         </td>
+
                         <td className="px-6 py-4 text-medium-gray">
                           {manuscript.date}
                         </td>
                         <td className="px-6 py-4 text-medium-gray">
                           {manuscript.pages || manuscript.page_count || 0}
+                        </td>
+                        <td className="px-6 py-4 text-medium-gray">
+                          {manuscript.size || "غير محدد"}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex space-x-2 space-x-reverse">

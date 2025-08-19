@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCategories, useSubcategories, useAuth } from "../hooks/useApi";
+import {
+  useCategories,
+  useSubcategories,
+  useAuth,
+  useKinds,
+} from "../hooks/useApi";
 import { apiClient, ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
@@ -10,6 +15,7 @@ const AdminAddBook: React.FC = () => {
   const { data: categories, loading: categoriesLoading } = useCategories();
   const { data: subcategories, loading: subcategoriesLoading } =
     useSubcategories();
+  const { data: kinds, loading: kindsLoading } = useKinds();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -23,6 +29,8 @@ const AdminAddBook: React.FC = () => {
     language: "العربية",
     tags: "",
     page_count: "",
+    size: "",
+    kind: 0,
     cover_image_link: "",
     pdf_file_link: "",
   });
@@ -37,6 +45,11 @@ const AdminAddBook: React.FC = () => {
 
   // Filter out manuscripts category (ID 10) from available categories
   const availableCategories = categories?.filter((cat) => cat.id !== 10) || [];
+
+  // Filter kinds for books (كتاب or محتوي)
+  const availableKinds =
+    kinds?.filter((kind) => kind.name === "كتاب" || kind.name === "محتوي") ||
+    [];
 
   // Redirect if not authenticated
   React.useEffect(() => {
@@ -54,7 +67,7 @@ const AdminAddBook: React.FC = () => {
     setFormData((prev) => ({
       ...prev,
       [name]:
-        name === "category" || name === "subcategory"
+        name === "category" || name === "subcategory" || name === "kind"
           ? parseInt(value) || 0
           : value,
       ...(name === "category" ? { subcategory: 0 } : {}),
@@ -85,25 +98,16 @@ const AdminAddBook: React.FC = () => {
 
       console.log("Starting submission with valid token");
 
-      // Handle page_count properly
+      // Handle page_count and size properly
       const pageCount =
         formData.page_count.trim() === ""
           ? undefined
           : parseInt(formData.page_count) || undefined;
 
-      // Generate slug from title
-      const generateSlug = (title: string) => {
-        return title
-          .toLowerCase()
-          .replace(
-            /[^\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFFa-zA-Z0-9\s]/g,
-            ""
-          )
-          .replace(/\s+/g, "-")
-          .replace(/-+/g, "-")
-          .trim()
-          .replace(/^-+|-+$/g, "");
-      };
+      const sizeValue =
+        formData.size.trim() === ""
+          ? undefined
+          : parseInt(formData.size) || undefined;
 
       const entryData: any = {
         title: formData.title.trim(),
@@ -113,12 +117,14 @@ const AdminAddBook: React.FC = () => {
         subcategory: formData.subcategory || undefined,
         date: formData.date,
         page_count: pageCount,
+        size: sizeValue,
+        kind: formData.kind,
         description: formData.description.trim(),
         content: formData.content.trim(),
         language: formData.language.trim(),
         tags: formData.tags.trim(),
         published: true,
-        slug: generateSlug(formData.title.trim()),
+        // Remove slug - let backend generate it automatically
       };
 
       // إضافة روابط إلى البيانات إذا كانت موجودة
@@ -186,7 +192,7 @@ const AdminAddBook: React.FC = () => {
     }
   };
 
-  if (categoriesLoading || subcategoriesLoading) {
+  if (categoriesLoading || subcategoriesLoading || kindsLoading) {
     return (
       <div className="min-h-screen bg-ivory">
         <div className="container mx-auto px-4 py-8">
@@ -225,23 +231,6 @@ const AdminAddBook: React.FC = () => {
           <div className="bg-white rounded-lg shadow-lg p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Type */}
-                <div>
-                  <label className="block text-sm font-medium text-blue-gray mb-2">
-                    نوع المحتوى *
-                  </label>
-                  <select
-                    name="entry_type"
-                    value={formData.entry_type}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right"
-                  >
-                    <option value="book">كتاب</option>
-                    <option value="investigation">تحقيق</option>
-                  </select>
-                </div>
-
                 {/* Title */}
                 <div>
                   <label className="block text-sm font-medium text-blue-gray mb-2">
@@ -335,7 +324,7 @@ const AdminAddBook: React.FC = () => {
                 {/* Page Count */}
                 <div>
                   <label className="block text-sm font-medium text-blue-gray mb-2">
-                    عدد الصفحات
+                    عدد المواد
                   </label>
                   <input
                     type="number"
@@ -346,6 +335,43 @@ const AdminAddBook: React.FC = () => {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right"
                     placeholder="اتركه فارغًا إذا كان غير معروف"
                   />
+                </div>
+
+                {/* Size */}
+                <div>
+                  <label className="block text-sm font-medium text-blue-gray mb-2">
+                    الحجم (ميجابايت)
+                  </label>
+                  <input
+                    type="number"
+                    name="size"
+                    value={formData.size}
+                    onChange={handleChange}
+                    min="1"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right"
+                    placeholder="اتركه فارغًا إذا كان غير معروف"
+                  />
+                </div>
+
+                {/* Kind */}
+                <div>
+                  <label className="block text-sm font-medium text-blue-gray mb-2">
+                    النوع *
+                  </label>
+                  <select
+                    name="kind"
+                    value={formData.kind}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right"
+                  >
+                    <option value="">اختر النوع</option>
+                    {availableKinds.map((kind) => (
+                      <option key={kind.id} value={kind.id}>
+                        {kind.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Language */}

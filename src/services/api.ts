@@ -17,6 +17,12 @@ export interface Subcategory {
   description?: string;
 }
 
+export interface Kind {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 export interface ContentEntry {
   id: number;
   title: string;
@@ -30,6 +36,7 @@ export interface ContentEntry {
   date: string;
   pages?: number;
   page_count?: number | null;
+  size?: number | null;
   language: string;
   tags?: string;
   cover_image_link?: string | null;
@@ -38,6 +45,7 @@ export interface ContentEntry {
   updated_at?: string;
   published?: boolean;
   entry_type?: "manuscript" | "book" | "investigation";
+  kind?: number | null;
 }
 
 export interface AuthResponse {
@@ -286,6 +294,16 @@ class ApiClient {
       }
     );
     return this.handleResponse<Subcategory[]>(response);
+  }
+
+  // Kinds
+  async getKinds(): Promise<Kind[]> {
+    const response = await fetch(`${this.baseURL}/kinds/`, {
+      headers: this.getHeaders(),
+    });
+    const data = await this.handleResponse<any>(response);
+    // Handle paginated response by extracting results array
+    return data.results || data;
   }
 
   // Content Entries

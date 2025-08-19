@@ -99,6 +99,21 @@ const ManuscriptDetail: React.FC = () => {
     }
   };
 
+  // Handle share functionality
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: manuscript?.title || "مخطوطة من شنقيط",
+        text: manuscript?.content || "",
+        url: window.location.href,
+      });
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      navigator.clipboard.writeText(window.location.href);
+      alert("تم نسخ الرابط إلى الحافظة");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-ivory">
       <Breadcrumb items={breadcrumbItems} />
@@ -147,26 +162,48 @@ const ManuscriptDetail: React.FC = () => {
               </h2>
 
               {/* Metadata */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-6 bg-ivory rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 p-6 bg-ivory rounded-lg">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-olive-green">
+                  <div className="text-xl font-bold text-olive-green">
                     {manuscript.page_count || manuscript.pages || "غير محدد"}
                   </div>
-                  <div className="text-medium-gray">صفحة</div>
+                  <div className="text-medium-gray text-sm">عدد المواد</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-olive-green">
-                    {manuscript.language}
+                  <div className="text-xl font-bold text-olive-green">
+                    {manuscript.size || "غير محدد"}
                   </div>
-                  <div className="text-medium-gray">اللغة</div>
+                  <div className="text-medium-gray text-sm">الحجم</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-olive-green">
+                  <div className="text-xl font-bold text-olive-green">
+                    {manuscript.language || "غير محدد"}
+                  </div>
+                  <div className="text-medium-gray text-sm">اللغة</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xl font-bold text-olive-green">
+                    {manuscript.tags || "غير محدد"}
+                  </div>
+                  <div className="text-medium-gray text-sm">العلامات</div>
+                </div>
+              </div>
+
+              {/* Additional Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-6 bg-gray-50 rounded-lg">
+                <div>
+                  <h4 className="font-semibold text-blue-gray mb-2">التصنيف</h4>
+                  <p className="text-medium-gray">
                     {typeof manuscript.category === "object"
                       ? manuscript.category.name
                       : "غير محدد"}
-                  </div>
-                  <div className="text-medium-gray">التصنيف</div>
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-blue-gray mb-2">الحالة</h4>
+                  <p className="text-medium-gray">
+                    {manuscript.published ? "منشور" : "غير منشور"}
+                  </p>
                 </div>
               </div>
 
@@ -187,7 +224,7 @@ const ManuscriptDetail: React.FC = () => {
                     onClick={handlePdfDownload}
                     className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 flex items-center space-x-2 space-x-reverse font-semibold"
                   >
-                    <span>تحميل PDF</span>
+                    <span>تحميل ملف</span>
                     <svg
                       className="w-5 h-5"
                       fill="none"
@@ -203,7 +240,10 @@ const ManuscriptDetail: React.FC = () => {
                     </svg>
                   </button>
                 )}
-                <button className="bg-heritage-gold text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 flex items-center space-x-2 space-x-reverse">
+                <button
+                  onClick={handleShare}
+                  className="bg-heritage-gold text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 flex items-center space-x-2 space-x-reverse"
+                >
                   <span>مشاركة</span>
                   <svg
                     className="w-5 h-5"

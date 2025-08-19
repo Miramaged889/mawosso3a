@@ -11,9 +11,37 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   const getCategoryName = () => {
     if (typeof item.category === "object" && item.category?.name) {
       return item.category.name;
+    } else if (typeof item.category === "number") {
+      // Map category IDs to names
+      const categoryNames: { [key: number]: string } = {
+        1: "العلوم الشرعية",
+        2: "العلوم اللغوية",
+        3: "العلوم الاجتماعية",
+        4: "المنوعات",
+        5: "فوائد",
+        6: "مكتبة التعليم النظامي",
+        7: "الأخبار العلمية",
+        8: "تحقيقات الشناقطة",
+        9: "مؤلفات عن شنقيط",
+        10: "مخطوطات",
+      };
+      return categoryNames[item.category] || "غير محدد";
     }
-    // Show tags if available, otherwise show "غير محدد"
-    return item.tags || "غير محدد";
+    return "غير محدد";
+  };
+
+  // Get kind name safely
+  const getKindName = () => {
+    if (item.kind) {
+      const kindNames: { [key: number]: string } = {
+        5: "كتاب",
+        6: "محتوي",
+        7: "بوست",
+        8: "مخطوطه",
+      };
+      return kindNames[item.kind] || "غير محدد";
+    }
+    return "غير محدد";
   };
 
   // Get subcategory name safely
@@ -32,41 +60,14 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   // Enhanced image URL formatting
   const getImageUrl = (url: string | null | undefined) => {
     if (!url) return null;
-    if (url.startsWith("http")) return url;
-    // Handle both relative and absolute paths
-    if (url.startsWith("/")) {
-      return `https://chinguitipedia.alldev.org${url}`;
-    }
-    return `https://chinguitipedia.alldev.org/${url}`;
+
+    return `${url}`;
   };
 
-  // Enhanced PDF URL formatting
-  const getPdfUrl = (url: string | null | undefined) => {
-    if (!url) return null;
-    if (url.startsWith("http")) return url;
-    // Handle both relative and absolute paths
-    if (url.startsWith("/")) {
-      return `https://chinguitipedia.alldev.org${url}`;
-    }
-    return `https://chinguitipedia.alldev.org/${url}`;
-  };
+
 
   // Determine the correct route based on entry type and category
   const getDetailRoute = () => {
-    // First check entry_type if available
-    if (item.entry_type) {
-      switch (item.entry_type) {
-        case "manuscript":
-          return `/manuscripts/${item.id}`;
-        case "book":
-          return `/books-on-chinguitt/${item.id}`;
-        case "investigation":
-          return `/tahqiq/${item.id}`;
-        default:
-          break;
-      }
-    }
-
     // If no entry_type, try to determine from category ID
     let categoryId = null;
 
@@ -128,65 +129,12 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
       return `/sharia-sciences/${item.id}`;
     }
 
-    // Fallback: try to determine from category name if ID is not available
-    const categoryName = getCategoryName();
-
-    if (categoryName === "مخطوطات") {
-      return `/manuscripts/${item.id}`;
-    }
-
-    if (categoryName === "مؤلفات عن شنقيط") {
-      return `/books-on-chinguitt/${item.id}`;
-    }
-
-    if (categoryName === "تحقيقات الشناقطة") {
-      return `/tahqiq/${item.id}`;
-    }
-
-    if (categoryName === "الأخبار العلمية") {
-      return `/scientific-news/${item.id}`;
-    }
-
-    if (categoryName === "مكتبة التعليم النظامي") {
-      return `/formal-education-library/${item.id}`;
-    }
-
-    if (categoryName === "فوائد") {
-      return `/benefits/${item.id}`;
-    }
-
-    if (categoryName === "المنوعات") {
-      return `/varieties/${item.id}`;
-    }
-
-    if (categoryName === "العلوم الاجتماعية") {
-      return `/social-sciences/${item.id}`;
-    }
-
-    if (categoryName === "العلوم اللغوية") {
-      return `/linguistic-sciences/${item.id}`;
-    }
-
-    if (categoryName === "العلوم الشرعية") {
-      return `/sharia-sciences/${item.id}`;
-    }
-
     // Default to books if no specific category is found
     return `/books-on-chinguitt/${item.id}`;
   };
 
   const coverImageUrl = getImageUrl(item.cover_image_link);
-  const pdfFileUrl = getPdfUrl(item.pdf_file_link);
   const detailRoute = getDetailRoute();
-
-  // Handle PDF download
-  const handlePdfDownload = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (pdfFileUrl) {
-      window.open(pdfFileUrl, "_blank");
-    }
-  };
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
@@ -216,9 +164,15 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
       <div className="p-6">
         <div className="flex flex-wrap items-center justify-between mb-3 gap-2">
           <div className="flex flex-wrap gap-2">
-            <span className="bg-heritage-gold text-white px-3 py-1 rounded-full text-sm">
+            {/* Category Badge */}
+            <span className="bg-heritage-gold text-white px-3 py-1 rounded-full text-sm font-semibold">
               {getCategoryName()}
             </span>
+            {/* Kind Badge */}
+            <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm font-semibold">
+              {getKindName()}
+            </span>
+            {/* Subcategory Badge */}
             {getSubcategoryName() && (
               <span className="bg-blue-gray text-white px-3 py-1 rounded-full text-sm">
                 {getSubcategoryName()}
@@ -236,34 +190,29 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
         <p className="text-medium-gray leading-relaxed mb-4 line-clamp-3">
           {item.description}
         </p>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-medium-gray">
+        {/* Metadata Section */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-medium-gray flex items-center gap-1">
+              <span className="text-gray-400">📄</span>
               {getPageCount()} صفحة
             </span>
-            <div className="flex gap-2">
-              {pdfFileUrl && (
-                <button
-                  onClick={handlePdfDownload}
-                  title="تحميل PDF"
-                  className="text-red-500 hover:text-red-700 transition-colors p-1 rounded"
-                >
-                  📄
-                </button>
-              )}
-              {coverImageUrl && (
-                <span title="صورة الغلاف متوفرة" className="text-blue-500">
-                  🖼️
-                </span>
-              )}
-            </div>
+            {item.language && (
+              <span className="text-sm text-medium-gray flex items-center gap-1">
+                <span className="text-gray-400">🌐</span>
+                {item.language}
+              </span>
+            )}
           </div>
-          <Link
-            to={detailRoute}
-            className="bg-olive-green text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300 text-sm font-semibold"
-          >
-            عرض التفاصيل
-          </Link>
+          {/* Action Button */}
+          <div className="flex justify-end">
+            <Link
+              to={detailRoute}
+              className="bg-olive-green text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300 text-sm font-semibold"
+            >
+              عرض التفاصيل
+            </Link>
+          </div>
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCategories, useAuth } from "../hooks/useApi";
+import { useCategories, useAuth, useKinds } from "../hooks/useApi";
 import { apiClient } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
@@ -8,6 +8,7 @@ const AdminAddManuscript: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, initialized, validateToken } = useAuth();
   const { data: categories } = useCategories();
+  const { data: kinds } = useKinds();
   const [formData, setFormData] = useState({
     title: "",
     author: "",
@@ -18,6 +19,8 @@ const AdminAddManuscript: React.FC = () => {
     language: "العربية",
     tags: "",
     page_count: "",
+    size: "",
+    kind: 0,
     cover_image_link: "",
     pdf_file_link: "", // تغيير من ملف إلى رابط
   });
@@ -26,6 +29,9 @@ const AdminAddManuscript: React.FC = () => {
 
   // Filter categories to only show manuscripts category (ID 10)
   const manuscriptCategories = categories?.filter((cat) => cat.id === 10) || [];
+
+  // Filter kinds for manuscripts (مخطوطه)
+  const availableKinds = kinds?.filter((kind) => kind.name === "مخطوطه") || [];
 
   useEffect(() => {
     if (initialized && !isAuthenticated) {
@@ -41,7 +47,8 @@ const AdminAddManuscript: React.FC = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "category" ? parseInt(value) || 0 : value,
+      [name]:
+        name === "category" || name === "kind" ? parseInt(value) || 0 : value,
     }));
   };
 
@@ -76,20 +83,6 @@ const AdminAddManuscript: React.FC = () => {
           ? null
           : parseInt(formData.page_count) || null;
 
-      // Generate slug from title
-      const generateSlug = (title: string) => {
-        return title
-          .toLowerCase()
-          .replace(
-            /[^\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFFa-zA-Z0-9\s]/g,
-            ""
-          )
-          .replace(/\s+/g, "-")
-          .replace(/-+/g, "-")
-          .trim()
-          .replace(/^-+|-+$/g, "");
-      };
-
       const entryData: any = {
         title: formData.title.trim(),
         author: formData.author.trim(),
@@ -101,8 +94,10 @@ const AdminAddManuscript: React.FC = () => {
         language: formData.language.trim(),
         tags: formData.tags.trim(),
         page_count: pageCount,
+        size: formData.size.trim() || null,
+        kind: formData.kind,
         published: true, // تعيين القيمة الافتراضية للنشر إلى true
-        slug: generateSlug(formData.title.trim()),
+        // Remove slug - let backend generate it automatically
       };
 
       // إضافة روابط إلى البيانات إذا كانت موجودة
@@ -193,7 +188,7 @@ const AdminAddManuscript: React.FC = () => {
                 onChange={handleChange}
                 className="w-full border p-3 rounded text-right"
                 required
-                placeholder="مثال: خقهتبخهثقصتبخؤهتض"
+                placeholder="مثال:ادخل العنوان"
               />
             </div>
             <div>
@@ -205,7 +200,7 @@ const AdminAddManuscript: React.FC = () => {
                 onChange={handleChange}
                 className="w-full border p-3 rounded text-right"
                 required
-                placeholder="مثال: هخ2ثصيختؤىصتهنثهىهيؤبهمصضىهعب"
+                placeholder="مثال:ادخل المؤلف"
               />
             </div>
             <div>
@@ -226,6 +221,23 @@ const AdminAddManuscript: React.FC = () => {
               </select>
             </div>
             <div>
+              <label className="block mb-2">النوع *</label>
+              <select
+                name="kind"
+                value={formData.kind}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+                required
+              >
+                <option value="">اختر النوع</option>
+                {availableKinds.map((kind) => (
+                  <option key={kind.id} value={kind.id}>
+                    {kind.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
               <label className="block mb-2">التاريخ</label>
               <input
                 type="date"
@@ -236,7 +248,7 @@ const AdminAddManuscript: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block mb-2">عدد الصفحات</label>
+              <label className="block mb-2">عدد المواد</label>
               <input
                 type="number"
                 name="page_count"
@@ -245,6 +257,17 @@ const AdminAddManuscript: React.FC = () => {
                 className="w-full border p-3 rounded text-right"
                 min="1"
                 placeholder="اتركه فارغًا إذا كان غير معروف"
+              />
+            </div>
+            <div>
+              <label className="block mb-2">الحجم</label>
+              <input
+                type="text"
+                name="size"
+                value={formData.size}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+                placeholder="مثال: 2.5 MB"
               />
             </div>
             <div>
@@ -313,7 +336,7 @@ const AdminAddManuscript: React.FC = () => {
               rows={3}
               className="w-full border p-3 rounded text-right"
               required
-              placeholder="مثال: نخث3صةيؤبعتصثىهنيعتؤىصض3"
+              placeholder="مثال:ادخل الوصف"
             ></textarea>
           </div>
           <div>
