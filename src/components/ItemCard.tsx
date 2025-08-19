@@ -36,7 +36,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
       const kindNames: { [key: number]: string } = {
         5: "كتاب",
         6: "محتوي",
-        7: "بوست",
+        7: "منشور",
         8: "مخطوطه",
       };
       return kindNames[item.kind] || "غير محدد";

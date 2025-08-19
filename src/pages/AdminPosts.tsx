@@ -184,7 +184,7 @@ const AdminPosts: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm">
-                          {post.kind === 7 ? "بوست" : post.kind || "غير محدد"}
+                          {post.kind === 7 ? "منشور" : post.kind || "غير محدد"}
                         </span>
                       </td>
 

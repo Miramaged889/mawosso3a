@@ -62,6 +62,43 @@ const ManuscriptDetail: React.FC = () => {
     return `https://chinguitipedia.alldev.org/${url}`;
   };
 
+  // Get category name safely
+  const getCategoryName = () => {
+    if (typeof manuscript?.category === "object" && manuscript?.category?.name) {
+      return manuscript?.category.name;
+    } else if (typeof manuscript?.category === "number") {
+      // Map category IDs to names
+      const categoryNames: { [key: number]: string } = {
+        1: "العلوم الشرعية",
+        2: "العلوم اللغوية",
+        3: "العلوم الاجتماعية",
+        4: "المنوعات",
+        5: "فوائد",
+        6: "مكتبة التعليم النظامي",
+        7: "الأخبار العلمية",
+        8: "تحقيقات الشناقطة",
+        9: "مؤلفات عن شنقيط",
+        10: "مخطوطات",
+      };
+      return categoryNames[manuscript?.category] || "غير محدد";
+    }
+    return "غير محدد";
+  };
+
+  // Get kind name safely
+  const getKindName = () => {
+    if (manuscript?.kind) {
+      const kindNames: { [key: number]: string } = {
+        5: "كتاب",
+        6: "محتوي",
+        7: "منشور",
+        8: "مخطوطه",
+      };
+      return kindNames[manuscript?.kind] || "غير محدد";
+    }
+    return "غير محدد";
+  };
+
   if (error || !manuscript) {
     return (
       <div className="min-h-screen bg-ivory flex items-center justify-center">
@@ -145,11 +182,14 @@ const ManuscriptDetail: React.FC = () => {
             <div className="p-8">
               {/* Header */}
               <div className="flex flex-wrap items-center justify-between mb-6">
-                <span className="bg-heritage-gold text-white px-4 py-2 rounded-full text-sm font-semibold">
-                  {typeof manuscript.category === "object"
-                    ? manuscript.category.name
-                    : manuscript.tags || "غير محدد"}
-                </span>
+                <div className="flex flex-wrap gap-2">
+                  <span className="bg-heritage-gold text-white px-4 py-2 rounded-full text-sm font-semibold">
+                    {getCategoryName()}
+                  </span>
+                  <span className="bg-olive-green text-white px-4 py-2 rounded-full text-sm font-semibold">
+                    {getKindName()}
+                  </span>
+                </div>
                 <span className="text-medium-gray">{manuscript.date}</span>
               </div>
 
@@ -162,7 +202,7 @@ const ManuscriptDetail: React.FC = () => {
               </h2>
 
               {/* Metadata */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 p-6 bg-ivory rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 p-6 bg-ivory rounded-lg">
                 <div className="text-center">
                   <div className="text-xl font-bold text-olive-green">
                     {manuscript.page_count || manuscript.pages || "غير محدد"}
@@ -181,12 +221,6 @@ const ManuscriptDetail: React.FC = () => {
                   </div>
                   <div className="text-medium-gray text-sm">اللغة</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-xl font-bold text-olive-green">
-                    {manuscript.tags || "غير محدد"}
-                  </div>
-                  <div className="text-medium-gray text-sm">العلامات</div>
-                </div>
               </div>
 
               {/* Additional Details */}
@@ -194,9 +228,7 @@ const ManuscriptDetail: React.FC = () => {
                 <div>
                   <h4 className="font-semibold text-blue-gray mb-2">التصنيف</h4>
                   <p className="text-medium-gray">
-                    {typeof manuscript.category === "object"
-                      ? manuscript.category.name
-                      : "غير محدد"}
+                    {getCategoryName()}
                   </p>
                 </div>
                 <div>
