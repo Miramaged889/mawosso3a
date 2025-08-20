@@ -4,8 +4,7 @@ import { useAuth } from "../hooks/useApi";
 import Breadcrumb from "../components/Breadcrumb";
 
 const Admin: React.FC = () => {
-  const { isAuthenticated, login, logout, loading, error, initialized } =
-    useAuth();
+  const { isAuthenticated, login, logout, loading, error } = useAuth();
   const [loginForm, setLoginForm] = React.useState({
     email: "",
     password: "",
@@ -149,7 +148,6 @@ const Admin: React.FC = () => {
       description: "إضافة وتعديل وحذف المخطوطات",
       icon: "📜",
       link: "/admin/manuscripts",
-      
     },
     {
       title: "إدارة الكتب والمحتوى",
@@ -162,28 +160,24 @@ const Admin: React.FC = () => {
       description: "إضافة وتعديل وحذف المؤلفات",
       icon: "✍️",
       link: "/admin/authors",
-      
     },
     {
       title: "إدارة التحقيقات",
       description: "إضافة وتعديل وحذف التحقيقات",
       icon: "🔍",
       link: "/admin/investigations",
-      
     },
     {
       title: "مؤلفات عن شنقيط",
       description: "إضافة وتعديل وحذف مؤلفات عن شنقيط",
       icon: "🏛️",
       link: "/admin/about-chinguit",
-      
     },
     {
       title: "إدارة المنشورات",
       description: "إضافة وتعديل ونشر المحتوى والمقالات والأخبار",
       icon: "📝",
       link: "/admin/posts",
-      
     },
   ];
 
@@ -229,7 +223,6 @@ const Admin: React.FC = () => {
               <p className="text-medium-gray mb-4 leading-relaxed">
                 {section.description}
               </p>
-              
             </Link>
           ))}
         </div>

@@ -17,7 +17,6 @@ const AdminManuscripts: React.FC = () => {
     // Remove category filter to fetch entries from all categories
   });
   const [deleting, setDeleting] = useState<number | null>(null);
-  const [filter, setFilter] = useState("");
 
   // Always use API data
   const manuscripts = useMemo(() => {
@@ -40,22 +39,6 @@ const AdminManuscripts: React.FC = () => {
     if (url.startsWith("http")) return url;
     return `${url}`;
   };
-
-  // Filter manuscripts based on search term
-  const filteredManuscripts = useMemo(() => {
-    if (!filter) return manuscripts;
-
-    const searchTerm = filter.toLowerCase();
-    return manuscripts.filter(
-      (m: ContentEntry) =>
-        m.title.toLowerCase().includes(searchTerm) ||
-        m.author.toLowerCase().includes(searchTerm) ||
-        (typeof m.category === "object" &&
-          m.category?.name?.toLowerCase().includes(searchTerm)) ||
-        (typeof m.subcategory === "object" &&
-          m.subcategory?.name?.toLowerCase().includes(searchTerm))
-    );
-  }, [manuscripts, filter]);
 
   // Redirect if not authenticated (but wait for auth to initialize)
   useEffect(() => {
@@ -98,7 +81,7 @@ const AdminManuscripts: React.FC = () => {
               إدارة المخطوطات
             </h1>
             <p className="text-medium-gray">
-              عرض وإدارة جميع المخطوطات المضافة ({filteredManuscripts.length})
+              عرض وإدارة جميع المخطوطات المضافة ({manuscripts.length})
             </p>
           </div>
           <div className="mt-4 md:mt-0 flex flex-col md:flex-row gap-4">
@@ -130,7 +113,7 @@ const AdminManuscripts: React.FC = () => {
         )}
 
         {/* Manuscripts Table */}
-        {filteredManuscripts.length > 0 ? (
+        {manuscripts.length > 0 ? (
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -166,8 +149,8 @@ const AdminManuscripts: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredManuscripts.map(
-                    (manuscript: ContentEntry, index) => (
+                  {manuscripts.map(
+                    (manuscript: ContentEntry, index: number) => (
                       <tr
                         key={manuscript.id}
                         className={index % 2 === 0 ? "bg-ivory" : "bg-white"}
@@ -243,7 +226,7 @@ const AdminManuscripts: React.FC = () => {
                         <td className="px-6 py-4 text-medium-gray">
                           {manuscript.size || "غير محدد"}
                         </td>
-                    
+
                         <td className="px-6 py-4">
                           <div className="flex space-x-2 space-x-reverse">
                             <Link
@@ -261,7 +244,6 @@ const AdminManuscripts: React.FC = () => {
                                 ? "جاري الحذف..."
                                 : "حذف"}
                             </button>
-                            
                           </div>
                         </td>
                       </tr>
@@ -278,9 +260,7 @@ const AdminManuscripts: React.FC = () => {
               لا توجد مخطوطات
             </h3>
             <p className="text-medium-gray mb-8">
-              {filter
-                ? "لا توجد مخطوطات تطابق معايير البحث"
-                : "لم يتم إضافة أي مخطوطات بعد. ابدأ بإضافة مخطوطة جديدة."}
+              لم يتم إضافة أي مخطوطات بعد. ابدأ بإضافة مخطوطة جديدة.
             </p>
             <Link
               to="/admin/manuscripts/add"
