@@ -8,16 +8,28 @@ import Breadcrumb from "../components/Breadcrumb";
 const BooksOnChinguitt: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch books from API - filter by category or tags for books about Chinguitt
-  const {
-    data: entriesData,
-    loading,
-    error,
-  } = useEntries({
-    category: "9",
-  });
+  // Fetch all entries from API
+  const { data: entriesData, loading, error } = useEntries();
 
-  const booksOnChinguitt = (entriesData as ContentEntry[]) || [];
+  // Filter entries by kind 11 (مؤلفات) or category 9 (مؤلفات عن شنقيط)
+  const booksOnChinguitt = useMemo(() => {
+    const results = entriesData || [];
+    const allEntries = Array.isArray(results)
+      ? (results as ContentEntry[])
+      : [];
+
+    return allEntries.filter((entry: ContentEntry) => {
+      // Check if kind is 11 (مؤلفات)
+      const isAuthorKind = entry.kind === 11;
+
+      // Check if category is 9 (مؤلفات عن شنقيط) - handle both object and number types
+      const isAuthorCategory =
+        (typeof entry.category === "object" && entry.category?.id === 9) ||
+        (typeof entry.category === "number" && entry.category === 9);
+
+      return isAuthorKind || isAuthorCategory;
+    });
+  }, [entriesData]);
 
   const filteredItems = useMemo(() => {
     let filtered = booksOnChinguitt;

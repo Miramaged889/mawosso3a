@@ -6,7 +6,6 @@ import ItemCard from "../components/ItemCard";
 import SearchBar from "../components/SearchBar";
 import Breadcrumb from "../components/Breadcrumb";
 
-
 const Manuscripts: React.FC = () => {
   const [searchParams] = useSearchParams();
   const categoryFromUrl = searchParams.get("category");

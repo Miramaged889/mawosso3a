@@ -44,11 +44,7 @@ const AdminAddPost: React.FC = () => {
 
   // Filter kinds for posts (بوست)
   const availableKinds =
-    kinds?.filter(
-      (kind) =>
-        kind.name === "منشور" ||
-        kind.name === "عن شنقيط"
-    ) || [];
+    kinds?.filter((kind) => kind.name === "منشور") || [];
 
   useEffect(() => {
     if (initialized && !isAuthenticated) {

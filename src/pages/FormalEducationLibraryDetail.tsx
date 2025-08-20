@@ -123,18 +123,7 @@ const FormalEducationLibraryDetail: React.FC = () => {
   };
 
   // Get kind name safely
-  const getKindName = () => {
-    if (item.kind) {
-      const kindNames: { [key: number]: string } = {
-        5: "كتاب",
-        6: "محتوي",
-        7: "منشور",
-        8: "مخطوطه",
-      };
-      return kindNames[item.kind] || "غير محدد";
-    }
-    return "غير محدد";
-  };
+  
 
   // Get page count safely
   const getPageCount = () => {

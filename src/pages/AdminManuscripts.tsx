@@ -14,7 +14,7 @@ const AdminManuscripts: React.FC = () => {
     error,
     refetch,
   } = useEntries({
-    category: "10", // Use category ID for manuscripts from API
+    // Remove category filter to fetch entries from all categories
   });
   const [deleting, setDeleting] = useState<number | null>(null);
   const [filter, setFilter] = useState("");
@@ -29,11 +29,8 @@ const AdminManuscripts: React.FC = () => {
 
     // Filter manuscripts based on kind field (مخطوطه)
     return allEntries.filter((item: ContentEntry) => {
-      // Only include items with kind 8 (مخطوطه) or 9 (عن شنقيط)
-      if (item.kind === 8 || item.kind === 9) {
-        return true;
-      }
-      return false;
+      // Only include items with kind 8 (مخطوطه)
+      return item.kind === 8;
     });
   }, [entriesData]);
 
@@ -105,13 +102,6 @@ const AdminManuscripts: React.FC = () => {
             </p>
           </div>
           <div className="mt-4 md:mt-0 flex flex-col md:flex-row gap-4">
-            <input
-              type="text"
-              placeholder="بحث في المخطوطات..."
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg"
-            />
             <Link
               to="/admin/manuscripts/add"
               className="bg-olive-green text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 text-center"
@@ -171,9 +161,6 @@ const AdminManuscripts: React.FC = () => {
                       الحجم
                     </th>
                     <th className="px-6 py-4 text-right font-semibold">
-                      الملفات
-                    </th>
-                    <th className="px-6 py-4 text-right font-semibold">
                       الإجراءات
                     </th>
                   </tr>
@@ -212,20 +199,38 @@ const AdminManuscripts: React.FC = () => {
                         <td className="px-6 py-4 text-medium-gray">
                           {manuscript.author}
                         </td>
-                        <td className="px-6 py-4">
-                          <span className="bg-heritage-gold text-white px-3 py-1 rounded-full text-sm">
+                        <td className="px-4 py-4">
+                          <span className="bg-heritage-gold text-white px-4 py-1 rounded-full text-sm">
                             {typeof manuscript.category === "object"
                               ? manuscript.category?.name
+                              : typeof manuscript.category === "number"
+                              ? (() => {
+                                  // Map category IDs to names
+                                  const categoryNames: {
+                                    [key: number]: string;
+                                  } = {
+                                    1: "العلوم الشرعية",
+                                    2: "العلوم اللغوية",
+                                    3: "العلوم الاجتماعية",
+                                    4: "المتنوعات",
+                                    5: "الفوائد",
+                                    6: "مكتبة التعليم النظامي",
+                                    7: "الأخبار العلمية",
+                                    8: "الكتب عن شنقيط",
+                                    9: "التحقيقات",
+                                    10: "المخطوطات",
+                                  };
+                                  return (
+                                    categoryNames[manuscript.category] ||
+                                    "غير محدد"
+                                  );
+                                })()
                               : manuscript.tags || "غير محدد"}
                           </span>
                         </td>
                         <td className="px-6 py-4">
                           <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm">
-                            {manuscript.kind === 8
-                              ? "مخطوطه"
-                              : manuscript.kind === 9
-                              ? "عن شنقيط"
-                              : manuscript.kind || "غير محدد"}
+                            {manuscript.kind === 8 ? "مخطوطه" : "غير محدد"}
                           </span>
                         </td>
 
@@ -238,44 +243,7 @@ const AdminManuscripts: React.FC = () => {
                         <td className="px-6 py-4 text-medium-gray">
                           {manuscript.size || "غير محدد"}
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="flex space-x-2 space-x-reverse">
-                            {manuscript.cover_image_link && (
-                              <span
-                                className="text-blue-500 cursor-pointer"
-                                title="صورة الغلاف متوفرة"
-                                onClick={() =>
-                                  manuscript.cover_image_link &&
-                                  window.open(
-                                    manuscript.cover_image_link,
-                                    "_blank"
-                                  )
-                                }
-                              >
-                                🖼️
-                              </span>
-                            )}
-                            {manuscript.pdf_file_link && (
-                              <span
-                                className="text-red-500 cursor-pointer"
-                                title="ملف PDF متوفر"
-                                onClick={() =>
-                                  manuscript.pdf_file_link &&
-                                  window.open(
-                                    manuscript.pdf_file_link,
-                                    "_blank"
-                                  )
-                                }
-                              >
-                                📄
-                              </span>
-                            )}
-                            {!manuscript.cover_image_link &&
-                              !manuscript.pdf_file_link && (
-                                <span className="text-gray-400">-</span>
-                              )}
-                          </div>
-                        </td>
+                    
                         <td className="px-6 py-4">
                           <div className="flex space-x-2 space-x-reverse">
                             <Link
@@ -293,13 +261,7 @@ const AdminManuscripts: React.FC = () => {
                                 ? "جاري الحذف..."
                                 : "حذف"}
                             </button>
-                            <Link
-                              to={`/manuscripts/${manuscript.id}`}
-                              target="_blank"
-                              className="bg-olive-green text-white px-3 py-1 rounded text-sm hover:bg-opacity-90 transition-colors"
-                            >
-                              عرض
-                            </Link>
+                            
                           </div>
                         </td>
                       </tr>

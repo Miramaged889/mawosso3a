@@ -4,22 +4,33 @@ import { ContentEntry } from "../services/api";
 import ItemCard from "../components/ItemCard";
 import SearchBar from "../components/SearchBar";
 import Breadcrumb from "../components/Breadcrumb";
-import { CATEGORY_IDS } from "../data/categoryMapping";
+
 
 const Tahqiq: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("الكل");
+ 
+  // Fetch all entries from API
+  const { data: entriesData, loading, error } = useEntries();
 
-  // Fetch investigations from API
-  const {
-    data: entriesData,
-    loading,
-    error,
-  } = useEntries({
-    category: CATEGORY_IDS.TAHQIQ,
-  });
+  // Filter entries by kind 10 (تحقيقات) or category 8 (تحقيقات الشناقطه)
+  const tahqiqat = useMemo(() => {
+    const results = entriesData || [];
+    const allEntries = Array.isArray(results)
+      ? (results as ContentEntry[])
+      : [];
 
-  const tahqiqat = (entriesData as ContentEntry[]) || [];
+    return allEntries.filter((entry: ContentEntry) => {
+      // Check if kind is 10 (تحقيقات)
+      const isInvestigationKind = entry.kind === 10;
+
+      // Check if category is 8 (تحقيقات الشناقطه) - handle both object and number types
+      const isInvestigationCategory =
+        (typeof entry.category === "object" && entry.category?.id === 8) ||
+        (typeof entry.category === "number" && entry.category === 8);
+
+      return isInvestigationKind || isInvestigationCategory;
+    });
+  }, [entriesData]);
 
   const filteredItems = useMemo(() => {
     let filtered = tahqiqat;
@@ -41,9 +52,7 @@ const Tahqiq: React.FC = () => {
     setSearchQuery(query);
   };
 
-  const handleCategoryFilter = (category: string) => {
-    setSelectedCategory(category);
-  };
+ 
 
   const breadcrumbItems = [{ label: "تحقيقات الشناقطة" }];
 

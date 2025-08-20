@@ -28,6 +28,15 @@ import AdminEditBook from "./pages/AdminEditBook";
 import AdminPosts from "./pages/AdminPosts";
 import AdminAddPost from "./pages/AdminAddPost";
 import AdminEditPost from "./pages/AdminEditPost";
+import AdminAuthors from "./pages/AdminAuthors";
+import AdminInvestigations from "./pages/AdminInvestigations";
+import AdminAboutChinguit from "./pages/AdminAboutChinguit";
+import AdminAddAuthor from "./pages/AdminAddAuthor";
+import AdminEditAuthor from "./pages/AdminEditAuthor";
+import AdminAddInvestigation from "./pages/AdminAddInvestigation";
+import AdminEditInvestigation from "./pages/AdminEditInvestigation";
+import AdminAddAboutChinguit from "./pages/AdminAddAboutChinguit";
+import AdminEditAboutChinguit from "./pages/AdminEditAboutChinguit";
 
 // Category Pages
 import ShariaSciences from "./pages/ShariaSciences";
@@ -133,6 +142,36 @@ function App() {
             <Route path="/admin/posts" element={<AdminPosts />} />
             <Route path="/admin/posts/add" element={<AdminAddPost />} />
             <Route path="/admin/posts/edit/:id" element={<AdminEditPost />} />
+            <Route path="/admin/authors" element={<AdminAuthors />} />
+            <Route
+              path="/admin/investigations"
+              element={<AdminInvestigations />}
+            />
+            <Route
+              path="/admin/about-chinguit"
+              element={<AdminAboutChinguit />}
+            />
+            <Route path="/admin/authors/add" element={<AdminAddAuthor />} />
+            <Route
+              path="/admin/authors/edit/:id"
+              element={<AdminEditAuthor />}
+            />
+            <Route
+              path="/admin/investigations/add"
+              element={<AdminAddInvestigation />}
+            />
+            <Route
+              path="/admin/investigations/edit/:id"
+              element={<AdminEditInvestigation />}
+            />
+            <Route
+              path="/admin/about-chinguit/add"
+              element={<AdminAddAboutChinguit />}
+            />
+            <Route
+              path="/admin/about-chinguit/edit/:id"
+              element={<AdminEditAboutChinguit />}
+            />
           </Routes>
         </main>
         <Footer />

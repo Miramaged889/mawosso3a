@@ -34,11 +34,13 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   const getKindName = () => {
     if (item.kind) {
       const kindNames: { [key: number]: string } = {
-        5: "كتاب",
-        6: "محتوي",
         7: "منشور",
         8: "مخطوطه",
         9: "عن شنقيط",
+        10: "تحقيقات",
+        11: "مؤلفات",
+        12: "كتاب",
+        13: "محتوي",
       };
       return kindNames[item.kind] || "غير محدد";
     }
@@ -67,12 +69,14 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
 
   // Determine the correct route based on kind and category
   const getDetailRoute = () => {
-    // First check by kind (مؤلفات عن شنقيط)
+    // First check by kind
     if (item.kind === 9) {
       return `/about-chinguit/${item.id}`;
     }
 
-    // If no kind or kind is not 9, try to determine from category ID
+    
+
+    // If no specific kind, try to determine from category ID
     let categoryId = null;
 
     // Get category ID from different possible formats
@@ -80,10 +84,6 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
       categoryId = item.category.id;
     } else if (typeof item.category === "number") {
       categoryId = item.category;
-    }
-
-    if (item.kind === 9) {
-      return `/about-chinguit/${item.id}`;
     }
 
     // Route based on category ID

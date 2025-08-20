@@ -27,8 +27,8 @@ const AdminBooks: React.FC = () => {
 
   // Filter books based on kind field (كتاب or محتوي)
   const books = (entriesData || []).filter((item: ContentEntry) => {
-    // Only include items with kind 5 (كتاب) or 6 (محتوي) or 9 (عن شنقيط)
-    return item.kind === 5 || item.kind === 6 || item.kind === 9;
+    // Only include items with kind 12 (كتاب) or 13 (محتوي)
+    return item.kind === 12 || item.kind === 13;
   });
 
   // Debug category data
@@ -178,12 +178,10 @@ const AdminBooks: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm">
-                          {book.kind === 5
+                          {book.kind === 12
                             ? "كتاب"
-                            : book.kind === 6
-                              ? "محتوي"
-                            : book.kind === 9
-                            ? "عن شنقيط"
+                            : book.kind === 13
+                            ? "محتوي"
                             : book.kind || "غير محدد"}
                         </span>
                       </td>

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEntries, useAuth, useCategories } from "../hooks/useApi";
-import { apiClient } from "../services/api";
+import { apiClient, ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
-const AdminPosts: React.FC = () => {
+const AdminAuthors: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, initialized } = useAuth();
   const { data: entriesData, error, refetch } = useEntries();
@@ -18,38 +18,25 @@ const AdminPosts: React.FC = () => {
     return `https://chinguitipedia.alldev.org${url}`;
   };
 
-  // Redirect if not authenticated (but wait for auth to initialize)
+  // Redirect if not authenticated
   React.useEffect(() => {
     if (initialized && !isAuthenticated) {
       navigate("/admin");
     }
   }, [isAuthenticated, initialized, navigate]);
 
-  // Filter posts based on kind field (بوست)
-  const posts = (Array.isArray(entriesData) ? entriesData : []).filter(
-    (item: any) => {
-      // Only include items with kind 7 (منشور)
-      return item.kind === 7;
+  // Filter authors based on kind field (مؤلفات)
+  const authors = (entriesData || []).filter((item: ContentEntry) => {
+    // Only include items with kind 11 (مؤلفات)
+    return item.kind === 11;
+  });
+
+  // Debug category data
+  React.useEffect(() => {
+    if (authors.length > 0) {
+      console.log("Sample author category data:", authors[0]?.category);
     }
-  );
-
-  const handleDelete = async (id: number) => {
-    if (confirm("هل أنت متأكد من حذف هذا المنشور؟")) {
-      setDeleting(id);
-      try {
-        await apiClient.deleteEntry(id);
-        alert("تم حذف المنشور بنجاح!");
-        refetch();
-      } catch (error) {
-        console.error("Error deleting entry:", error);
-        alert("حدث خطأ أثناء حذف المنشور. يرجى المحاولة مرة أخرى.");
-      } finally {
-        setDeleting(null);
-      }
-    }
-  };
-
-
+  }, [authors]);
 
   // Helper function to get category name
   const getCategoryName = (category: any, tags?: string): string => {
@@ -72,9 +59,25 @@ const AdminPosts: React.FC = () => {
     return tags || "غير محدد";
   };
 
+  const handleDelete = async (id: number) => {
+    if (confirm("هل أنت متأكد من حذف هذا العنصر؟")) {
+      try {
+        setDeleting(id);
+        await apiClient.deleteEntry(id);
+        refetch();
+        alert("تم حذف العنصر بنجاح");
+      } catch (error) {
+        console.error("Error deleting entry:", error);
+        alert("حدث خطأ أثناء حذف العنصر");
+      } finally {
+        setDeleting(null);
+      }
+    }
+  };
+
   const breadcrumbItems = [
     { label: "لوحة التحكم", path: "/admin" },
-    { label: "إدارة المنشورات" },
+    { label: "إدارة المؤلفات" },
   ];
 
   return (
@@ -86,17 +89,15 @@ const AdminPosts: React.FC = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-amiri font-bold text-blue-gray mb-2">
-              إدارة المنشورات
+              إدارة المؤلفات
             </h1>
-            <p className="text-medium-gray">
-              عرض وإدارة جميع المنشورات والمحتوى ({posts.length} منشور)
-            </p>
+            <p className="text-medium-gray">عرض وإدارة جميع المؤلفات المضافة</p>
           </div>
           <Link
-            to="/admin/posts/add"
+            to="/admin/authors/add"
             className="bg-olive-green text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
           >
-            إضافة منشور جديد
+            إضافة مؤلفة جديدة
           </Link>
         </div>
 
@@ -104,17 +105,11 @@ const AdminPosts: React.FC = () => {
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
             خطأ في تحميل البيانات: {error}
-            <button
-              onClick={refetch}
-              className="ml-4 underline hover:no-underline"
-            >
-              إعادة المحاولة
-            </button>
           </div>
         )}
 
-        {/* Posts Table */}
-        {posts.length > 0 ? (
+        {/* Authors Table */}
+        {authors.length > 0 ? (
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -140,26 +135,26 @@ const AdminPosts: React.FC = () => {
                     </th>
                     <th className="px-6 py-4 text-right font-semibold">
                       عدد المواد
-                    </th> 
+                    </th>
                     <th className="px-6 py-4 text-right font-semibold">
                       الإجراءات
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {posts.map((post, index) => (
+                  {authors.map((author, index) => (
                     <tr
-                      key={post.id}
+                      key={author.id}
                       className={index % 2 === 0 ? "bg-ivory" : "bg-white"}
                     >
                       <td className="px-6 py-4 w-24">
-                        {getImageUrl(post.cover_image_link) ? (
+                        {getImageUrl(author.cover_image_link) ? (
                           <img
                             src={
-                              getImageUrl(post.cover_image_link) ||
+                              getImageUrl(author.cover_image_link) ||
                               "/placeholder-manuscript.png"
                             }
-                            alt={post.title}
+                            alt={author.title}
                             className="w-20 h-20 object-contain rounded bg-gray-50"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
@@ -169,58 +164,54 @@ const AdminPosts: React.FC = () => {
                           />
                         ) : (
                           <div className="w-20 h-20 bg-gray-50 rounded flex items-center justify-center">
-                            <span className="text-2xl">📝</span>
+                            <span className="text-2xl">📚</span>
                           </div>
                         )}
                       </td>
                       <td className="px-6 py-4 font-semibold text-blue-gray">
-                        <div className="max-w-xs truncate">{post.title}</div>
+                        {author.title}
                       </td>
                       <td className="px-6 py-4 text-medium-gray">
-                        <div className="max-w-xs truncate">{post.author}</div>
+                        {author.author}
                       </td>
                       <td className="px-6 py-4">
                         <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm">
-                          {post.kind === 7 ? "منشور" : "غير محدد"}
+                          مؤلفات
                         </span>
                       </td>
-
                       <td className="px-6 py-4">
                         <span className="bg-heritage-gold text-white px-3 py-1 rounded-full text-sm">
-                          {getCategoryName(post.category, post.tags)}
+                          {getCategoryName(author.category, author.tags)}
                         </span>
-                        {post.subcategory &&
-                          typeof post.subcategory === "object" && (
+                        {author.subcategory &&
+                          typeof author.subcategory === "object" && (
                             <div className="mt-1">
                               <span className="bg-olive-green text-white px-2 py-1 rounded text-xs">
-                                {post.subcategory.name}
+                                {author.subcategory.name}
                               </span>
                             </div>
                           )}
                       </td>
-                      <td className="px-6 py-4 text-medium-gray text-sm">
-                        {post.date}
+                      <td className="px-6 py-4 text-medium-gray">
+                        {author.date}
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm">
-                          {post.pages || post.page_count || 0}
-                        </span>
+                      <td className="px-6 py-4 text-medium-gray">
+                        {author.pages || author.page_count || 0}
                       </td>
-                     
                       <td className="px-6 py-4">
                         <div className="flex space-x-2 space-x-reverse">
                           <Link
-                            to={`/admin/posts/edit/${post.id}`}
+                            to={`/admin/authors/edit/${author.id}`}
                             className="bg-blue-gray text-white px-3 py-1 rounded text-sm hover:bg-opacity-90 transition-colors"
                           >
                             تعديل
                           </Link>
                           <button
-                            onClick={() => handleDelete(post.id)}
-                            disabled={deleting === post.id}
+                            onClick={() => handleDelete(author.id)}
                             className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors disabled:opacity-50"
+                            disabled={deleting === author.id}
                           >
-                            {deleting === post.id ? "جاري الحذف..." : "حذف"}
+                            {deleting === author.id ? "جاري الحذف..." : "حذف"}
                           </button>
                         </div>
                       </td>
@@ -232,18 +223,18 @@ const AdminPosts: React.FC = () => {
           </div>
         ) : (
           <div className="text-center py-16">
-            <div className="text-6xl mb-4">📝</div>
+            <div className="text-6xl mb-4">📚</div>
             <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
-              لا توجد منشورات
+              لا توجد مؤلفات
             </h3>
             <p className="text-medium-gray mb-8">
-              لم يتم إضافة أي منشورات بعد. ابدأ بإضافة منشور جديد.
+              لم يتم إضافة أي مؤلفات بعد. ابدأ بإضافة مؤلفة جديدة.
             </p>
             <Link
-              to="/admin/posts/add"
+              to="/admin/authors/add"
               className="bg-olive-green text-white px-8 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
             >
-              إضافة منشور جديد
+              إضافة مؤلفة جديدة
             </Link>
           </div>
         )}
@@ -252,4 +243,4 @@ const AdminPosts: React.FC = () => {
   );
 };
 
-export default AdminPosts;
+export default AdminAuthors;

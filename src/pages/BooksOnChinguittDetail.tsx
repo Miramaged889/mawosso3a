@@ -10,19 +10,44 @@ const BooksOnChinguittDetail: React.FC = () => {
   const numericId = id ? parseInt(id) : null;
 
   const { data: book, error } = useEntry(numericId);
-  const { data: relatedData } = useEntries({ category: "9" });
+  const { data: relatedData } = useEntries();
 
   const relatedItems = React.useMemo(() => {
     if (!relatedData || !book) return [];
-    return (relatedData as ContentEntry[])
-      .filter(
-        (item: ContentEntry) =>
-          item.id !== numericId &&
-          typeof item.category === "object" &&
-          typeof book.category === "object" &&
-          item.category?.id === book.category?.id
-      )
-      .slice(0, 3);
+    const allEntries = (relatedData as ContentEntry[]) || [];
+
+    // Filter by kind 11 (مؤلفات) or category 9 (مؤلفات عن شنقيط) and exclude current item
+    const filteredAuthors = allEntries.filter((entry: ContentEntry) => {
+      if (entry.id === numericId) return false; // Exclude current item
+
+      // Check if kind is 11 (مؤلفات)
+      const isAuthorKind = entry.kind === 11;
+
+      // Check if category is 9 (مؤلفات عن شنقيط) - handle both object and number types
+      const isAuthorCategory =
+        (typeof entry.category === "object" && entry.category?.id === 9) ||
+        (typeof entry.category === "number" && entry.category === 9);
+
+      return isAuthorKind || isAuthorCategory;
+    });
+
+    // If we have authors with same category, prioritize them
+    const sameCategoryAuthors = filteredAuthors.filter(
+      (entry: ContentEntry) =>
+        typeof entry.category === "object" &&
+        typeof book.category === "object" &&
+        entry.category?.id === book.category?.id
+    );
+
+    // Return same category authors first, then other authors
+    const relatedAuthors = [
+      ...sameCategoryAuthors,
+      ...filteredAuthors.filter(
+        (entry) => !sameCategoryAuthors.includes(entry)
+      ),
+    ];
+
+    return relatedAuthors.slice(0, 3);
   }, [relatedData, book, numericId]);
 
   // Enhanced image URL formatting
@@ -126,10 +151,13 @@ const BooksOnChinguittDetail: React.FC = () => {
   const getKindName = () => {
     if (book.kind) {
       const kindNames: { [key: number]: string } = {
-        5: "كتاب",
-        6: "محتوي",
         7: "منشور",
         8: "مخطوطه",
+        9: "عن شنقيط",
+        10: "تحقيقات",
+        11: "مؤلفات",
+        12: "كتاب",
+        13: "محتوي",
       };
       return kindNames[book.kind] || "غير محدد";
     }
@@ -211,7 +239,6 @@ const BooksOnChinguittDetail: React.FC = () => {
                   </div>
                   <div className="text-medium-gray text-sm">اللغة</div>
                 </div>
-                
               </div>
 
               {/* Additional Details */}

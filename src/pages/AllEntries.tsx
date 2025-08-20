@@ -24,10 +24,13 @@ const AllEntries: React.FC = () => {
     entriesData.forEach((entry: ContentEntry) => {
       if (entry.kind) {
         const kindNames: { [key: number]: string } = {
-          5: "كتاب",
-          6: "محتوي",
-          7: "بوست",
+          7: "منشور",
           8: "مخطوطه",
+          9: "عن شنقيط",
+          10: "تحقيقات",
+          11: "مؤلفات",
+          12: "كتاب",
+          13: "محتوي",
         };
         const kindName = kindNames[entry.kind] || entry.kind.toString();
         uniqueKinds.add(kindName);
@@ -73,10 +76,13 @@ const AllEntries: React.FC = () => {
         selectedKind === "" ||
         (() => {
           const kindNames: { [key: number]: string } = {
-            5: "كتاب",
-            6: "محتوي",
-            7: "بوست",
+            7: "منشور",
             8: "مخطوطه",
+            9: "عن شنقيط",
+            10: "تحقيقات",
+            11: "مؤلفات",
+            12: "كتاب",
+            13: "محتوي",
           };
           return entry.kind && kindNames[entry.kind] === selectedKind;
         })();

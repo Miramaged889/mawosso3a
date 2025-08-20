@@ -1,25 +1,34 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useCategories, useAuth, useEntry, useKinds } from "../hooks/useApi";
-import { apiClient } from "../services/api";
+import {
+  useCategories,
+  useSubcategories,
+  useAuth,
+  useEntry,
+  useKinds,
+} from "../hooks/useApi";
+import { apiClient, ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
-const AdminEditManuscript: React.FC = () => {
+const AdminEditAboutChinguit: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { isAuthenticated, initialized, validateToken } = useAuth();
   const { data: categories } = useCategories();
+  const { data: subcategories } = useSubcategories();
   const { data: kinds } = useKinds();
   const {
-    data: manuscript,
-    loading: manuscriptLoading,
-    error: manuscriptError,
+    data: item,
+    loading: itemLoading,
+    error: itemError,
   } = useEntry(parseInt(id || "0"));
 
   const [formData, setFormData] = useState({
     title: "",
     author: "",
-    category: 10,
+    entry_type: "book" as ContentEntry["entry_type"],
+    category: 0,
+    subcategory: 0,
     date: "2024-01-01",
     description: "",
     content: "",
@@ -34,45 +43,54 @@ const AdminEditManuscript: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Filter categories to only show manuscripts category (ID 10)
-  const manuscriptCategories = categories?.filter((cat) => cat.id === 10) || [];
+  // Filter subcategories to exclude those belonging to category 10
+  const availableSubcategories =
+    subcategories?.filter(
+      (sub) => sub.category === formData.category && sub.category !== 10
+    ) || [];
 
-  // Filter kinds for manuscripts (مخطوطه)
-  const availableKinds = kinds?.filter((kind) => kind.name === "مخطوطه") || [];
+  // Filter out manuscripts category (ID 10) from available categories
+  const availableCategories = categories?.filter((cat) => cat.id !== 10) || [];
 
-  useEffect(() => {
+  // Filter kinds for about chinguit (عن شنقيط)
+  const availableKinds =
+    kinds?.filter((kind) => kind.name === "عن شنقيط") || [];
+
+  // Redirect if not authenticated
+  React.useEffect(() => {
     if (initialized && !isAuthenticated) {
       navigate("/admin");
     }
   }, [isAuthenticated, initialized, navigate]);
 
-  // Load manuscript data when available
+  // Load item data when available
   useEffect(() => {
-    if (manuscript) {
+    if (item) {
       setFormData({
-        title: manuscript.title || "",
-        author: manuscript.author || "",
+        title: item.title || "",
+        author: item.author || "",
+        entry_type: item.entry_type || "book",
         category:
-          typeof manuscript.category === "object" &&
-          manuscript.category !== null
-            ? manuscript.category.id
-            : (manuscript.category as number) || 10,
-        date: manuscript.date || "2024-01-01",
-        description: manuscript.description || "",
-        content: manuscript.content || "",
-        language: manuscript.language || "العربية",
-        tags: manuscript.tags || "",
-        page_count:
-          manuscript.page_count?.toString() ||
-          manuscript.pages?.toString() ||
-          "",
-        size: manuscript.size?.toString() || "",
-        kind: manuscript.kind || 0,
-        cover_image_link: manuscript.cover_image_link || "",
-        pdf_file_link: manuscript.pdf_file_link || "",
+          typeof item.category === "object" && item.category !== null
+            ? item.category.id
+            : (item.category as number) || 0,
+        subcategory:
+          typeof item.subcategory === "object" && item.subcategory !== null
+            ? item.subcategory.id
+            : (item.subcategory as number) || 0,
+        date: item.date || "2024-01-01",
+        description: item.description || "",
+        content: item.content || "",
+        language: item.language || "العربية",
+        tags: item.tags || "",
+        page_count: item.page_count?.toString() || item.pages?.toString() || "",
+        size: item.size?.toString() || "",
+        kind: item.kind || 0,
+        cover_image_link: item.cover_image_link || "",
+        pdf_file_link: item.pdf_file_link || "",
       });
     }
-  }, [manuscript]);
+  }, [item]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -83,7 +101,10 @@ const AdminEditManuscript: React.FC = () => {
     setFormData((prev) => ({
       ...prev,
       [name]:
-        name === "category" || name === "kind" ? parseInt(value) || 0 : value,
+        name === "category" || name === "subcategory" || name === "kind"
+          ? parseInt(value) || 0
+          : value,
+      ...(name === "category" ? { subcategory: 0 } : {}),
     }));
   };
 
@@ -92,8 +113,7 @@ const AdminEditManuscript: React.FC = () => {
     if (
       !formData.title.trim() ||
       !formData.author.trim() ||
-      !formData.category ||
-      !formData.description.trim()
+      !formData.category
     ) {
       alert("يرجى ملء جميع الحقول المطلوبة");
       return;
@@ -102,7 +122,7 @@ const AdminEditManuscript: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // تحقق من صلاحية الرمز المميز
+      // Validate token
       const isValid = await validateToken();
       if (!isValid) {
         alert("انتهت صلاحية جلسة تسجيل الدخول. يرجى تسجيل الدخول مرة أخرى.");
@@ -112,25 +132,31 @@ const AdminEditManuscript: React.FC = () => {
 
       console.log("Starting submission with valid token");
 
-      // معالجة حقل page_count بشكل صحيح
+      // Handle page_count and size properly
       const pageCount =
         formData.page_count.trim() === ""
-          ? null
-          : parseInt(formData.page_count) || null;
+          ? undefined
+          : parseInt(formData.page_count) || undefined;
+
+      const sizeValue =
+        formData.size.trim() === ""
+          ? undefined
+          : parseInt(formData.size) || undefined;
 
       const entryData: any = {
         title: formData.title.trim(),
         author: formData.author.trim(),
-        entry_type: "manuscript" as const,
+        entry_type: formData.entry_type,
         category: formData.category,
+        subcategory: formData.subcategory || undefined,
         date: formData.date,
+        page_count: pageCount,
+        size: sizeValue,
+        kind: formData.kind,
         description: formData.description.trim(),
         content: formData.content.trim(),
         language: formData.language.trim(),
         tags: formData.tags.trim(),
-        page_count: pageCount,
-        size: formData.size.trim() || null,
-        kind: formData.kind,
         published: true,
       };
 
@@ -159,7 +185,7 @@ const AdminEditManuscript: React.FC = () => {
         entryData.pdf_file_link = pdfFileLink;
       }
 
-      // إضافة معلومات تصحيح
+      // Debug info
       console.log("Entry data:", entryData);
       console.log("Links:", {
         cover_image_link: formData.cover_image_link || "none",
@@ -168,8 +194,8 @@ const AdminEditManuscript: React.FC = () => {
 
       try {
         await apiClient.updateEntry(parseInt(id || "0"), entryData);
-        alert("تم تحديث المخطوطة بنجاح!");
-        navigate("/admin/manuscripts");
+        alert("تم تحديث المؤلفة بنجاح!");
+        navigate("/admin/about-chinguit");
       } catch (apiError) {
         console.error("API Error:", apiError);
         throw apiError;
@@ -197,11 +223,11 @@ const AdminEditManuscript: React.FC = () => {
 
   const breadcrumbItems = [
     { label: "لوحة التحكم", path: "/admin" },
-    { label: "إدارة المخطوطات", path: "/admin/manuscripts" },
-    { label: "تعديل المخطوطة" },
+    { label: "إدارة مؤلفات عن شنقيط", path: "/admin/about-chinguit" },
+    { label: "تعديل المؤلفة" },
   ];
 
-  if (manuscriptLoading) {
+  if (itemLoading) {
     return (
       <div className="min-h-screen bg-ivory flex items-center justify-center">
         <div className="text-center">
@@ -212,17 +238,17 @@ const AdminEditManuscript: React.FC = () => {
     );
   }
 
-  if (manuscriptError || !manuscript) {
+  if (itemError || !item) {
     return (
       <div className="min-h-screen bg-ivory flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4">❌</div>
-          <p className="text-lg text-red-600">لم يتم العثور على المخطوطة</p>
+          <p className="text-lg text-red-600">لم يتم العثور على المؤلفة</p>
           <button
-            onClick={() => navigate("/admin/manuscripts")}
+            onClick={() => navigate("/admin/about-chinguit")}
             className="mt-4 bg-olive-green text-white px-6 py-2 rounded-lg"
           >
-            العودة إلى إدارة المخطوطات
+            العودة إلى إدارة مؤلفات عن شنقيط
           </button>
         </div>
       </div>
@@ -233,11 +259,11 @@ const AdminEditManuscript: React.FC = () => {
     <div className="min-h-screen bg-ivory">
       <Breadcrumb items={breadcrumbItems} />
       <div className="container mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">تعديل المخطوطة</h1>
+        <h1 className="text-2xl font-bold mb-6">تعديل المؤلفة</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block mb-2">عنوان المخطوطة *</label>
+              <label className="block mb-2">العنوان *</label>
               <input
                 type="text"
                 name="title"
@@ -245,7 +271,7 @@ const AdminEditManuscript: React.FC = () => {
                 onChange={handleChange}
                 className="w-full border p-3 rounded text-right"
                 required
-                placeholder="أدخل عنوان المخطوطة"
+                placeholder="أدخل العنوان"
               />
             </div>
             <div>
@@ -261,7 +287,7 @@ const AdminEditManuscript: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block mb-2">التصنيف *</label>
+              <label className="block mb-2">التصنيف الرئيسي *</label>
               <select
                 name="category"
                 value={formData.category}
@@ -270,13 +296,31 @@ const AdminEditManuscript: React.FC = () => {
                 required
               >
                 <option value="">اختر التصنيف</option>
-                {manuscriptCategories?.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
+                {availableCategories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
                   </option>
                 ))}
               </select>
             </div>
+            {availableSubcategories.length > 0 && (
+              <div>
+                <label className="block mb-2">التصنيف الفرعي</label>
+                <select
+                  name="subcategory"
+                  value={formData.subcategory}
+                  onChange={handleChange}
+                  className="w-full border p-3 rounded text-right"
+                >
+                  <option value="">اختر التصنيف الفرعي (اختياري)</option>
+                  {availableSubcategories.map((sub) => (
+                    <option key={sub.id} value={sub.id}>
+                      {sub.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div>
               <label className="block mb-2">النوع *</label>
               <select
@@ -393,7 +437,7 @@ const AdminEditManuscript: React.FC = () => {
               rows={3}
               className="w-full border p-3 rounded text-right"
               required
-              placeholder="أدخل الوصف المختصر"
+              placeholder="وصف مختصر للمؤلفة"
             ></textarea>
           </div>
           <div>
@@ -404,13 +448,13 @@ const AdminEditManuscript: React.FC = () => {
               onChange={handleChange}
               rows={6}
               className="w-full border p-3 rounded text-right"
-              placeholder="محتوى المخطوطة (اختياري)"
+              placeholder="محتوى تفصيلي (اختياري)"
             ></textarea>
           </div>
           <div className="flex justify-end gap-4">
             <button
               type="button"
-              onClick={() => navigate("/admin/manuscripts")}
+              onClick={() => navigate("/admin/about-chinguit")}
               className="px-6 py-2 border rounded"
             >
               إلغاء
@@ -420,7 +464,7 @@ const AdminEditManuscript: React.FC = () => {
               disabled={isSubmitting}
               className="bg-green-600 text-white px-6 py-2 rounded"
             >
-              {isSubmitting ? "جاري التحديث..." : "تحديث المخطوطة"}
+              {isSubmitting ? "جاري التحديث..." : "تحديث المؤلفة"}
             </button>
           </div>
         </form>
@@ -429,4 +473,4 @@ const AdminEditManuscript: React.FC = () => {
   );
 };
 
-export default AdminEditManuscript;
+export default AdminEditAboutChinguit;

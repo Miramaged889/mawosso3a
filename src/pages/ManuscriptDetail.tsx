@@ -1,16 +1,13 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import { useEntry, useEntries } from "../hooks/useApi";
-import { ContentEntry } from "../services/api";
+import { useEntry } from "../hooks/useApi";
 import Breadcrumb from "../components/Breadcrumb";
-import ItemCard from "../components/ItemCard";
 
 const ManuscriptDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const numericId = id ? parseInt(id) : null;
 
   const { data: manuscript, error } = useEntry(numericId);
-  const { data: relatedData } = useEntries();
 
   // Debug image URLs
   React.useEffect(() => {
@@ -26,34 +23,6 @@ const ManuscriptDetail: React.FC = () => {
       );
     }
   }, [manuscript]);
-
-  const relatedItems = React.useMemo(() => {
-    if (!relatedData || !manuscript) return [];
-    const allEntries = (relatedData as ContentEntry[]) || [];
-
-    // Filter by kind 8 (مخطوطه) and exclude current manuscript
-    const filteredManuscripts = allEntries.filter(
-      (item: ContentEntry) => item.id !== numericId && item.kind === 8
-    );
-
-    // If we have manuscripts with same category, prioritize them
-    const sameCategoryManuscripts = filteredManuscripts.filter(
-      (item: ContentEntry) =>
-        typeof item.category === "object" &&
-        typeof manuscript.category === "object" &&
-        item.category?.id === manuscript.category?.id
-    );
-
-    // Return same category manuscripts first, then other manuscripts
-    const relatedManuscripts = [
-      ...sameCategoryManuscripts,
-      ...filteredManuscripts.filter(
-        (item) => !sameCategoryManuscripts.includes(item)
-      ),
-    ];
-
-    return relatedManuscripts.slice(0, 3);
-  }, [relatedData, manuscript, numericId]);
 
   // Enhanced image URL formatting
   const getImageUrl = (url: string | null | undefined) => {
@@ -107,10 +76,13 @@ const ManuscriptDetail: React.FC = () => {
   const getKindName = () => {
     if (manuscript?.kind) {
       const kindNames: { [key: number]: string } = {
-        5: "كتاب",
-        6: "محتوي",
         7: "منشور",
         8: "مخطوطه",
+        9: "عن شنقيط",
+        10: "تحقيقات",
+        11: "مؤلفات",
+        12: "كتاب",
+        13: "محتوي",
       };
       return kindNames[manuscript?.kind] || "غير محدد";
     }
@@ -310,20 +282,6 @@ const ManuscriptDetail: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {/* Related Items */}
-          {relatedItems.length > 0 && (
-            <div>
-              <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-8 text-center">
-                مخطوطات ذات صلة
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {relatedItems.map((item) => (
-                  <ItemCard key={item.id} item={item} />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

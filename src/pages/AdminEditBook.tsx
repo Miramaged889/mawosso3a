@@ -57,8 +57,7 @@ const AdminEditBook: React.FC = () => {
     kinds?.filter(
       (kind) =>
         kind.name === "كتاب" ||
-        kind.name === "محتوي" ||
-        kind.name === "عن شنقيط"
+        kind.name === "محتوي"
     ) || [];
 
   // Redirect if not authenticated
@@ -267,19 +266,7 @@ const AdminEditBook: React.FC = () => {
         <h1 className="text-2xl font-bold mb-6">تعديل العنصر</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block mb-2">نوع المحتوى *</label>
-              <select
-                name="entry_type"
-                value={formData.entry_type}
-                onChange={handleChange}
-                className="w-full border p-3 rounded text-right"
-                required
-              >
-                <option value="book">كتاب</option>
-                <option value="investigation">تحقيق</option>
-              </select>
-            </div>
+            
             <div>
               <label className="block mb-2">العنوان *</label>
               <input

@@ -75,7 +75,7 @@ const Header = () => {
             <Link
               to="/about-chinguit"
               className={`transition-colors ${
-                isActive("/books-on-chinguitt")
+                isActive("/about-chinguit")
                   ? "text-heritage-gold font-semibold"
                   : "text-dark-gray hover:text-heritage-gold"
               }`}

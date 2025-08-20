@@ -46,14 +46,10 @@ const AdminAddBook: React.FC = () => {
   // Filter out manuscripts category (ID 10) from available categories
   const availableCategories = categories?.filter((cat) => cat.id !== 10) || [];
 
-  // Filter kinds for books (كتاب or محتوي or عن شنقيط)
+  // Filter kinds for books (كتاب or محتوي)
   const availableKinds =
-    kinds?.filter(
-      (kind) =>
-        kind.name === "كتاب" ||
-        kind.name === "محتوي" ||
-        kind.name === "عن شنقيط"
-    ) || [];
+    kinds?.filter((kind) => kind.name === "كتاب" || kind.name === "محتوي") ||
+    [];
 
   // Redirect if not authenticated
   React.useEffect(() => {

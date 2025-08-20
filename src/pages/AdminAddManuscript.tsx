@@ -31,9 +31,7 @@ const AdminAddManuscript: React.FC = () => {
   const manuscriptCategories = categories?.filter((cat) => cat.id === 10) || [];
 
   // Filter kinds for manuscripts (مخطوطه)
-  const availableKinds =
-    kinds?.filter((kind) => kind.name === "مخطوطه" || kind.name === "عن شنقيط") ||
-    [];
+  const availableKinds = kinds?.filter((kind) => kind.name === "مخطوطه") || [];
 
   useEffect(() => {
     if (initialized && !isAuthenticated) {

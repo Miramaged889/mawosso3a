@@ -24,8 +24,6 @@ const Admin: React.FC = () => {
     }
   };
 
-  
-
   const handleLogout = () => {
     logout();
     setShowLogin(true);
@@ -151,21 +149,41 @@ const Admin: React.FC = () => {
       description: "إضافة وتعديل وحذف المخطوطات",
       icon: "📜",
       link: "/admin/manuscripts",
-      count: "6 مخطوطات",
+      
     },
     {
       title: "إدارة الكتب والمحتوى",
-      description: "إضافة وتعديل وحذف الكتب والتحقيقات والمؤلفات",
+      description: "إضافة وتعديل وحذف الكتب والمحتوى",
       icon: "📚",
       link: "/admin/books",
-      count: "9 عناصر",
+    },
+    {
+      title: "إدارة المؤلفات",
+      description: "إضافة وتعديل وحذف المؤلفات",
+      icon: "✍️",
+      link: "/admin/authors",
+      
+    },
+    {
+      title: "إدارة التحقيقات",
+      description: "إضافة وتعديل وحذف التحقيقات",
+      icon: "🔍",
+      link: "/admin/investigations",
+      
+    },
+    {
+      title: "مؤلفات عن شنقيط",
+      description: "إضافة وتعديل وحذف مؤلفات عن شنقيط",
+      icon: "🏛️",
+      link: "/admin/about-chinguit",
+      
     },
     {
       title: "إدارة المنشورات",
       description: "إضافة وتعديل ونشر المحتوى والمقالات والأخبار",
       icon: "📝",
       link: "/admin/posts",
-      count: "12 منشور",
+      
     },
   ];
 
@@ -195,7 +213,7 @@ const Admin: React.FC = () => {
         </div>
 
         {/* Admin Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
           {adminSections.map((section, index) => (
             <Link
               to={section.link}
@@ -211,38 +229,9 @@ const Admin: React.FC = () => {
               <p className="text-medium-gray mb-4 leading-relaxed">
                 {section.description}
               </p>
-              <div className="text-heritage-gold font-semibold">
-                {section.count}
-              </div>
+              
             </Link>
           ))}
-        </div>
-
-        {/* Quick Actions */}
-        <div className="mt-16 text-center">
-          <h2 className="text-2xl font-amiri font-bold text-blue-gray mb-8">
-            إجراءات سريعة
-          </h2>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/admin/manuscripts/add"
-              className="bg-olive-green text-white px-8 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
-            >
-              إضافة مخطوطة جديدة
-            </Link>
-            <Link
-              to="/admin/books/add"
-              className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
-            >
-              إضافة كتاب جديد
-            </Link>
-            <Link
-              to="/admin/posts/add"
-              className="bg-heritage-gold text-white px-8 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
-            >
-              إضافة منشور جديد
-            </Link>
-          </div>
         </div>
       </div>
     </div>

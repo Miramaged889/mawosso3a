@@ -126,10 +126,13 @@ const ScientificNewsDetail: React.FC = () => {
   const getKindName = () => {
     if (item.kind) {
       const kindNames: { [key: number]: string } = {
-        5: "كتاب",
-        6: "محتوي",
         7: "منشور",
         8: "مخطوطه",
+        9: "عن شنقيط",
+        10: "تحقيقات",
+        11: "مؤلفات",
+        12: "كتاب",
+        13: "محتوي",
       };
       return kindNames[item.kind] || "غير محدد";
     }
@@ -211,7 +214,7 @@ const ScientificNewsDetail: React.FC = () => {
                   </div>
                   <div className="text-medium-gray text-sm">اللغة</div>
                 </div>
-            
+
               </div>
 
               {/* Additional Details */}
