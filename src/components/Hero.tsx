@@ -8,7 +8,7 @@ const Hero = () => {
       <div className="container mx-auto px-4 text-center">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-6xl font-louguiya font-bold text-blue-gray mb-6">
-            Chinguitipedia
+            الموسوعة الشنقيطية
           </h1>
           <p className="text-xl md:text-2xl text-dark-gray mb-8 leading-relaxed">
             موقع يهتم بجمع التراث العلمي لعلماء وكتاب بلاد شنقيط (موريتانيا)،

@@ -27,8 +27,8 @@ const AdminAddManuscript: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Filter categories to only show manuscripts category (ID 10)
-  const manuscriptCategories = categories?.filter((cat) => cat.id === 10) || [];
+  // Use all categories
+  const allCategories = categories || [];
 
   // Filter kinds for manuscripts (مخطوطه)
   const availableKinds = kinds?.filter((kind) => kind.name === "مخطوطه") || [];
@@ -213,7 +213,7 @@ const AdminAddManuscript: React.FC = () => {
                 required
               >
                 <option value="">اختر التصنيف</option>
-                {manuscriptCategories?.map((cat) => (
+                {allCategories?.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
                   </option>
