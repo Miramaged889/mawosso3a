@@ -38,6 +38,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
         6: "محتوي",
         7: "منشور",
         8: "مخطوطه",
+        9: "عن شنقيط",
       };
       return kindNames[item.kind] || "غير محدد";
     }
@@ -64,11 +65,14 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
     return `${url}`;
   };
 
-
-
-  // Determine the correct route based on entry type and category
+  // Determine the correct route based on kind and category
   const getDetailRoute = () => {
-    // If no entry_type, try to determine from category ID
+    // First check by kind (مؤلفات عن شنقيط)
+    if (item.kind === 9) {
+      return `/about-chinguit/${item.id}`;
+    }
+
+    // If no kind or kind is not 9, try to determine from category ID
     let categoryId = null;
 
     // Get category ID from different possible formats
@@ -76,6 +80,10 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
       categoryId = item.category.id;
     } else if (typeof item.category === "number") {
       categoryId = item.category;
+    }
+
+    if (item.kind === 9) {
+      return `/about-chinguit/${item.id}`;
     }
 
     // Route based on category ID
@@ -86,7 +94,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
 
     if (categoryId === 9) {
       // مؤلفات عن شنقيط
-      return `/books-on-chinguitt/${item.id}`;
+      return `/about-chinguit/${item.id}`;
     }
 
     if (categoryId === 8) {

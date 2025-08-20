@@ -73,6 +73,18 @@ const Header = () => {
               المخطوطات
             </Link>
             <Link
+              to="/about-chinguit"
+              className={`transition-colors ${
+                isActive("/books-on-chinguitt")
+                  ? "text-heritage-gold font-semibold"
+                  : "text-dark-gray hover:text-heritage-gold"
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              عن شنقيط
+            </Link>
+
+            <Link
               to="/about"
               className={`transition-colors ${
                 isActive("/about")

@@ -5,55 +5,38 @@ import { ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 import ItemCard from "../components/ItemCard";
 
-const ManuscriptDetail: React.FC = () => {
+const AboutChinguitDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const numericId = id ? parseInt(id) : null;
 
-  const { data: manuscript, error } = useEntry(numericId);
+  const { data: entry, error } = useEntry(numericId);
   const { data: relatedData } = useEntries();
 
-  // Debug image URLs
-  React.useEffect(() => {
-    if (manuscript) {
-      console.log("Manuscript cover_image_link:", manuscript.cover_image_link);
-      console.log(
-        "Manuscript full URL:",
-        manuscript.cover_image_link
-          ? manuscript.cover_image_link.startsWith("http")
-            ? manuscript.cover_image_link
-            : `https://chinguitipedia.alldev.org${manuscript.cover_image_link}`
-          : null
-      );
-    }
-  }, [manuscript]);
-
   const relatedItems = React.useMemo(() => {
-    if (!relatedData || !manuscript) return [];
+    if (!relatedData || !entry) return [];
     const allEntries = (relatedData as ContentEntry[]) || [];
 
-    // Filter by kind 8 (مخطوطه) and exclude current manuscript
-    const filteredManuscripts = allEntries.filter(
-      (item: ContentEntry) => item.id !== numericId && item.kind === 8
+    // Filter by kind 9 (مؤلفات عن شنقيط) and exclude current entry
+    const filteredEntries = allEntries.filter(
+      (item: ContentEntry) => item.id !== numericId && item.kind === 9
     );
 
-    // If we have manuscripts with same category, prioritize them
-    const sameCategoryManuscripts = filteredManuscripts.filter(
+    // If we have entries with same category, prioritize them
+    const sameCategoryEntries = filteredEntries.filter(
       (item: ContentEntry) =>
         typeof item.category === "object" &&
-        typeof manuscript.category === "object" &&
-        item.category?.id === manuscript.category?.id
+        typeof entry.category === "object" &&
+        item.category?.id === entry.category?.id
     );
 
-    // Return same category manuscripts first, then other manuscripts
-    const relatedManuscripts = [
-      ...sameCategoryManuscripts,
-      ...filteredManuscripts.filter(
-        (item) => !sameCategoryManuscripts.includes(item)
-      ),
+    // Return same category entries first, then other entries
+    const relatedEntries = [
+      ...sameCategoryEntries,
+      ...filteredEntries.filter((item) => !sameCategoryEntries.includes(item)),
     ];
 
-    return relatedManuscripts.slice(0, 3);
-  }, [relatedData, manuscript, numericId]);
+    return relatedEntries.slice(0, 3);
+  }, [relatedData, entry, numericId]);
 
   // Enhanced image URL formatting
   const getImageUrl = (url: string | null | undefined) => {
@@ -79,12 +62,9 @@ const ManuscriptDetail: React.FC = () => {
 
   // Get category name safely
   const getCategoryName = () => {
-    if (
-      typeof manuscript?.category === "object" &&
-      manuscript?.category?.name
-    ) {
-      return manuscript?.category.name;
-    } else if (typeof manuscript?.category === "number") {
+    if (typeof entry?.category === "object" && entry?.category?.name) {
+      return entry?.category.name;
+    } else if (typeof entry?.category === "number") {
       // Map category IDs to names
       const categoryNames: { [key: number]: string } = {
         1: "العلوم الشرعية",
@@ -98,41 +78,42 @@ const ManuscriptDetail: React.FC = () => {
         9: "مؤلفات عن شنقيط",
         10: "مخطوطات",
       };
-      return categoryNames[manuscript?.category] || "غير محدد";
+      return categoryNames[entry?.category] || "غير محدد";
     }
     return "غير محدد";
   };
 
   // Get kind name safely
   const getKindName = () => {
-    if (manuscript?.kind) {
+    if (entry?.kind) {
       const kindNames: { [key: number]: string } = {
         5: "كتاب",
         6: "محتوي",
         7: "منشور",
         8: "مخطوطه",
+        9: "مؤلفات عن شنقيط",
       };
-      return kindNames[manuscript?.kind] || "غير محدد";
+      return kindNames[entry?.kind] || "غير محدد";
     }
     return "غير محدد";
   };
 
-  if (error || !manuscript) {
+  if (error || !entry) {
     return (
       <div className="min-h-screen bg-ivory flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">❌</div>
           <h2 className="text-3xl font-amiri font-bold text-blue-gray mb-4">
-            المخطوطة غير موجودة
+            المؤلفة غير موجودة
           </h2>
           <p className="text-medium-gray mb-8">
-            عذراً، لم نتمكن من العثور على المخطوطة المطلوبة.
+            عذراً، لم نتمكن من العثور على المؤلفة المطلوبة.
           </p>
           <Link
-            to="/manuscripts"
+            to="/about-chinguit"
             className="bg-olive-green text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
           >
-            العودة إلى المخطوطات
+            العودة إلى مؤلفات عن شنقيط
           </Link>
         </div>
       </div>
@@ -140,12 +121,12 @@ const ManuscriptDetail: React.FC = () => {
   }
 
   const breadcrumbItems = [
-    { label: "المخطوطات", path: "/manuscripts" },
-    { label: manuscript.title },
+    { label: "مؤلفات عن شنقيط", path: "/about-chinguit" },
+    { label: entry.title },
   ];
 
-  const coverImageUrl = getImageUrl(manuscript.cover_image_link);
-  const pdfFileUrl = getPdfUrl(manuscript.pdf_file_link);
+  const coverImageUrl = getImageUrl(entry.cover_image_link);
+  const pdfFileUrl = getPdfUrl(entry.pdf_file_link);
 
   // Handle PDF download
   const handlePdfDownload = () => {
@@ -158,8 +139,8 @@ const ManuscriptDetail: React.FC = () => {
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: manuscript?.title || "مخطوطة من شنقيط",
-        text: manuscript?.content || "",
+        title: entry?.title || "مؤلفة عن شنقيط",
+        text: entry?.content || "",
         url: window.location.href,
       });
     } else {
@@ -181,7 +162,7 @@ const ManuscriptDetail: React.FC = () => {
               <div className="h-64 md:h-80 overflow-hidden relative group">
                 <img
                   src={coverImageUrl}
-                  alt={manuscript.title}
+                  alt={entry.title}
                   className="w-full h-full object-contain bg-gray-50 group-hover:scale-105 transition-transform duration-300"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -193,7 +174,7 @@ const ManuscriptDetail: React.FC = () => {
               </div>
             ) : (
               <div className="h-64 md:h-80 bg-gray-50 flex items-center justify-center">
-                <div className="text-gray-400 text-6xl">📜</div>
+                <div className="text-gray-400 text-6xl">🏛️</div>
               </div>
             )}
 
@@ -208,34 +189,34 @@ const ManuscriptDetail: React.FC = () => {
                     {getKindName()}
                   </span>
                 </div>
-                <span className="text-medium-gray">{manuscript.date}</span>
+                <span className="text-medium-gray">{entry.date}</span>
               </div>
 
               {/* Title and Author */}
               <h1 className="text-3xl md:text-4xl font-amiri font-bold text-blue-gray mb-4 leading-tight">
-                {manuscript.title}
+                {entry.title}
               </h1>
               <h2 className="text-xl text-heritage-gold font-semibold mb-6">
-                {manuscript.author}
+                {entry.author}
               </h2>
 
               {/* Metadata */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 p-6 bg-ivory rounded-lg">
                 <div className="text-center">
                   <div className="text-xl font-bold text-olive-green">
-                    {manuscript.page_count || manuscript.pages || "غير محدد"}
+                    {entry.page_count || entry.pages || "غير محدد"}
                   </div>
                   <div className="text-medium-gray text-sm">عدد المواد</div>
                 </div>
                 <div className="text-center">
                   <div className="text-xl font-bold text-olive-green">
-                    {manuscript.size || "غير محدد"}
+                    {entry.size || "غير محدد"}
                   </div>
                   <div className="text-medium-gray text-sm">الحجم</div>
                 </div>
                 <div className="text-center">
                   <div className="text-xl font-bold text-olive-green">
-                    {manuscript.language || "غير محدد"}
+                    {entry.language || "غير محدد"}
                   </div>
                   <div className="text-medium-gray text-sm">اللغة</div>
                 </div>
@@ -250,7 +231,7 @@ const ManuscriptDetail: React.FC = () => {
                 <div>
                   <h4 className="font-semibold text-blue-gray mb-2">الحالة</h4>
                   <p className="text-medium-gray">
-                    {manuscript.published ? "منشور" : "غير منشور"}
+                    {entry.published ? "منشور" : "غير منشور"}
                   </p>
                 </div>
               </div>
@@ -258,10 +239,10 @@ const ManuscriptDetail: React.FC = () => {
               {/* Description */}
               <div className="prose prose-lg max-w-none">
                 <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
-                  وصف المخطوطة
+                  وصف المؤلفة
                 </h3>
                 <p className="text-medium-gray leading-relaxed mb-6">
-                  {manuscript.content}
+                  {entry.content || entry.description}
                 </p>
               </div>
 
@@ -315,7 +296,7 @@ const ManuscriptDetail: React.FC = () => {
           {relatedItems.length > 0 && (
             <div>
               <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-8 text-center">
-                مخطوطات ذات صلة
+                مؤلفات ذات صلة
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {relatedItems.map((item) => (
@@ -330,4 +311,4 @@ const ManuscriptDetail: React.FC = () => {
   );
 };
 
-export default ManuscriptDetail;
+export default AboutChinguitDetail;

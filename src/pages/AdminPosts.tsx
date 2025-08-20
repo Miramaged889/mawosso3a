@@ -28,8 +28,8 @@ const AdminPosts: React.FC = () => {
   // Filter posts based on kind field (بوست)
   const posts = (Array.isArray(entriesData) ? entriesData : []).filter(
     (item: any) => {
-      // Only include items with kind 7 (بوست)
-      return item.kind === 7;
+      // Only include items with kind 7 (منشور) or 9 (عن شنقيط)
+      return item.kind === 7 || item.kind === 9;
     }
   );
 
@@ -184,7 +184,11 @@ const AdminPosts: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm">
-                          {post.kind === 7 ? "منشور" : post.kind || "غير محدد"}
+                          {post.kind === 7
+                            ? "منشور"
+                            : post.kind === 9
+                            ? "عن شنقيط"
+                            : post.kind || "غير محدد"}
                         </span>
                       </td>
 

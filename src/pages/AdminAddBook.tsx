@@ -46,10 +46,14 @@ const AdminAddBook: React.FC = () => {
   // Filter out manuscripts category (ID 10) from available categories
   const availableCategories = categories?.filter((cat) => cat.id !== 10) || [];
 
-  // Filter kinds for books (كتاب or محتوي)
+  // Filter kinds for books (كتاب or محتوي or عن شنقيط)
   const availableKinds =
-    kinds?.filter((kind) => kind.name === "كتاب" || kind.name === "محتوي") ||
-    [];
+    kinds?.filter(
+      (kind) =>
+        kind.name === "كتاب" ||
+        kind.name === "محتوي" ||
+        kind.name === "عن شنقيط"
+    ) || [];
 
   // Redirect if not authenticated
   React.useEffect(() => {
@@ -214,284 +218,216 @@ const AdminAddBook: React.FC = () => {
   return (
     <div className="min-h-screen bg-ivory">
       <Breadcrumb items={breadcrumbItems} />
-
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-amiri font-bold text-blue-gray mb-2">
-              إضافة عنصر جديد
-            </h1>
-            <p className="text-medium-gray">
-              أدخل معلومات الكتاب أو المخطوطة أو التحقيق الجديد
-            </p>
+      <div className="container mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6">إضافة عنصر جديد</h1>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block mb-2">العنوان *</label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+                required
+                placeholder="أدخل العنوان"
+              />
+            </div>
+            <div>
+              <label className="block mb-2">المؤلف/المحقق *</label>
+              <input
+                type="text"
+                name="author"
+                value={formData.author}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+                required
+                placeholder="أدخل اسم المؤلف أو المحقق"
+              />
+            </div>
+            <div>
+              <label className="block mb-2">التصنيف الرئيسي *</label>
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+                required
+              >
+                <option value="">اختر التصنيف</option>
+                {availableCategories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {availableSubcategories.length > 0 && (
+              <div>
+                <label className="block mb-2">التصنيف الفرعي</label>
+                <select
+                  name="subcategory"
+                  value={formData.subcategory}
+                  onChange={handleChange}
+                  className="w-full border p-3 rounded text-right"
+                >
+                  <option value="">اختر التصنيف الفرعي (اختياري)</option>
+                  {availableSubcategories.map((sub) => (
+                    <option key={sub.id} value={sub.id}>
+                      {sub.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div>
+              <label className="block mb-2">النوع *</label>
+              <select
+                name="kind"
+                value={formData.kind}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+                required
+              >
+                <option value="">اختر النوع</option>
+                {availableKinds.map((kind) => (
+                  <option key={kind.id} value={kind.id}>
+                    {kind.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block mb-2">التاريخ</label>
+              <input
+                type="date"
+                name="date"
+                value={formData.date}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+              />
+            </div>
+            <div>
+              <label className="block mb-2">عدد المواد</label>
+              <input
+                type="number"
+                name="page_count"
+                value={formData.page_count}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+                min="1"
+                placeholder="اتركه فارغًا إذا كان غير معروف"
+              />
+            </div>
+            <div>
+              <label className="block mb-2">الحجم</label>
+              <input
+                type="text"
+                name="size"
+                value={formData.size}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+                placeholder="مثال: 2.5 MB"
+              />
+            </div>
+            <div>
+              <label className="block mb-2">اللغة</label>
+              <input
+                type="text"
+                name="language"
+                value={formData.language}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+              />
+            </div>
+            <div>
+              <label className="block mb-2">الكلمات المفتاحية</label>
+              <input
+                type="text"
+                name="tags"
+                value={formData.tags}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+                placeholder="كلمات مفتاحية مفصولة بفواصل"
+              />
+            </div>
           </div>
 
-          {/* Form */}
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Title */}
-                <div>
-                  <label className="block text-sm font-medium text-blue-gray mb-2">
-                    العنوان *
-                  </label>
-                  <input
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right"
-                    placeholder="أدخل العنوان"
-                  />
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div className="border p-4 rounded bg-gray-50">
+              <label className="block mb-2 font-semibold">
+                رابط صورة الغلاف
+              </label>
+              <input
+                type="text"
+                name="cover_image_link"
+                value={formData.cover_image_link}
+                onChange={handleChange}
+                className="w-full mb-2 p-3 border rounded text-right"
+                placeholder="https://example.com/cover-image.jpg"
+              />
+              <p className="text-sm text-gray-600 mt-1">
+                أدخل رابط مباشر لصورة الغلاف
+              </p>
+            </div>
 
-                {/* Author */}
-                <div>
-                  <label className="block text-sm font-medium text-blue-gray mb-2">
-                    المؤلف/المحقق *
-                  </label>
-                  <input
-                    type="text"
-                    name="author"
-                    value={formData.author}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right"
-                    placeholder="أدخل اسم المؤلف أو المحقق"
-                  />
-                </div>
-
-                {/* Category */}
-                <div>
-                  <label className="block text-sm font-medium text-blue-gray mb-2">
-                    التصنيف الرئيسي *
-                  </label>
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right"
-                  >
-                    <option value="">اختر التصنيف</option>
-                    {availableCategories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Subcategory */}
-                {availableSubcategories.length > 0 && (
-                  <div>
-                    <label className="block text-sm font-medium text-blue-gray mb-2">
-                      التصنيف الفرعي
-                    </label>
-                    <select
-                      name="subcategory"
-                      value={formData.subcategory}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right"
-                    >
-                      <option value="">اختر التصنيف الفرعي (اختياري)</option>
-                      {availableSubcategories.map((sub) => (
-                        <option key={sub.id} value={sub.id}>
-                          {sub.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                {/* Date */}
-                <div>
-                  <label className="block text-sm font-medium text-blue-gray mb-2">
-                    التاريخ *
-                  </label>
-                  <input
-                    type="date"
-                    name="date"
-                    value={formData.date}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right"
-                  />
-                </div>
-
-                {/* Page Count */}
-                <div>
-                  <label className="block text-sm font-medium text-blue-gray mb-2">
-                    عدد المواد
-                  </label>
-                  <input
-                    type="number"
-                    name="page_count"
-                    value={formData.page_count}
-                    onChange={handleChange}
-                    min="1"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right"
-                    placeholder="اتركه فارغًا إذا كان غير معروف"
-                  />
-                </div>
-
-                {/* Size */}
-                <div>
-                  <label className="block text-sm font-medium text-blue-gray mb-2">
-                    الحجم (ميجابايت)
-                  </label>
-                  <input
-                    type="number"
-                    name="size"
-                    value={formData.size}
-                    onChange={handleChange}
-                    min="1"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right"
-                    placeholder="اتركه فارغًا إذا كان غير معروف"
-                  />
-                </div>
-
-                {/* Kind */}
-                <div>
-                  <label className="block text-sm font-medium text-blue-gray mb-2">
-                    النوع *
-                  </label>
-                  <select
-                    name="kind"
-                    value={formData.kind}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right"
-                  >
-                    <option value="">اختر النوع</option>
-                    {availableKinds.map((kind) => (
-                      <option key={kind.id} value={kind.id}>
-                        {kind.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Language */}
-                <div>
-                  <label className="block text-sm font-medium text-blue-gray mb-2">
-                    اللغة
-                  </label>
-                  <input
-                    type="text"
-                    name="language"
-                    value={formData.language}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right"
-                  />
-                </div>
-
-                {/* Tags */}
-                <div>
-                  <label className="block text-sm font-medium text-blue-gray mb-2">
-                    الكلمات المفتاحية
-                  </label>
-                  <input
-                    type="text"
-                    name="tags"
-                    value={formData.tags}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right"
-                    placeholder="كلمات مفتاحية مفصولة بفواصل"
-                  />
-                </div>
-              </div>
-
-              {/* Link Input Section */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <div className="border p-4 rounded bg-gray-50">
-                  <label className="block mb-2 font-semibold">
-                    رابط صورة الغلاف
-                  </label>
-                  <input
-                    type="text"
-                    name="cover_image_link"
-                    value={formData.cover_image_link}
-                    onChange={handleChange}
-                    className="w-full mb-2 p-3 border rounded text-right"
-                    placeholder="https://example.com/cover-image.jpg"
-                  />
-                  <p className="text-sm text-gray-600 mt-1">
-                    أدخل رابط مباشر لصورة الغلاف
-                  </p>
-                </div>
-
-                <div className="border p-4 rounded bg-gray-50">
-                  <label className="block mb-2 font-semibold">
-                    رابط ملف PDF
-                  </label>
-                  <input
-                    type="text"
-                    name="pdf_file_link"
-                    value={formData.pdf_file_link}
-                    onChange={handleChange}
-                    className="w-full mb-2 p-3 border rounded text-right"
-                    placeholder="https://example.com/document.pdf"
-                  />
-                  <p className="text-sm text-gray-600 mt-1">
-                    أدخل رابط مباشر لملف PDF
-                  </p>
-                </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-blue-gray mb-2">
-                  الوصف المختصر *
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  required
-                  rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right resize-vertical"
-                  placeholder="وصف مختصر للمحتوى"
-                />
-              </div>
-
-              {/* Content */}
-              <div>
-                <label className="block text-sm font-medium text-blue-gray mb-2">
-                  المحتوى
-                </label>
-                <textarea
-                  name="content"
-                  value={formData.content}
-                  onChange={handleChange}
-                  rows={6}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-olive-green transition-colors text-right resize-vertical"
-                  placeholder="محتوى تفصيلي (اختياري)"
-                />
-              </div>
-
-              {/* Submit Button */}
-              <div className="flex justify-end space-x-4 space-x-reverse">
-                <button
-                  type="button"
-                  onClick={() => navigate("/admin/books")}
-                  className="px-6 py-3 border border-gray-300 rounded-lg text-medium-gray hover:bg-gray-50 transition-colors"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="bg-olive-green text-white px-8 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? "جاري الحفظ..." : "حفظ العنصر"}
-                </button>
-              </div>
-            </form>
+            <div className="border p-4 rounded bg-gray-50">
+              <label className="block mb-2 font-semibold">رابط ملف PDF</label>
+              <input
+                type="text"
+                name="pdf_file_link"
+                value={formData.pdf_file_link}
+                onChange={handleChange}
+                className="w-full mb-2 p-3 border rounded text-right"
+                placeholder="https://example.com/document.pdf"
+              />
+              <p className="text-sm text-gray-600 mt-1">
+                أدخل رابط مباشر لملف PDF
+              </p>
+            </div>
           </div>
-        </div>
+
+          <div>
+            <label className="block mb-2">الوصف المختصر *</label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              rows={3}
+              className="w-full border p-3 rounded text-right"
+              required
+              placeholder="وصف مختصر للمحتوى"
+            ></textarea>
+          </div>
+          <div>
+            <label className="block mb-2">المحتوى</label>
+            <textarea
+              name="content"
+              value={formData.content}
+              onChange={handleChange}
+              rows={6}
+              className="w-full border p-3 rounded text-right"
+              placeholder="محتوى تفصيلي (اختياري)"
+            ></textarea>
+          </div>
+          <div className="flex justify-end gap-4">
+            <button
+              type="button"
+              onClick={() => navigate("/admin/books")}
+              className="px-6 py-2 border rounded"
+            >
+              إلغاء
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-green-600 text-white px-6 py-2 rounded"
+            >
+              {isSubmitting ? "جاري الحفظ..." : "حفظ العنصر"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

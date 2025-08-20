@@ -6,8 +6,7 @@ import ItemCard from "../components/ItemCard";
 import SearchBar from "../components/SearchBar";
 import Breadcrumb from "../components/Breadcrumb";
 
-
-const Manuscripts: React.FC = () => {
+const AboutChinguit: React.FC = () => {
   const [searchParams] = useSearchParams();
   const categoryFromUrl = searchParams.get("category");
   const subcategoryFromUrl = searchParams.get("subcategory");
@@ -20,25 +19,26 @@ const Manuscripts: React.FC = () => {
   );
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch manuscripts from API - filter by kind 8 (مخطوطه)
+  // Fetch entries with kind 9 (مؤلفات عن شنقيط)
   const { data: entriesData, loading, error, refetch } = useEntries();
 
   // Fetch subcategories
   const { data: subcategories, loading: subcategoriesLoading } =
     useSubcategories();
 
-  // Filter manuscripts by kind 8 (مخطوطه)
-  const manuscripts = useMemo(() => {
+  // Filter entries by kind 9 (مؤلفات عن شنقيط)
+  const aboutChinguitEntries = useMemo(() => {
     const results = entriesData || [];
-
+    console.log("API Data:", results);
     const allEntries = Array.isArray(results)
       ? (results as ContentEntry[])
       : [];
 
-    // Filter by kind 8 (مخطوطه)
-    const filteredManuscripts = allEntries.filter((entry) => entry.kind === 8);
+    // Filter by kind 9 (مؤلفات عن شنقيط)
+    const filteredEntries = allEntries.filter((entry) => entry.kind === 9);
+    console.log("Filtered About Chinguit Entries:", filteredEntries);
 
-    return filteredManuscripts;
+    return filteredEntries;
   }, [entriesData]);
 
   // Get available subcategories for the selected category
@@ -50,17 +50,17 @@ const Manuscripts: React.FC = () => {
     }
 
     return subcategories.filter((sub) => {
-      const category = manuscripts.find(
+      const category = aboutChinguitEntries.find(
         (m) =>
           typeof m.category === "object" &&
           m.category?.name === selectedCategory
       )?.category;
       return typeof category === "object" && sub.category === category.id;
     });
-  }, [subcategories, selectedCategory, manuscripts]);
+  }, [subcategories, selectedCategory, aboutChinguitEntries]);
 
   const filteredItems = useMemo(() => {
-    let filtered = manuscripts;
+    let filtered = aboutChinguitEntries;
 
     // Apply category filter
     if (selectedCategory !== "الكل") {
@@ -91,7 +91,12 @@ const Manuscripts: React.FC = () => {
     }
 
     return filtered;
-  }, [manuscripts, selectedCategory, selectedSubcategory, searchQuery]);
+  }, [
+    aboutChinguitEntries,
+    selectedCategory,
+    selectedSubcategory,
+    searchQuery,
+  ]);
 
   const categories = [
     "الكل",
@@ -125,7 +130,7 @@ const Manuscripts: React.FC = () => {
     setSelectedSubcategory(subcategory);
   };
 
-  const breadcrumbItems = [{ label: "المخطوطات" }];
+  const breadcrumbItems = [{ label: "مؤلفات عن شنقيط" }];
 
   return (
     <div className="min-h-screen bg-ivory">
@@ -135,11 +140,11 @@ const Manuscripts: React.FC = () => {
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-amiri font-bold text-blue-gray mb-4">
-            مخطوطات الموسوعة الشنقيطية
+            مؤلفات عن شنقيط
           </h1>
           <p className="text-lg text-medium-gray max-w-3xl mx-auto leading-relaxed">
-            اكتشف مجموعتنا النادرة من المخطوطات الإسلامية التراثية المحققة
-            والمدروسة بعناية فائقة
+            اكتشف مجموعة المؤلفات والكتب التي تتحدث عن مدينة شنقيط التاريخية
+            وتراثها الثقافي العريق
           </p>
         </div>
 
@@ -147,7 +152,7 @@ const Manuscripts: React.FC = () => {
         <div className="max-w-2xl mx-auto mb-8">
           <SearchBar
             onSearch={handleSearch}
-            placeholder="ابحث في المخطوطات..."
+            placeholder="ابحث في المؤلفات عن شنقيط..."
           />
         </div>
 
@@ -213,7 +218,7 @@ const Manuscripts: React.FC = () => {
             <span className="font-bold text-heritage-gold">
               {filteredItems.length}
             </span>{" "}
-            مخطوطة
+            مؤلفة
           </p>
 
           {/* Data source indicator */}
@@ -248,22 +253,22 @@ const Manuscripts: React.FC = () => {
           </div>
         )}
 
-        {/* Manuscripts Grid */}
+        {/* Entries Grid */}
         {filteredItems.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredItems.map((manuscript) => (
-              <ItemCard key={manuscript.id} item={manuscript} />
+            {filteredItems.map((entry) => (
+              <ItemCard key={entry.id} item={entry} />
             ))}
           </div>
         ) : (
           !loading && (
             <div className="text-center py-16">
-              <div className="text-6xl mb-4">📜</div>
+              <div className="text-6xl mb-4">📚</div>
               <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
                 لا توجد نتائج
               </h3>
               <p className="text-medium-gray">
-                لم نجد أي مخطوطات تطابق بحثك. جرب كلمات مفتاحية أخرى.
+                لم نجد أي مؤلفات تطابق بحثك. جرب كلمات مفتاحية أخرى.
               </p>
             </div>
           )
@@ -273,4 +278,4 @@ const Manuscripts: React.FC = () => {
   );
 };
 
-export default Manuscripts;
+export default AboutChinguit;

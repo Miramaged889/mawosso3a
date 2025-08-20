@@ -11,6 +11,7 @@ import ManuscriptDetail from "./pages/ManuscriptDetail";
 import Tahqiq from "./pages/Tahqiq";
 import TahqiqDetail from "./pages/TahqiqDetail";
 import BooksOnChinguitt from "./pages/BooksOnChinguitt";
+import AboutChinguit from "./pages/AboutChinguit";
 
 import Search from "./pages/Search";
 import AllEntries from "./pages/AllEntries";
@@ -46,6 +47,7 @@ import ScientificNewsDetail from "./pages/ScientificNewsDetail";
 import ShariaSciencesDetail from "./pages/ShariaSciencesDetail";
 import SocialSciencesDetail from "./pages/SocialSciencesDetail";
 import VarietiesDetail from "./pages/VarietiesDetail";
+import AboutChinguitDetail from "./pages/AboutChinguitDetail";
 
 function App() {
   return (
@@ -64,6 +66,11 @@ function App() {
             <Route
               path="/books-on-chinguitt/:id"
               element={<BooksOnChinguittDetail />}
+            />
+            <Route path="/about-chinguit" element={<AboutChinguit />} />
+            <Route
+              path="/about-chinguit/:id"
+              element={<AboutChinguitDetail />}
             />
 
             <Route path="/search" element={<Search />} />

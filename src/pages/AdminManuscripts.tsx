@@ -29,8 +29,8 @@ const AdminManuscripts: React.FC = () => {
 
     // Filter manuscripts based on kind field (مخطوطه)
     return allEntries.filter((item: ContentEntry) => {
-      // Only include items with kind 8 (مخطوطه)
-      if (item.kind === 8) {
+      // Only include items with kind 8 (مخطوطه) or 9 (عن شنقيط)
+      if (item.kind === 8 || item.kind === 9) {
         return true;
       }
       return false;
@@ -223,6 +223,8 @@ const AdminManuscripts: React.FC = () => {
                           <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm">
                             {manuscript.kind === 8
                               ? "مخطوطه"
+                              : manuscript.kind === 9
+                              ? "عن شنقيط"
                               : manuscript.kind || "غير محدد"}
                           </span>
                         </td>
