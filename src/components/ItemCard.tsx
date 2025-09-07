@@ -12,18 +12,19 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
     if (typeof item.category === "object" && item.category?.name) {
       return item.category.name;
     } else if (typeof item.category === "number") {
-      // Map category IDs to names
+      // Map category IDs to names based on API response
       const categoryNames: { [key: number]: string } = {
-        1: "العلوم الشرعية",
-        2: "العلوم اللغوية",
-        3: "العلوم الاجتماعية",
-        4: "المنوعات",
-        5: "فوائد",
-        6: "مكتبة التعليم النظامي",
-        7: "الأخبار العلمية",
-        8: "تحقيقات الشناقطة",
-        9: "مؤلفات عن شنقيط",
-        10: "مخطوطات",
+        1: "Uncategorized",
+        32: "مقالات",
+        33: "فوائد",
+        34: "الكل",
+        67: "خطب و دروس",
+        99: "الأخبار العلمية",
+        100: "العلوم الشرعية",
+        109: "العلوم اللغوية",
+        118: "علوم أخرى",
+        122: "مكتبة التعليم النظامي",
+        127: "المنوعات",
       };
       return categoryNames[item.category] || "غير محدد";
     }
@@ -32,19 +33,16 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
 
   // Get kind name safely
   const getKindName = () => {
-    if (item.kind) {
-      const kindNames: { [key: number]: string } = {
-        7: "منشور",
-        8: "مخطوطه",
-        9: "عن شنقيط",
-        10: "تحقيقات",
-        11: "مؤلفات",
-        12: "كتاب",
-        13: "محتوي",
-      };
-      return kindNames[item.kind] || "غير محدد";
-    }
-    return "غير محدد";
+    if (!item.kind) return null;
+    const kindNames: { [key: number]: string } = {
+      1: "كتاب",
+      14: "منشور",
+      15: "المولفات",
+      16: "المخطوطات",
+      17: "التحقيقات",
+      18: "عن الشنقيط",
+    };
+    return kindNames[item.kind] || null;
   };
 
   // Get subcategory name safely
@@ -69,14 +67,33 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
 
   // Determine the correct route based on kind and category
   const getDetailRoute = () => {
-    // First check by kind
-    if (item.kind === 9) {
+    // Route based on kind first
+    if (item.kind === 1) {
+      // كتاب
+      return `/books-on-chinguitt/${item.id}`;
+    }
+    if (item.kind === 14) {
+      // منشور
+      return `/varieties/${item.id}`;
+    }
+    if (item.kind === 15) {
+      // المولفات
+      return `/books-on-chinguitt/${item.id}`;
+    }
+    if (item.kind === 16) {
+      // المخطوطات
+      return `/manuscripts/${item.id}`;
+    }
+    if (item.kind === 17) {
+      // التحقيقات
+      return `/tahqiq/${item.id}`;
+    }
+    if (item.kind === 18) {
+      // عن الشنقيط
       return `/about-chinguit/${item.id}`;
     }
 
-    
-
-    // If no specific kind, try to determine from category ID
+    // If no specific kind or kind is not 1, try to determine from category ID
     let categoryId = null;
 
     // Get category ID from different possible formats
@@ -86,55 +103,50 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
       categoryId = item.category;
     }
 
-    // Route based on category ID
-    if (categoryId === 10) {
-      // مخطوطات
-      return `/manuscripts/${item.id}`;
-    }
-
-    if (categoryId === 9) {
-      // مؤلفات عن شنقيط
-      return `/about-chinguit/${item.id}`;
-    }
-
-    if (categoryId === 8) {
-      // تحقيقات الشناقطة
-      return `/tahqiq/${item.id}`;
-    }
-
-    if (categoryId === 7) {
+    // Route based on category ID (updated to match new API categories)
+    if (categoryId === 99) {
       // الأخبار العلمية
       return `/scientific-news/${item.id}`;
     }
 
-    if (categoryId === 6) {
+    if (categoryId === 122) {
       // مكتبة التعليم النظامي
       return `/formal-education-library/${item.id}`;
     }
 
-    if (categoryId === 5) {
+    if (categoryId === 33) {
       // فوائد
       return `/benefits/${item.id}`;
     }
 
-    if (categoryId === 4) {
+    if (categoryId === 127) {
       // المنوعات
       return `/varieties/${item.id}`;
     }
 
-    if (categoryId === 3) {
-      // العلوم الاجتماعية
-      return `/social-sciences/${item.id}`;
-    }
-
-    if (categoryId === 2) {
+    if (categoryId === 109) {
       // العلوم اللغوية
       return `/linguistic-sciences/${item.id}`;
     }
 
-    if (categoryId === 1) {
+    if (categoryId === 100) {
       // العلوم الشرعية
       return `/sharia-sciences/${item.id}`;
+    }
+
+    if (categoryId === 118) {
+      // علوم أخرى
+      return `/social-sciences/${item.id}`;
+    }
+
+    if (categoryId === 67) {
+      // خطب و دروس
+      return `/varieties/${item.id}`;
+    }
+
+    if (categoryId === 32) {
+      // مقالات
+      return `/varieties/${item.id}`;
     }
 
     // Default to books if no specific category is found
@@ -176,10 +188,12 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
             <span className="bg-heritage-gold text-white px-3 py-1 rounded-full text-sm font-semibold">
               {getCategoryName()}
             </span>
-            {/* Kind Badge */}
-            <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm font-semibold">
-              {getKindName()}
-            </span>
+            {/* Kind Badge - only show for books (kind 1) */}
+            {getKindName() && (
+              <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm font-semibold">
+                {getKindName()}
+              </span>
+            )}
             {/* Subcategory Badge */}
             {getSubcategoryName() && (
               <span className="bg-blue-gray text-white px-3 py-1 rounded-full text-sm">

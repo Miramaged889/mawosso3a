@@ -40,7 +40,7 @@ const AdminAddPost: React.FC = () => {
     ) || [];
 
   // Filter out manuscripts category (ID 10) from available categories
-  const availableCategories = categories?.filter((cat) => cat.id !== 10) || [];
+  const availableCategories = categories?.filter((cat) => cat.id !== 14) || [];
 
   // Filter kinds for posts (بوست)
   const availableKinds =

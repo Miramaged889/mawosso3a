@@ -52,12 +52,20 @@ const convertManuscriptToContentEntry = (manuscript: any): ContentEntry => ({
       : ("manuscript" as const),
 });
 
-const convertCategoryToApiFormat = (category: any): Category => ({
-  id: parseInt(category.id.replace(/[^\d]/g, "") || Math.random().toString()),
-  name: category.name,
-  slug: category.slug,
-  description: category.name,
-});
+// Fallback categories based on API response
+const fallbackCategories: Category[] = [
+  { id: 1, name: "Uncategorized", slug: "uncategorized" },
+  { id: 32, name: "مقالات", slug: "مقaلaت" },
+  { id: 33, name: "فوائد", slug: "فوaئd" },
+  { id: 34, name: "الكل", slug: "aلكل" },
+  { id: 67, name: "خطب و دروس", slug: "خطب-و-دروس" },
+  { id: 99, name: "الأخبار العلمية", slug: "aلaخبaر-aلعلمية" },
+  { id: 100, name: "العلوم الشرعية", slug: "aلعلوم-aلشرعية" },
+  { id: 109, name: "العلوم اللغوية", slug: "aلعلوم-aللغوية" },
+  { id: 118, name: "علوم أخرى", slug: "علوم-aخرى" },
+  { id: 122, name: "مكتبة التعليم النظامي", slug: "مكتبة-aلتعليم-aلنظaمي" },
+  { id: 127, name: "المنوعات", slug: "aلمنوعaت" },
+];
 
 // Custom hook for API data fetching with loading and error states
 export const useApiData = <T>(
@@ -87,15 +95,12 @@ export const useApiData = <T>(
 
       setData(result);
     } catch (err) {
-      console.error("API Error:", err); // Debug log
       if (fallbackFunction) {
         try {
           const fallbackData = fallbackFunction();
-          console.log("Using fallback data:", fallbackData); // Debug log
           setData(fallbackData);
           setError(null); // Clear error when using fallback
         } catch (fallbackErr) {
-          console.error("Fallback Error:", fallbackErr); // Debug log
           setError("Failed to load data");
         }
       } else {
@@ -117,7 +122,7 @@ export const useApiData = <T>(
 export const useCategories = () => {
   return useApiData(
     () => apiClient.getCategories(),
-    () => localCategories.map(convertCategoryToApiFormat)
+    () => fallbackCategories
   );
 };
 
@@ -155,13 +160,40 @@ export const useKinds = () => {
     () => {
       // Fallback kinds data
       const fallbackKinds: Kind[] = [
-        { id: 5, name: "كتاب", slug: "ktb" },
-        { id: 6, name: "محتوي", slug: "mhtoy" },
-        { id: 7, name: "بوست", slug: "bost" },
-        { id: 8, name: "مخطوطه", slug: "mkhtoth" },
+        { id: 1, name: "كتاب", slug: "book" },
+        { id: 14, name: "منشور", slug: "mnshor" },
+        { id: 15, name: "المولفات", slug: "lmolft" },
+        { id: 16, name: "المخطوطات", slug: "lmkhtott" },
+        { id: 17, name: "التحقيقات", slug: "lthkykt" },
+        { id: 18, name: "عن الشنقيط", slug: "aan-lshnkyt" },
       ];
       return fallbackKinds;
     }
+  );
+};
+
+// Hook for paginated entries (used by AllEntries page)
+export const useEntriesPaginated = (page: number = 1, limit: number = 20) => {
+  return useApiData(
+    async () => {
+      // Get paginated entries
+      const data = await apiClient.getEntriesPaginated(page, limit);
+      return data;
+    },
+    () => {
+      // Fallback to local data when API fails
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedItems = allItems.slice(startIndex, endIndex);
+
+      return {
+        results: paginatedItems.map(convertManuscriptToContentEntry),
+        count: allItems.length,
+        next: endIndex < allItems.length ? `page=${page + 1}` : null,
+        previous: page > 1 ? `page=${page - 1}` : null,
+      };
+    },
+    [page, limit]
   );
 };
 
@@ -303,6 +335,40 @@ export const useSearch = (query: string) => {
   );
 };
 
+// Hook for all entries without pagination
+export const useAllEntries = () => {
+  return useApiData(
+    () => apiClient.getEntries(),
+    () => allItems.map(convertManuscriptToContentEntry)
+  );
+};
+
+// Hook for AdminBooks with pagination (like AllEntries)
+export const useAllEntriesPaginated = (
+  page: number = 1,
+  limit: number = 2000
+) => {
+  return useApiData(
+    async () => {
+      const data = await apiClient.getAllEntriesPaginated(page, limit);
+      return data;
+    },
+    () => {
+      // Fallback to local data when API fails
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedItems = allItems.slice(startIndex, endIndex);
+
+      return {
+        results: paginatedItems.map(convertManuscriptToContentEntry),
+        count: allItems.length,
+        next: endIndex < allItems.length ? `page=${page + 1}` : null,
+        previous: page > 1 ? `page=${page - 1}` : null,
+      };
+    },
+    [page, limit]
+  );
+};
 // Authentication hook
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -374,7 +440,6 @@ export const useAuth = () => {
       setIsAuthenticated(true);
       return true;
     } catch (error) {
-      console.error("Token validation error:", error);
       setIsAuthenticated(false);
       return false;
     }

@@ -52,13 +52,8 @@ const AdminEditBook: React.FC = () => {
   // Filter out manuscripts category (ID 10) from available categories
   const availableCategories = categories?.filter((cat) => cat.id !== 10) || [];
 
-  // Filter kinds for books (كتاب or محتوي)
-  const availableKinds =
-    kinds?.filter(
-      (kind) =>
-        kind.name === "كتاب" ||
-        kind.name === "محتوي"
-    ) || [];
+  // Filter kinds for books (كتاب or المولفات)
+  const availableKinds = kinds?.filter((kind) => kind.name === "كتاب") || [];
 
   // Redirect if not authenticated
   React.useEffect(() => {
@@ -266,7 +261,6 @@ const AdminEditBook: React.FC = () => {
         <h1 className="text-2xl font-bold mb-6">تعديل العنصر</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
             <div>
               <label className="block mb-2">العنوان *</label>
               <input

@@ -46,9 +46,9 @@ const AdminAddInvestigation: React.FC = () => {
   // Filter out manuscripts category (ID 10) from available categories
   const availableCategories = categories?.filter((cat) => cat.id !== 10) || [];
 
-  // Filter kinds for investigations (تحقيقات)
+  // Filter kinds for investigations (التحقيقات)
   const availableKinds =
-    kinds?.filter((kind) => kind.name === "تحقيقات") || [];
+    kinds?.filter((kind) => kind.name === "التحقيقات") || [];
 
   // Redirect if not authenticated
   React.useEffect(() => {

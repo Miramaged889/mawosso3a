@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useEntries, useAuth } from "../hooks/useApi";
+import { useAllEntriesPaginated, useAuth } from "../hooks/useApi";
 import { apiClient, ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
@@ -9,29 +9,37 @@ import Breadcrumb from "../components/Breadcrumb";
 const AdminManuscripts: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, initialized } = useAuth();
+  const [deleting, setDeleting] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(20);
+
   const {
-    data: entriesData,
+    data: paginatedData,
+    loading,
     error,
     refetch,
-  } = useEntries({
-    // Remove category filter to fetch entries from all categories
-  });
-  const [deleting, setDeleting] = useState<number | null>(null);
+  } = useAllEntriesPaginated(currentPage, itemsPerPage);
 
-  // Always use API data
-  const manuscripts = useMemo(() => {
-    const results = entriesData || [];
-    console.log("API Data:", results); // Debug log to see what data is received
-    const allEntries = Array.isArray(results)
-      ? (results as ContentEntry[])
-      : [];
-
-    // Filter manuscripts based on kind field (مخطوطه)
-    return allEntries.filter((item: ContentEntry) => {
-      // Only include items with kind 8 (مخطوطه)
-      return item.kind === 8;
+  // Filter manuscripts based on kind field (المخطوطات)
+  const allManuscripts = useMemo(() => {
+    if (!paginatedData?.results) return [];
+    return paginatedData.results.filter((item: ContentEntry) => {
+      // Only include items with kind 16 (المخطوطات)
+      return item.kind === 16;
     });
-  }, [entriesData]);
+  }, [paginatedData]);
+
+  // Pagination logic
+  const totalPages = paginatedData
+    ? Math.ceil(paginatedData.count / itemsPerPage)
+    : 0;
+  const manuscripts = allManuscripts;
+
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // Format image URL
   const getImageUrl = (url: string | null | undefined): string | undefined => {
@@ -81,7 +89,8 @@ const AdminManuscripts: React.FC = () => {
               إدارة المخطوطات
             </h1>
             <p className="text-medium-gray">
-              عرض وإدارة جميع المخطوطات المضافة ({manuscripts.length})
+              عرض وإدارة جميع المخطوطات المضافة ({paginatedData?.count || 0}{" "}
+              إدخال إجمالي - {allManuscripts.length} مخطوطة في هذه الصفحة)
             </p>
           </div>
           <div className="mt-4 md:mt-0 flex flex-col md:flex-row gap-4">
@@ -94,18 +103,23 @@ const AdminManuscripts: React.FC = () => {
           </div>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
+            <div className="flex items-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700 mr-2"></div>
+              جاري تحميل المخطوطات من الخادم... صفحة {currentPage}
+            </div>
+          </div>
+        )}
+
         {/* Error State */}
         {error && (
-          <div className="bg-orange-100 border border-orange-400 text-orange-700 px-4 py-3 rounded mb-6 flex justify-between items-center">
-            <div>
-              <p className="font-bold">تعذر الاتصال بالخادم</p>
-              <p className="text-sm">
-                يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.
-              </p>
-            </div>
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            خطأ في تحميل البيانات: {error}
             <button
               onClick={refetch}
-              className="bg-orange-700 text-white px-4 py-2 rounded hover:bg-orange-800"
+              className="ml-4 underline hover:no-underline"
             >
               إعادة المحاولة
             </button>
@@ -213,7 +227,7 @@ const AdminManuscripts: React.FC = () => {
                         </td>
                         <td className="px-6 py-4">
                           <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm">
-                            {manuscript.kind === 8 ? "مخطوطه" : "غير محدد"}
+                            {manuscript.kind === 16 ? "المخطوطات" : "غير محدد"}
                           </span>
                         </td>
 
@@ -268,6 +282,66 @@ const AdminManuscripts: React.FC = () => {
             >
               إضافة مخطوطة جديدة
             </Link>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="bg-white rounded-lg shadow-lg border-t border-gray-200 px-6 py-4 mt-8">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-medium-gray">
+                صفحة {currentPage} من أصل {totalPages} صفحة - عرض{" "}
+                {allManuscripts.length} مخطوطة من أصل{" "}
+                {paginatedData?.count || 0} إدخال
+              </div>
+              <div className="flex items-center gap-2">
+                {/* Previous Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  السابق
+                </button>
+
+                {/* Page Numbers */}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      className={`px-3 py-2 border rounded-lg text-sm ${
+                        currentPage === pageNum
+                          ? "bg-olive-green text-white border-olive-green"
+                          : "border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+
+                {/* Next Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  التالي
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

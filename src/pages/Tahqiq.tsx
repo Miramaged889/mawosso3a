@@ -5,14 +5,13 @@ import ItemCard from "../components/ItemCard";
 import SearchBar from "../components/SearchBar";
 import Breadcrumb from "../components/Breadcrumb";
 
-
 const Tahqiq: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
- 
+
   // Fetch all entries from API
   const { data: entriesData, loading, error } = useEntries();
 
-  // Filter entries by kind 10 (تحقيقات) or category 8 (تحقيقات الشناقطه)
+  // Filter entries by kind 1 (كتاب) - only show books
   const tahqiqat = useMemo(() => {
     const results = entriesData || [];
     const allEntries = Array.isArray(results)
@@ -20,15 +19,8 @@ const Tahqiq: React.FC = () => {
       : [];
 
     return allEntries.filter((entry: ContentEntry) => {
-      // Check if kind is 10 (تحقيقات)
-      const isInvestigationKind = entry.kind === 10;
-
-      // Check if category is 8 (تحقيقات الشناقطه) - handle both object and number types
-      const isInvestigationCategory =
-        (typeof entry.category === "object" && entry.category?.id === 8) ||
-        (typeof entry.category === "number" && entry.category === 8);
-
-      return isInvestigationKind || isInvestigationCategory;
+      // Only show investigations with kind 17 (التحقيقات)
+      return entry.kind === 17;
     });
   }, [entriesData]);
 
@@ -51,8 +43,6 @@ const Tahqiq: React.FC = () => {
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
-
- 
 
   const breadcrumbItems = [{ label: "تحقيقات الشناقطة" }];
 

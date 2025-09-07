@@ -1,15 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useEntries, useAuth, useCategories } from "../hooks/useApi";
+import {
+  useAllEntriesPaginated,
+  useAuth,
+  useCategories,
+} from "../hooks/useApi";
 import { apiClient, ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
 const AdminAboutChinguit: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, initialized } = useAuth();
-  const { data: entriesData, error, refetch } = useEntries();
-  const { data: categories } = useCategories();
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(20);
+
+  const {
+    data: paginatedData,
+    loading,
+    error,
+    refetch,
+  } = useAllEntriesPaginated(currentPage, itemsPerPage);
+  const { data: categories } = useCategories();
 
   // Format image URL
   const getImageUrl = (url: string | null | undefined): string | undefined => {
@@ -25,11 +37,26 @@ const AdminAboutChinguit: React.FC = () => {
     }
   }, [isAuthenticated, initialized, navigate]);
 
-  // Filter about chinguit based on kind field (عن شنقيط)
-  const aboutChinguit = (entriesData || []).filter((item: ContentEntry) => {
-    // Only include items with kind 9 (عن شنقيط)
-    return item.kind === 9;
-  });
+  // Filter about chinguit based on kind field (عن الشنقيط)
+  const allAboutChinguit = useMemo(() => {
+    if (!paginatedData?.results) return [];
+    return paginatedData.results.filter((item: ContentEntry) => {
+      // Only include items with kind 18 (عن الشنقيط)
+      return item.kind === 18;
+    });
+  }, [paginatedData]);
+
+  // Pagination logic
+  const totalPages = paginatedData
+    ? Math.ceil(paginatedData.count / itemsPerPage)
+    : 0;
+  const aboutChinguit = allAboutChinguit;
+
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // Debug category data
   React.useEffect(() => {
@@ -95,7 +122,9 @@ const AdminAboutChinguit: React.FC = () => {
               إدارة مؤلفات عن شنقيط
             </h1>
             <p className="text-medium-gray">
-              عرض وإدارة جميع المؤلفات عن شنقيط المضافة
+              عرض وإدارة جميع المؤلفات عن شنقيط المضافة (
+              {paginatedData?.count || 0} إدخال إجمالي -{" "}
+              {allAboutChinguit.length} مؤلفة في هذه الصفحة)
             </p>
           </div>
           <Link
@@ -106,10 +135,26 @@ const AdminAboutChinguit: React.FC = () => {
           </Link>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
+            <div className="flex items-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700 mr-2"></div>
+              جاري تحميل المؤلفات عن شنقيط من الخادم... صفحة {currentPage}
+            </div>
+          </div>
+        )}
+
         {/* Error State */}
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
             خطأ في تحميل البيانات: {error}
+            <button
+              onClick={refetch}
+              className="ml-4 underline hover:no-underline"
+            >
+              إعادة المحاولة
+            </button>
           </div>
         )}
 
@@ -241,6 +286,66 @@ const AdminAboutChinguit: React.FC = () => {
             >
               إضافة مؤلفة جديدة
             </Link>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="bg-white rounded-lg shadow-lg border-t border-gray-200 px-6 py-4 mt-8">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-medium-gray">
+                صفحة {currentPage} من أصل {totalPages} صفحة - عرض{" "}
+                {allAboutChinguit.length} مؤلفة من أصل{" "}
+                {paginatedData?.count || 0} إدخال
+              </div>
+              <div className="flex items-center gap-2">
+                {/* Previous Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  السابق
+                </button>
+
+                {/* Page Numbers */}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      className={`px-3 py-2 border rounded-lg text-sm ${
+                        currentPage === pageNum
+                          ? "bg-olive-green text-white border-olive-green"
+                          : "border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+
+                {/* Next Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  التالي
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

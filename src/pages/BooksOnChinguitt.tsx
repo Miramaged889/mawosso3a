@@ -11,7 +11,7 @@ const BooksOnChinguitt: React.FC = () => {
   // Fetch all entries from API
   const { data: entriesData, loading, error } = useEntries();
 
-  // Filter entries by kind 11 (مؤلفات) or category 9 (مؤلفات عن شنقيط)
+  // Filter entries by kind 1 (كتاب) - only show books
   const booksOnChinguitt = useMemo(() => {
     const results = entriesData || [];
     const allEntries = Array.isArray(results)
@@ -19,15 +19,8 @@ const BooksOnChinguitt: React.FC = () => {
       : [];
 
     return allEntries.filter((entry: ContentEntry) => {
-      // Check if kind is 11 (مؤلفات)
-      const isAuthorKind = entry.kind === 11;
-
-      // Check if category is 9 (مؤلفات عن شنقيط) - handle both object and number types
-      const isAuthorCategory =
-        (typeof entry.category === "object" && entry.category?.id === 9) ||
-        (typeof entry.category === "number" && entry.category === 9);
-
-      return isAuthorKind || isAuthorCategory;
+      // Only show books with kind 1 (كتاب)
+      return entry.kind === 1;
     });
   }, [entriesData]);
 

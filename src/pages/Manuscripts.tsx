@@ -26,7 +26,7 @@ const Manuscripts: React.FC = () => {
   const { data: subcategories, loading: subcategoriesLoading } =
     useSubcategories();
 
-  // Filter manuscripts by kind 8 (مخطوطه)
+  // Filter manuscripts by kind 1 (كتاب) - only show books
   const manuscripts = useMemo(() => {
     const results = entriesData || [];
 
@@ -34,8 +34,8 @@ const Manuscripts: React.FC = () => {
       ? (results as ContentEntry[])
       : [];
 
-    // Filter by kind 8 (مخطوطه)
-    const filteredManuscripts = allEntries.filter((entry) => entry.kind === 8);
+    // Filter by kind 16 (المخطوطات) - only show manuscripts
+    const filteredManuscripts = allEntries.filter((entry) => entry.kind === 16);
 
     return filteredManuscripts;
   }, [entriesData]);

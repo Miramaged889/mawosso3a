@@ -16,9 +16,9 @@ const AboutChinguitDetail: React.FC = () => {
     if (!relatedData || !entry) return [];
     const allEntries = (relatedData as ContentEntry[]) || [];
 
-    // Filter by kind 9 (مؤلفات عن شنقيط) and exclude current entry
+    // Filter by kind 18 (عن الشنقيط) and exclude current entry
     const filteredEntries = allEntries.filter(
-      (item: ContentEntry) => item.id !== numericId && item.kind === 9
+      (item: ContentEntry) => item.id !== numericId && item.kind === 18
     );
 
     // If we have entries with same category, prioritize them

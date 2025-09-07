@@ -1,15 +1,27 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useEntries, useAuth, useCategories } from "../hooks/useApi";
+import {
+  useAllEntriesPaginated,
+  useAuth,
+  useCategories,
+} from "../hooks/useApi";
 import { apiClient, ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
 const AdminAuthors: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, initialized } = useAuth();
-  const { data: entriesData, error, refetch } = useEntries();
-  const { data: categories } = useCategories();
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(20);
+
+  const {
+    data: paginatedData,
+    loading,
+    error,
+    refetch,
+  } = useAllEntriesPaginated(currentPage, itemsPerPage);
+  const { data: categories } = useCategories();
 
   // Format image URL
   const getImageUrl = (url: string | null | undefined): string | undefined => {
@@ -25,11 +37,26 @@ const AdminAuthors: React.FC = () => {
     }
   }, [isAuthenticated, initialized, navigate]);
 
-  // Filter authors based on kind field (مؤلفات)
-  const authors = (entriesData || []).filter((item: ContentEntry) => {
-    // Only include items with kind 11 (مؤلفات)
-    return item.kind === 11;
-  });
+  // Filter authors based on kind field (المولفات)
+  const allAuthors = useMemo(() => {
+    if (!paginatedData?.results) return [];
+    return paginatedData.results.filter((item: ContentEntry) => {
+      // Only include items with kind 15 (المولفات)
+      return item.kind === 15;
+    });
+  }, [paginatedData]);
+
+  // Pagination logic
+  const totalPages = paginatedData
+    ? Math.ceil(paginatedData.count / itemsPerPage)
+    : 0;
+  const authors = allAuthors;
+
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // Debug category data
   React.useEffect(() => {
@@ -91,7 +118,10 @@ const AdminAuthors: React.FC = () => {
             <h1 className="text-3xl font-amiri font-bold text-blue-gray mb-2">
               إدارة المؤلفات
             </h1>
-            <p className="text-medium-gray">عرض وإدارة جميع المؤلفات المضافة</p>
+            <p className="text-medium-gray">
+              عرض وإدارة جميع المؤلفات المضافة ({paginatedData?.count || 0}{" "}
+              إدخال إجمالي - {allAuthors.length} مؤلفة في هذه الصفحة)
+            </p>
           </div>
           <Link
             to="/admin/authors/add"
@@ -101,10 +131,59 @@ const AdminAuthors: React.FC = () => {
           </Link>
         </div>
 
+        {/* Items Per Page Slider */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4 space-x-reverse">
+              <label className="text-sm font-semibold text-blue-gray">
+                عدد العناصر: {itemsPerPage}
+              </label>
+              <div className="w-64">
+                <input
+                  type="range"
+                  min="10"
+                  max="100"
+                  step="10"
+                  value={itemsPerPage}
+                  onChange={(e) => handlePageChange(Number(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                  style={{
+                    background: `linear-gradient(to right, #8b7355 0%, #8b7355 ${
+                      ((itemsPerPage - 10) / 90) * 100
+                    }%, #E5E7EB ${
+                      ((itemsPerPage - 10) / 90) * 100
+                    }%, #E5E7EB 100%)`,
+                  }}
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>10</span>
+                  <span>100</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
+            <div className="flex items-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700 mr-2"></div>
+              جاري تحميل المؤلفات من الخادم... صفحة {currentPage}
+            </div>
+          </div>
+        )}
+
         {/* Error State */}
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
             خطأ في تحميل البيانات: {error}
+            <button
+              onClick={refetch}
+              className="ml-4 underline hover:no-underline"
+            >
+              إعادة المحاولة
+            </button>
           </div>
         )}
 
@@ -236,6 +315,66 @@ const AdminAuthors: React.FC = () => {
             >
               إضافة مؤلفة جديدة
             </Link>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="bg-white rounded-lg shadow-lg border-t border-gray-200 px-6 py-4 mt-8">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-medium-gray">
+                صفحة {currentPage} من أصل {totalPages} صفحة - عرض{" "}
+                {allAuthors.length} مؤلفة من أصل {paginatedData?.count || 0}{" "}
+                إدخال
+              </div>
+              <div className="flex items-center gap-2">
+                {/* Previous Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  السابق
+                </button>
+
+                {/* Page Numbers */}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      className={`px-3 py-2 border rounded-lg text-sm ${
+                        currentPage === pageNum
+                          ? "bg-olive-green text-white border-olive-green"
+                          : "border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+
+                {/* Next Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  التالي
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

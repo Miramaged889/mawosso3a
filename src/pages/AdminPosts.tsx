@@ -1,15 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useEntries, useAuth, useCategories } from "../hooks/useApi";
-import { apiClient } from "../services/api";
+import {
+  useAllEntriesPaginated,
+  useAuth,
+  useCategories,
+} from "../hooks/useApi";
+import { apiClient, ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
 const AdminPosts: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, initialized } = useAuth();
-  const { data: entriesData, error, refetch } = useEntries();
-  const { data: categories } = useCategories();
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(20);
+
+  const {
+    data: paginatedData,
+    loading,
+    error,
+    refetch,
+  } = useAllEntriesPaginated(currentPage, itemsPerPage);
+  const { data: categories } = useCategories();
 
   // Format image URL
   const getImageUrl = (url: string | null | undefined): string | undefined => {
@@ -25,13 +37,26 @@ const AdminPosts: React.FC = () => {
     }
   }, [isAuthenticated, initialized, navigate]);
 
-  // Filter posts based on kind field (بوست)
-  const posts = (Array.isArray(entriesData) ? entriesData : []).filter(
-    (item: any) => {
-      // Only include items with kind 7 (منشور)
-      return item.kind === 7;
-    }
-  );
+  // Filter posts based on kind field (منشور)
+  const allPosts = useMemo(() => {
+    if (!paginatedData?.results) return [];
+    return paginatedData.results.filter((item: ContentEntry) => {
+      // Only include items with kind 14 (منشور)
+      return item.kind === 14;
+    });
+  }, [paginatedData]);
+
+  // Pagination logic
+  const totalPages = paginatedData
+    ? Math.ceil(paginatedData.count / itemsPerPage)
+    : 0;
+  const posts = allPosts;
+
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleDelete = async (id: number) => {
     if (confirm("هل أنت متأكد من حذف هذا المنشور؟")) {
@@ -48,8 +73,6 @@ const AdminPosts: React.FC = () => {
       }
     }
   };
-
-
 
   // Helper function to get category name
   const getCategoryName = (category: any, tags?: string): string => {
@@ -89,7 +112,8 @@ const AdminPosts: React.FC = () => {
               إدارة المنشورات
             </h1>
             <p className="text-medium-gray">
-              عرض وإدارة جميع المنشورات والمحتوى ({posts.length} منشور)
+              عرض وإدارة جميع المنشورات والمحتوى ({paginatedData?.count || 0}{" "}
+              إدخال إجمالي - {allPosts.length} منشور في هذه الصفحة)
             </p>
           </div>
           <Link
@@ -99,6 +123,16 @@ const AdminPosts: React.FC = () => {
             إضافة منشور جديد
           </Link>
         </div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
+            <div className="flex items-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700 mr-2"></div>
+              جاري تحميل المنشورات من الخادم... صفحة {currentPage}
+            </div>
+          </div>
+        )}
 
         {/* Error State */}
         {error && (
@@ -140,7 +174,7 @@ const AdminPosts: React.FC = () => {
                     </th>
                     <th className="px-6 py-4 text-right font-semibold">
                       عدد المواد
-                    </th> 
+                    </th>
                     <th className="px-6 py-4 text-right font-semibold">
                       الإجراءات
                     </th>
@@ -181,7 +215,7 @@ const AdminPosts: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm">
-                          {post.kind === 7 ? "منشور" : "غير محدد"}
+                          {post.kind === 14 ? "منشور" : "غير محدد"}
                         </span>
                       </td>
 
@@ -206,7 +240,7 @@ const AdminPosts: React.FC = () => {
                           {post.pages || post.page_count || 0}
                         </span>
                       </td>
-                     
+
                       <td className="px-6 py-4">
                         <div className="flex space-x-2 space-x-reverse">
                           <Link
@@ -245,6 +279,65 @@ const AdminPosts: React.FC = () => {
             >
               إضافة منشور جديد
             </Link>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="bg-white rounded-lg shadow-lg border-t border-gray-200 px-6 py-4 mt-8">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-medium-gray">
+                صفحة {currentPage} من أصل {totalPages} صفحة - عرض{" "}
+                {allPosts.length} منشور من أصل {paginatedData?.count || 0} إدخال
+              </div>
+              <div className="flex items-center gap-2">
+                {/* Previous Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  السابق
+                </button>
+
+                {/* Page Numbers */}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      className={`px-3 py-2 border rounded-lg text-sm ${
+                        currentPage === pageNum
+                          ? "bg-olive-green text-white border-olive-green"
+                          : "border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+
+                {/* Next Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  التالي
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

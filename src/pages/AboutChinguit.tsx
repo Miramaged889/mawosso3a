@@ -26,17 +26,15 @@ const AboutChinguit: React.FC = () => {
   const { data: subcategories, loading: subcategoriesLoading } =
     useSubcategories();
 
-  // Filter entries by kind 9 (مؤلفات عن شنقيط)
+  // Filter entries by kind 1 (كتاب) - only show books
   const aboutChinguitEntries = useMemo(() => {
     const results = entriesData || [];
-    console.log("API Data:", results);
     const allEntries = Array.isArray(results)
       ? (results as ContentEntry[])
       : [];
 
-    // Filter by kind 9 (مؤلفات عن شنقيط)
-    const filteredEntries = allEntries.filter((entry) => entry.kind === 9);
-    console.log("Filtered About Chinguit Entries:", filteredEntries);
+    // Filter by kind 18 (عن الشنقيط) - only show about chinguit content
+    const filteredEntries = allEntries.filter((entry) => entry.kind === 18);
 
     return filteredEntries;
   }, [entriesData]);

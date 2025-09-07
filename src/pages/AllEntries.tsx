@@ -1,15 +1,21 @@
 import React, { useState, useMemo } from "react";
-import { useEntries, useCategories } from "../hooks/useApi";
+import { useEntriesPaginated, useCategories } from "../hooks/useApi";
 import { ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 import ItemCard from "../components/ItemCard";
 
 const AllEntries: React.FC = () => {
-  const { data: entriesData, loading, error } = useEntries();
-  const { data: categoriesData } = useCategories();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedKind, setSelectedKind] = useState("");
+
+  const {
+    data: paginatedData,
+    loading,
+    error,
+  } = useEntriesPaginated(currentPage, itemsPerPage);
+  const { data: categoriesData } = useCategories();
 
   // Get unique categories from API
   const categories = useMemo(() => {
@@ -18,32 +24,11 @@ const AllEntries: React.FC = () => {
     return categoryNames;
   }, [categoriesData]);
 
-  const kinds = useMemo(() => {
-    if (!entriesData) return [];
-    const uniqueKinds = new Set<string>();
-    entriesData.forEach((entry: ContentEntry) => {
-      if (entry.kind) {
-        const kindNames: { [key: number]: string } = {
-          7: "منشور",
-          8: "مخطوطه",
-          9: "عن شنقيط",
-          10: "تحقيقات",
-          11: "مؤلفات",
-          12: "كتاب",
-          13: "محتوي",
-        };
-        const kindName = kindNames[entry.kind] || entry.kind.toString();
-        uniqueKinds.add(kindName);
-      }
-    });
-    return Array.from(uniqueKinds).sort();
-  }, [entriesData]);
-
   // Filter entries based on search term and selected filters
   const filteredEntries = useMemo(() => {
-    if (!entriesData) return [];
+    if (!paginatedData?.results) return [];
 
-    const filtered = entriesData.filter((entry: ContentEntry) => {
+    const filtered = paginatedData.results.filter((entry: ContentEntry) => {
       // Search term filter
       const matchesSearch =
         searchTerm === "" ||
@@ -58,7 +43,6 @@ const AllEntries: React.FC = () => {
         (() => {
           if (typeof entry.category === "object" && entry.category?.name) {
             const matches = entry.category.name === selectedCategory;
-
             return matches;
           } else if (typeof entry.category === "number") {
             // Find category by ID from categoriesData
@@ -71,28 +55,33 @@ const AllEntries: React.FC = () => {
           return false;
         })();
 
-      // Kind filter
-      const matchesKind =
-        selectedKind === "" ||
-        (() => {
-          const kindNames: { [key: number]: string } = {
-            7: "منشور",
-            8: "مخطوطه",
-            9: "عن شنقيط",
-            10: "تحقيقات",
-            11: "مؤلفات",
-            12: "كتاب",
-            13: "محتوي",
-          };
-          return entry.kind && kindNames[entry.kind] === selectedKind;
-        })();
-
-      return matchesSearch && matchesCategory && matchesKind;
+      return matchesSearch && matchesCategory;
     });
 
-
     return filtered;
-  }, [entriesData, categoriesData, searchTerm, selectedCategory, selectedKind]);
+  }, [paginatedData, categoriesData, searchTerm, selectedCategory]);
+
+  // Pagination logic
+  const totalPages = paginatedData
+    ? Math.ceil(paginatedData.count / itemsPerPage)
+    : 0;
+  const currentEntries = filteredEntries;
+
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory]);
+
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  };
 
   const breadcrumbItems = [
     { label: "الرئيسية", path: "/" },
@@ -201,23 +190,35 @@ const AllEntries: React.FC = () => {
               </select>
             </div>
 
-            {/* Kind Filter */}
+            {/* Items Per Page Slider */}
             <div>
               <label className="block text-sm font-semibold text-blue-gray mb-3">
-                النوع
+                عدد العناصر: {itemsPerPage}
               </label>
-              <select
-                value={selectedKind}
-                onChange={(e) => setSelectedKind(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-green focus:border-transparent text-right"
-              >
-                <option value="">جميع الأنواع</option>
-                {kinds.map((kind: string) => (
-                  <option key={kind} value={kind}>
-                    {kind}
-                  </option>
-                ))}
-              </select>
+              <div className="px-2">
+                <input
+                  type="range"
+                  min="10"
+                  max="100"
+                  step="10"
+                  value={itemsPerPage}
+                  onChange={(e) =>
+                    handleItemsPerPageChange(Number(e.target.value))
+                  }
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                  style={{
+                    background: `linear-gradient(to right, #8B7355 0%, #8B7355 ${
+                      ((itemsPerPage - 10) / 90) * 100
+                    }%, #E5E7EB ${
+                      ((itemsPerPage - 10) / 90) * 100
+                    }%, #E5E7EB 100%)`,
+                  }}
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>10</span>
+                  <span>100</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -226,19 +227,18 @@ const AllEntries: React.FC = () => {
             <p className="text-medium-gray">
               تم العثور على{" "}
               <span className="font-semibold text-olive-green text-lg">
-                {filteredEntries.length}
+                {paginatedData?.count || 0}
               </span>{" "}
               مادة
               {selectedCategory && ` في تصنيف "${selectedCategory}"`}
-              {selectedKind && ` من نوع "${selectedKind}"`}
               {searchTerm && ` تحتوي على "${searchTerm}"`}
             </p>
-            {(searchTerm || selectedCategory || selectedKind) && (
+            {(searchTerm || selectedCategory) && (
               <button
                 onClick={() => {
                   setSearchTerm("");
                   setSelectedCategory("");
-                  setSelectedKind("");
+                  setCurrentPage(1);
                 }}
                 className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors duration-200 text-sm font-medium"
               >
@@ -253,24 +253,75 @@ const AllEntries: React.FC = () => {
           <div className="space-y-8">
             {/* Results Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredEntries.map((entry) => (
+              {currentEntries.map((entry) => (
                 <ItemCard key={entry.id} item={entry} />
               ))}
             </div>
 
             {/* Pagination Info */}
-            <div className="text-center py-8 border-t border-gray-100">
-              <p className="text-medium-gray">
-                عرض{" "}
+            <div className="text-center py-4 border-t border-gray-100">
+              <p className="text-medium-gray mb-4">
+                صفحة{" "}
                 <span className="font-semibold text-olive-green">
-                  {filteredEntries.length}
+                  {currentPage}
                 </span>{" "}
                 من أصل{" "}
                 <span className="font-semibold text-blue-gray">
-                  {entriesData?.length || 0}
+                  {totalPages}
                 </span>{" "}
-                مادة
+                صفحة (إجمالي {paginatedData?.count || 0} مادة)
               </p>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 flex-wrap">
+                  {/* Previous Button */}
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    السابق
+                  </button>
+
+                  {/* Page Numbers */}
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`px-3 py-2 border rounded-lg text-sm ${
+                          currentPage === pageNum
+                            ? "bg-olive-green text-white border-olive-green"
+                            : "border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+
+                  {/* Next Button */}
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    التالي
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ) : (
@@ -288,7 +339,7 @@ const AllEntries: React.FC = () => {
                 onClick={() => {
                   setSearchTerm("");
                   setSelectedCategory("");
-                  setSelectedKind("");
+                  setCurrentPage(1);
                 }}
                 className="bg-olive-green text-white px-8 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 font-semibold"
               >

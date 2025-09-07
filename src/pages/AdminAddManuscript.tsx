@@ -30,8 +30,9 @@ const AdminAddManuscript: React.FC = () => {
   // Use all categories
   const allCategories = categories || [];
 
-  // Filter kinds for manuscripts (مخطوطه)
-  const availableKinds = kinds?.filter((kind) => kind.name === "مخطوطه") || [];
+  // Filter kinds for manuscripts (المخطوطات)
+  const availableKinds =
+    kinds?.filter((kind) => kind.name === "المخطوطات") || [];
 
   useEffect(() => {
     if (initialized && !isAuthenticated) {

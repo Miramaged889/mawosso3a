@@ -16,19 +16,12 @@ const BooksOnChinguittDetail: React.FC = () => {
     if (!relatedData || !book) return [];
     const allEntries = (relatedData as ContentEntry[]) || [];
 
-    // Filter by kind 11 (مؤلفات) or category 9 (مؤلفات عن شنقيط) and exclude current item
+    // Filter by kind 1 (كتاب) and exclude current item
     const filteredAuthors = allEntries.filter((entry: ContentEntry) => {
       if (entry.id === numericId) return false; // Exclude current item
 
-      // Check if kind is 11 (مؤلفات)
-      const isAuthorKind = entry.kind === 11;
-
-      // Check if category is 9 (مؤلفات عن شنقيط) - handle both object and number types
-      const isAuthorCategory =
-        (typeof entry.category === "object" && entry.category?.id === 9) ||
-        (typeof entry.category === "number" && entry.category === 9);
-
-      return isAuthorKind || isAuthorCategory;
+      // Only show books with kind 1 (كتاب) or 15 (المولفات)
+      return entry.kind === 1 || entry.kind === 15;
     });
 
     // If we have authors with same category, prioritize them

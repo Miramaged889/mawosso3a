@@ -46,9 +46,9 @@ const AdminAddAboutChinguit: React.FC = () => {
   // Filter out manuscripts category (ID 10) from available categories
   const availableCategories = categories?.filter((cat) => cat.id !== 10) || [];
 
-  // Filter kinds for about chinguit (عن شنقيط)
+  // Filter kinds for about chinguit (عن الشنقيط)
   const availableKinds =
-    kinds?.filter((kind) => kind.name === "عن شنقيط") || [];
+    kinds?.filter((kind) => kind.name === "عن الشنقيط") || [];
 
   // Redirect if not authenticated
   React.useEffect(() => {

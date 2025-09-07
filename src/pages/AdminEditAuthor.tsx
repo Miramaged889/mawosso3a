@@ -52,8 +52,9 @@ const AdminEditAuthor: React.FC = () => {
   // Filter out manuscripts category (ID 10) from available categories
   const availableCategories = categories?.filter((cat) => cat.id !== 10) || [];
 
-  // Filter kinds for authors (مؤلفات)
-  const availableKinds = kinds?.filter((kind) => kind.name === "مؤلفات") || [];
+  // Filter kinds for authors (المولفات)
+  const availableKinds =
+    kinds?.filter((kind) => kind.name === "المولفات") || [];
 
   // Redirect if not authenticated
   React.useEffect(() => {

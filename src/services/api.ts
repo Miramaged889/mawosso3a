@@ -1,5 +1,7 @@
 // API Configuration and Service Layer
-const API_BASE_URL = "https://mawso3a.pythonanywhere.com/api";
+const API_BASE_URL = import.meta.env.DEV
+  ? "/api" // Use proxy in development
+  : "https://mawso3a.pythonanywhere.com/api"; // Use direct URL in production
 
 // Types for API responses
 export interface Category {
@@ -76,6 +78,9 @@ class ApiClient {
   private getHeaders(): HeadersInit {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
     };
 
     if (this.token) {
@@ -196,6 +201,8 @@ class ApiClient {
   async getCategories(): Promise<Category[]> {
     const response = await fetch(`${this.baseURL}/categories/`, {
       headers: this.getHeaders(),
+      mode: "cors",
+      credentials: "omit",
     });
     const data = await this.handleResponse<any>(response);
     // Handle paginated response by extracting results array
@@ -324,8 +331,15 @@ class ApiClient {
     if (params?.page) searchParams.append("page", params.page.toString());
     if (params?.limit) searchParams.append("limit", params.limit.toString());
 
+    // If no limit is specified, set a high limit to get all entries
+    if (!params?.limit) {
+      searchParams.append("limit", "2000"); // High limit to get all entries
+    }
+
     const response = await fetch(`${this.baseURL}/entries/?${searchParams}`, {
       headers: this.getHeaders(),
+      mode: "cors",
+      credentials: "omit",
     });
 
     const result = await this.handleResponse<any>(response);
@@ -350,6 +364,64 @@ class ApiClient {
     return [];
   }
 
+  // Get all entries with pagination support (for AdminBooks)
+  async getAllEntriesPaginated(
+    page: number = 1,
+    limit: number = 2000
+  ): Promise<{
+    results: ContentEntry[];
+    count: number;
+    next: string | null;
+    previous: string | null;
+  }> {
+    const response = await fetch(
+      `${this.baseURL}/entries/?page=${page}&limit=${limit}`,
+      {
+        headers: this.getHeaders(),
+        mode: "cors",
+        credentials: "omit",
+      }
+    );
+
+    const result = await this.handleResponse<any>(response);
+
+    return {
+      results: result.results || [],
+      count: result.count || 0,
+      next: result.next || null,
+      previous: result.previous || null,
+    };
+  }
+
+  // Get entries with pagination
+  async getEntriesPaginated(
+    page: number = 1,
+    limit: number = 20
+  ): Promise<{
+    results: ContentEntry[];
+    count: number;
+    next: string | null;
+    previous: string | null;
+  }> {
+    const response = await fetch(
+      `${this.baseURL}/entries/?page=${page}&limit=${limit}`,
+      {
+        headers: this.getHeaders(),
+        mode: "cors",
+        credentials: "omit",
+      }
+    );
+
+    const result = await this.handleResponse<any>(response);
+
+    return {
+      results: result.results || [],
+      count: result.count || 0,
+      next: result.next || null,
+      previous: result.previous || null,
+    };
+  }
+
   async getEntry(id: number): Promise<ContentEntry> {
     const response = await fetch(`${this.baseURL}/entries/${id}/`, {
       headers: this.getHeaders(),
@@ -365,8 +437,6 @@ class ApiClient {
       pdf_file?: File;
     }
   ): Promise<ContentEntry> {
-    console.log("Creating entry with data:", data);
-
     // إذا كانت هناك ملفات، استخدم FormData
     if (files && (files.cover_image || files.pdf_file)) {
       // تحديث الرمز المميز من التخزين المحلي
@@ -403,13 +473,6 @@ class ApiClient {
         headers["Authorization"] = `Token ${this.token}`;
       }
 
-      console.log("Sending form data with files to API");
-
-      // طباعة محتويات FormData للتصحيح
-      for (const pair of formData.entries()) {
-        console.log(`${pair[0]}: ${pair[1]}`);
-      }
-
       const response = await fetch(`${this.baseURL}/entries/`, {
         method: "POST",
         headers: headers,
@@ -427,7 +490,6 @@ class ApiClient {
       return this.handleResponse<ContentEntry>(response);
     } else {
       // إرسال البيانات كـ FormData لتجنب مشاكل التحقق
-      console.log("Sending FormData to API:", data);
 
       const formData = new FormData();
 
@@ -576,11 +638,6 @@ class ApiClient {
     const formData = new FormData();
     formData.append("file", file);
 
-    console.log(
-      "Uploading PDF with token:",
-      this.token ? "Present" : "Missing"
-    );
-
     // استخدام طريقة مختلفة لإرسال الرؤوس مع FormData
     const headers: HeadersInit = {};
     if (this.token) {
@@ -615,11 +672,6 @@ class ApiClient {
 
     const formData = new FormData();
     formData.append("file", file);
-
-    console.log(
-      "Uploading image with token:",
-      this.token ? "Present" : "Missing"
-    );
 
     // استخدام طريقة مختلفة لإرسال الرؤوس مع FormData
     const headers: HeadersInit = {};
