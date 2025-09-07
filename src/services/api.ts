@@ -1,7 +1,8 @@
 // API Configuration and Service Layer
-const API_BASE_URL = import.meta.env.DEV
-  ? "/api" // Use proxy in development
-  : "https://mawso3a.pythonanywhere.com/api"; // Use direct URL in production
+const API_BASE_URL = "/api"; // Use proxy for both development and production
+
+// Fallback API URL for direct access if proxy fails
+const FALLBACK_API_URL = "https://mawso3a.pythonanywhere.com/api";
 
 // Types for API responses
 export interface Category {
@@ -92,9 +93,6 @@ class ApiClient {
 
     const headers: HeadersInit = {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
     };
 
     if (this.token) {
@@ -102,6 +100,64 @@ class ApiClient {
     }
 
     return headers;
+  }
+
+  private getPublicHeaders(): HeadersInit {
+    return {
+      "Content-Type": "application/json",
+    };
+  }
+
+  private async fetchWithFallback(
+    url: string,
+    options: RequestInit = {}
+  ): Promise<Response> {
+    try {
+      // Try proxy first
+      const response = await fetch(url, options);
+      if (response.ok) {
+        return response;
+      }
+
+      // If proxy fails and it's a proxy URL, try direct access
+      if (url.startsWith("/api/")) {
+        const directUrl = url.replace("/api/", `${FALLBACK_API_URL}/`);
+        console.warn(
+          `Proxy failed (${response.status}), trying direct access:`,
+          directUrl
+        );
+
+        const directResponse = await fetch(directUrl, {
+          ...options,
+          mode: "cors",
+          credentials: "omit",
+        });
+
+        return directResponse;
+      }
+
+      return response;
+    } catch (error) {
+      // If proxy fails and it's a proxy URL, try direct access
+      if (url.startsWith("/api/")) {
+        const directUrl = url.replace("/api/", `${FALLBACK_API_URL}/`);
+        console.warn(`Proxy request failed, trying direct access:`, directUrl);
+
+        try {
+          const directResponse = await fetch(directUrl, {
+            ...options,
+            mode: "cors",
+            credentials: "omit",
+          });
+          return directResponse;
+        } catch (directError) {
+          console.error("Both proxy and direct access failed:", directError);
+          throw error; // Throw original error
+        }
+      }
+
+      throw error;
+    }
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
@@ -214,36 +270,57 @@ class ApiClient {
 
   // Categories
   async getCategories(): Promise<Category[]> {
-    const response = await fetch(`${this.baseURL}/categories/`, {
-      headers: this.getHeaders(),
-      mode: "cors",
-      credentials: "omit",
-    });
+    try {
+      const response = await this.fetchWithFallback(
+        `${this.baseURL}/categories/`,
+        {
+          headers: this.getHeaders(),
+          mode: "cors",
+          credentials: "omit",
+        }
+      );
 
-    // If 403 error, try without authentication
-    if (response.status === 403) {
-      const publicHeaders = {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      };
+      // If 403 error, try without authentication
+      if (response.status === 403) {
+        const publicResponse = await this.fetchWithFallback(
+          `${this.baseURL}/categories/`,
+          {
+            headers: this.getPublicHeaders(),
+            mode: "cors",
+            credentials: "omit",
+          }
+        );
 
-      const publicResponse = await fetch(`${this.baseURL}/categories/`, {
-        headers: publicHeaders,
-        mode: "cors",
-        credentials: "omit",
-      });
-
-      if (publicResponse.ok) {
-        const data = await publicResponse.json();
-        return data.results || data;
+        if (publicResponse.ok) {
+          const data = await publicResponse.json();
+          return data.results || data;
+        }
       }
-    }
 
-    const data = await this.handleResponse<any>(response);
-    // Handle paginated response by extracting results array
-    return data.results || data;
+      const data = await this.handleResponse<any>(response);
+      // Handle paginated response by extracting results array
+      return data.results || data;
+    } catch (error) {
+      console.warn("API request failed, using fallback data:", error);
+      // Return fallback categories if API fails
+      return [
+        { id: 1, name: "Uncategorized", slug: "uncategorized" },
+        { id: 32, name: "مقالات", slug: "مقالات" },
+        { id: 33, name: "فوائد", slug: "فوائد" },
+        { id: 34, name: "الكل", slug: "الكل" },
+        { id: 67, name: "خطب و دروس", slug: "خطب-و-دروس" },
+        { id: 99, name: "الأخبار العلمية", slug: "الأخبار-العلمية" },
+        { id: 100, name: "العلوم الشرعية", slug: "العلوم-الشرعية" },
+        { id: 109, name: "العلوم اللغوية", slug: "العلوم-اللغوية" },
+        { id: 118, name: "علوم أخرى", slug: "علوم-أخرى" },
+        {
+          id: 122,
+          name: "مكتبة التعليم النظامي",
+          slug: "مكتبة-التعليم-النظامي",
+        },
+        { id: 127, name: "المنوعات", slug: "المنوعات" },
+      ];
+    }
   }
 
   async createCategory(data: Partial<Category>): Promise<Category> {
@@ -373,74 +450,76 @@ class ApiClient {
       searchParams.append("limit", "2000"); // High limit to get all entries
     }
 
-    const response = await fetch(`${this.baseURL}/entries/?${searchParams}`, {
-      headers: this.getHeaders(),
-      mode: "cors",
-      credentials: "omit",
-    });
-
-    // If 403 error, try without authentication
-    if (response.status === 403) {
-      const publicHeaders = {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      };
-
-      const publicResponse = await fetch(
+    try {
+      const response = await this.fetchWithFallback(
         `${this.baseURL}/entries/?${searchParams}`,
         {
-          headers: publicHeaders,
+          headers: this.getHeaders(),
           mode: "cors",
           credentials: "omit",
         }
       );
 
-      if (publicResponse.ok) {
-        const result = await publicResponse.json();
+      // If 403 error, try without authentication
+      if (response.status === 403) {
+        const publicResponse = await this.fetchWithFallback(
+          `${this.baseURL}/entries/?${searchParams}`,
+          {
+            headers: this.getPublicHeaders(),
+            mode: "cors",
+            credentials: "omit",
+          }
+        );
 
-        // Handle different response structures
-        if (result && typeof result === "object") {
-          // If the response has a 'results' property (paginated response), use that
-          if ("results" in result && Array.isArray(result.results)) {
-            return result.results as ContentEntry[];
+        if (publicResponse.ok) {
+          const result = await publicResponse.json();
+
+          // Handle different response structures
+          if (result && typeof result === "object") {
+            // If the response has a 'results' property (paginated response), use that
+            if ("results" in result && Array.isArray(result.results)) {
+              return result.results as ContentEntry[];
+            }
+            // If the response has a 'value' property, use that (PowerShell format)
+            if ("value" in result && Array.isArray(result.value)) {
+              return result.value as ContentEntry[];
+            }
+            // If the response is directly an array
+            if (Array.isArray(result)) {
+              return result as ContentEntry[];
+            }
           }
-          // If the response has a 'value' property, use that (PowerShell format)
-          if ("value" in result && Array.isArray(result.value)) {
-            return result.value as ContentEntry[];
-          }
-          // If the response is directly an array
-          if (Array.isArray(result)) {
-            return result as ContentEntry[];
-          }
+
+          // Fallback to empty array
+          return [];
         }
-
-        // Fallback to empty array
-        return [];
       }
+
+      const result = await this.handleResponse<any>(response);
+
+      // Handle different response structures
+      if (result && typeof result === "object") {
+        // If the response has a 'results' property (paginated response), use that
+        if ("results" in result && Array.isArray(result.results)) {
+          return result.results as ContentEntry[];
+        }
+        // If the response has a 'value' property, use that (PowerShell format)
+        if ("value" in result && Array.isArray(result.value)) {
+          return result.value as ContentEntry[];
+        }
+        // If the response is directly an array
+        if (Array.isArray(result)) {
+          return result as ContentEntry[];
+        }
+      }
+
+      // Fallback to empty array
+      return [];
+    } catch (error) {
+      console.warn("API request failed, using fallback data:", error);
+      // Return empty array if API fails completely
+      return [];
     }
-
-    const result = await this.handleResponse<any>(response);
-
-    // Handle different response structures
-    if (result && typeof result === "object") {
-      // If the response has a 'results' property (paginated response), use that
-      if ("results" in result && Array.isArray(result.results)) {
-        return result.results as ContentEntry[];
-      }
-      // If the response has a 'value' property, use that (PowerShell format)
-      if ("value" in result && Array.isArray(result.value)) {
-        return result.value as ContentEntry[];
-      }
-      // If the response is directly an array
-      if (Array.isArray(result)) {
-        return result as ContentEntry[];
-      }
-    }
-
-    // Fallback to empty array
-    return [];
   }
 
   // Get all entries with pagination support (for AdminBooks)
@@ -482,52 +561,56 @@ class ApiClient {
     next: string | null;
     previous: string | null;
   }> {
-    const response = await fetch(
-      `${this.baseURL}/entries/?page=${page}&limit=${limit}`,
-      {
-        headers: this.getHeaders(),
-        mode: "cors",
-        credentials: "omit",
-      }
-    );
-
-    // If 403 error, try without authentication
-    if (response.status === 403) {
-      const publicHeaders = {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      };
-
-      const publicResponse = await fetch(
+    try {
+      const response = await this.fetchWithFallback(
         `${this.baseURL}/entries/?page=${page}&limit=${limit}`,
         {
-          headers: publicHeaders,
+          headers: this.getHeaders(),
           mode: "cors",
           credentials: "omit",
         }
       );
 
-      if (publicResponse.ok) {
-        const result = await publicResponse.json();
-        return {
-          results: result.results || [],
-          count: result.count || 0,
-          next: result.next || null,
-          previous: result.previous || null,
-        };
+      // If 403 error, try without authentication
+      if (response.status === 403) {
+        const publicResponse = await this.fetchWithFallback(
+          `${this.baseURL}/entries/?page=${page}&limit=${limit}`,
+          {
+            headers: this.getPublicHeaders(),
+            mode: "cors",
+            credentials: "omit",
+          }
+        );
+
+        if (publicResponse.ok) {
+          const result = await publicResponse.json();
+          return {
+            results: result.results || [],
+            count: result.count || 0,
+            next: result.next || null,
+            previous: result.previous || null,
+          };
+        }
       }
+
+      const result = await this.handleResponse<any>(response);
+
+      return {
+        results: result.results || [],
+        count: result.count || 0,
+        next: result.next || null,
+        previous: result.previous || null,
+      };
+    } catch (error) {
+      console.warn("API request failed, using fallback data:", error);
+      // Return empty paginated result if API fails
+      return {
+        results: [],
+        count: 0,
+        next: null,
+        previous: null,
+      };
     }
-
-    const result = await this.handleResponse<any>(response);
-
-    return {
-      results: result.results || [],
-      count: result.count || 0,
-      next: result.next || null,
-      previous: result.previous || null,
-    };
   }
 
   async getEntry(id: number): Promise<ContentEntry> {

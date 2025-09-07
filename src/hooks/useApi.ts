@@ -85,7 +85,7 @@ export const useApiData = <T>(
       // Add timeout to API calls
       const timeoutPromise = new Promise(
         (_, reject) =>
-          setTimeout(() => reject(new Error("API request timeout")), 10000) // Increased timeout
+          setTimeout(() => reject(new Error("API request timeout")), 15000) // Increased timeout for CORS issues
       );
 
       const result = (await Promise.race([
@@ -95,16 +95,22 @@ export const useApiData = <T>(
 
       setData(result);
     } catch (err) {
+      console.warn("API call failed, attempting fallback:", err);
+      
       if (fallbackFunction) {
         try {
           const fallbackData = fallbackFunction();
           setData(fallbackData);
           setError(null); // Clear error when using fallback
+          console.log("Successfully used fallback data");
         } catch (fallbackErr) {
-          setError("Failed to load data");
+          console.error("Fallback also failed:", fallbackErr);
+          setError("Failed to load data from both API and fallback");
         }
       } else {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        const errorMessage = err instanceof Error ? err.message : "An error occurred";
+        setError(errorMessage);
+        console.error("No fallback available, error:", errorMessage);
       }
     } finally {
       setLoading(false);
