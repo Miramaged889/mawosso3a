@@ -253,8 +253,8 @@ const AllEntries: React.FC = () => {
           <div className="space-y-8">
             {/* Results Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {currentEntries.map((entry) => (
-                <ItemCard key={entry.id} item={entry} />
+              {currentEntries.map((entry, index) => (
+                <ItemCard key={`${entry.id}-${index}`} item={entry} />
               ))}
             </div>
 

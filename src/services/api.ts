@@ -73,9 +73,23 @@ class ApiClient {
   constructor() {
     this.baseURL = API_BASE_URL;
     this.token = localStorage.getItem("auth_token");
+
+    // Clean up any invalid tokens on initialization
+    this.validateAndCleanToken();
+  }
+
+  private validateAndCleanToken() {
+    const token = localStorage.getItem("auth_token");
+    if (token === "test_token" || !token || token.length < 10) {
+      localStorage.removeItem("auth_token");
+      this.token = null;
+    }
   }
 
   private getHeaders(): HeadersInit {
+    // Refresh token from localStorage in case it was updated
+    this.token = localStorage.getItem("auth_token");
+
     const headers: HeadersInit = {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*",
@@ -104,10 +118,11 @@ class ApiClient {
 
       // Handle specific error cases
       if (response.status === 403) {
-        console.error(
-          "🔐 Authentication failed. Token may be invalid or expired."
+        console.warn(
+          "🔐 Authentication failed. Token may be invalid or expired. Trying public access..."
         );
-        console.error("Current token:", this.token ? "Present" : "Missing");
+        console.warn("Current token:", this.token ? "Present" : "Missing");
+        // Don't throw error immediately, let the calling function handle fallback
         throw new Error(
           "ليس لديك صلاحية للقيام بهذا الإجراء. يرجى تسجيل الدخول بحساب صالح."
         );
@@ -204,6 +219,28 @@ class ApiClient {
       mode: "cors",
       credentials: "omit",
     });
+
+    // If 403 error, try without authentication
+    if (response.status === 403) {
+      const publicHeaders = {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      };
+
+      const publicResponse = await fetch(`${this.baseURL}/categories/`, {
+        headers: publicHeaders,
+        mode: "cors",
+        credentials: "omit",
+      });
+
+      if (publicResponse.ok) {
+        const data = await publicResponse.json();
+        return data.results || data;
+      }
+    }
+
     const data = await this.handleResponse<any>(response);
     // Handle paginated response by extracting results array
     return data.results || data;
@@ -342,6 +379,48 @@ class ApiClient {
       credentials: "omit",
     });
 
+    // If 403 error, try without authentication
+    if (response.status === 403) {
+      const publicHeaders = {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      };
+
+      const publicResponse = await fetch(
+        `${this.baseURL}/entries/?${searchParams}`,
+        {
+          headers: publicHeaders,
+          mode: "cors",
+          credentials: "omit",
+        }
+      );
+
+      if (publicResponse.ok) {
+        const result = await publicResponse.json();
+
+        // Handle different response structures
+        if (result && typeof result === "object") {
+          // If the response has a 'results' property (paginated response), use that
+          if ("results" in result && Array.isArray(result.results)) {
+            return result.results as ContentEntry[];
+          }
+          // If the response has a 'value' property, use that (PowerShell format)
+          if ("value" in result && Array.isArray(result.value)) {
+            return result.value as ContentEntry[];
+          }
+          // If the response is directly an array
+          if (Array.isArray(result)) {
+            return result as ContentEntry[];
+          }
+        }
+
+        // Fallback to empty array
+        return [];
+      }
+    }
+
     const result = await this.handleResponse<any>(response);
 
     // Handle different response structures
@@ -411,6 +490,35 @@ class ApiClient {
         credentials: "omit",
       }
     );
+
+    // If 403 error, try without authentication
+    if (response.status === 403) {
+      const publicHeaders = {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      };
+
+      const publicResponse = await fetch(
+        `${this.baseURL}/entries/?page=${page}&limit=${limit}`,
+        {
+          headers: publicHeaders,
+          mode: "cors",
+          credentials: "omit",
+        }
+      );
+
+      if (publicResponse.ok) {
+        const result = await publicResponse.json();
+        return {
+          results: result.results || [],
+          count: result.count || 0,
+          next: result.next || null,
+          previous: result.previous || null,
+        };
+      }
+    }
 
     const result = await this.handleResponse<any>(response);
 
