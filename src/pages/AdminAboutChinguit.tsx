@@ -13,7 +13,7 @@ const AdminAboutChinguit: React.FC = () => {
   const { isAuthenticated, initialized } = useAuth();
   const [deleting, setDeleting] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(20);
+  const [itemsPerPage] = useState(18);
 
   const {
     data: paginatedData,
@@ -140,7 +140,7 @@ const AdminAboutChinguit: React.FC = () => {
           <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700 mr-2"></div>
-              جاري تحميل المؤلفات عن شنقيط من الخادم... صفحة {currentPage}
+              جاري تحميل مؤلفات عن شنقيط من الخادم... صفحة {currentPage}
             </div>
           </div>
         )}
@@ -290,13 +290,13 @@ const AdminAboutChinguit: React.FC = () => {
         )}
 
         {/* Pagination Controls */}
-        {totalPages > 1 && (
+        {allAboutChinguit && allAboutChinguit.length > itemsPerPage && (
           <div className="bg-white rounded-lg shadow-lg border-t border-gray-200 px-6 py-4 mt-8">
             <div className="flex items-center justify-between">
               <div className="text-sm text-medium-gray">
                 صفحة {currentPage} من أصل {totalPages} صفحة - عرض{" "}
-                {allAboutChinguit.length} مؤلفة من أصل{" "}
-                {paginatedData?.count || 0} إدخال
+                {allAboutChinguit.length} مؤلفة من أصل {allAboutChinguit.length || 0}{" "}
+                إدخال
               </div>
               <div className="flex items-center gap-2">
                 {/* Previous Button */}

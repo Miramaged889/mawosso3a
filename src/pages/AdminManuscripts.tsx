@@ -4,14 +4,13 @@ import { useAllEntriesPaginated, useAuth } from "../hooks/useApi";
 import { apiClient, ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
-// import { manuscripts as localManuscripts } from "../data/manuscripts"; // Import local data as fallback
 
 const AdminManuscripts: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, initialized } = useAuth();
   const [deleting, setDeleting] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(20);
+  const [itemsPerPage] = useState(18);
 
   const {
     data: paginatedData,
@@ -89,8 +88,7 @@ const AdminManuscripts: React.FC = () => {
               إدارة المخطوطات
             </h1>
             <p className="text-medium-gray">
-              عرض وإدارة جميع المخطوطات المضافة ({paginatedData?.count || 0}{" "}
-              إدخال إجمالي - {allManuscripts.length} مخطوطة في هذه الصفحة)
+              عرض وإدارة جميع المخطوطات المضافة
             </p>
           </div>
           <div className="mt-4 md:mt-0 flex flex-col md:flex-row gap-4">
@@ -286,13 +284,13 @@ const AdminManuscripts: React.FC = () => {
         )}
 
         {/* Pagination Controls */}
-        {totalPages > 1 && (
+        {allManuscripts && allManuscripts.length > itemsPerPage && (
           <div className="bg-white rounded-lg shadow-lg border-t border-gray-200 px-6 py-4 mt-8">
             <div className="flex items-center justify-between">
               <div className="text-sm text-medium-gray">
                 صفحة {currentPage} من أصل {totalPages} صفحة - عرض{" "}
-                {allManuscripts.length} مخطوطة من أصل{" "}
-                {paginatedData?.count || 0} إدخال
+                {allManuscripts.length} مخطوطة من أصل {allManuscripts.length || 0}{" "}
+                إدخال
               </div>
               <div className="flex items-center gap-2">
                 {/* Previous Button */}

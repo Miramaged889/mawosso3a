@@ -13,7 +13,7 @@ const AdminBooks: React.FC = () => {
   const { isAuthenticated, initialized } = useAuth();
   const [deleting, setDeleting] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(20);
+  const [itemsPerPage] = useState(18);
 
   const {
     data: paginatedData,
@@ -51,6 +51,9 @@ const AdminBooks: React.FC = () => {
     ? Math.ceil(paginatedData.count / itemsPerPage)
     : 0;
   const books = allBooks;
+
+  console.log(allBooks);
+
 
   // Pagination handlers
   const handlePageChange = (page: number) => {
@@ -279,12 +282,12 @@ const AdminBooks: React.FC = () => {
         )}
 
         {/* Pagination Controls */}
-        {totalPages > 1 && (
+        {allBooks && allBooks.length > itemsPerPage && (
           <div className="bg-white rounded-lg shadow-lg border-t border-gray-200 px-6 py-4 mt-8">
             <div className="flex items-center justify-between">
               <div className="text-sm text-medium-gray">
                 صفحة {currentPage} من أصل {totalPages} صفحة - عرض{" "}
-                {allBooks.length} كتاب من أصل {paginatedData?.count || 0} إدخال
+                {allBooks.length} كتاب من أصل {allBooks.length || 0} إدخال
               </div>
               <div className="flex items-center gap-2">
                 {/* Previous Button */}
