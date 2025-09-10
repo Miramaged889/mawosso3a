@@ -807,6 +807,65 @@ class ApiClient {
     return data.results || data;
   }
 
+  // New method for search using the entries endpoint with search parameter
+  async searchEntriesWithParam(query: string): Promise<{
+    results: ContentEntry[];
+    count: number;
+    next: string | null;
+    previous: string | null;
+  }> {
+    try {
+      const response = await this.fetchWithFallback(
+        `${this.baseURL}/entries/?search=${encodeURIComponent(query)}`,
+        {
+          headers: this.getHeaders(),
+          mode: "cors",
+          credentials: "omit",
+        }
+      );
+
+      // If 403 error, try without authentication
+      if (response.status === 403) {
+        const publicResponse = await this.fetchWithFallback(
+          `${this.baseURL}/entries/?search=${encodeURIComponent(query)}`,
+          {
+            headers: this.getPublicHeaders(),
+            mode: "cors",
+            credentials: "omit",
+          }
+        );
+
+        if (publicResponse.ok) {
+          const result = await publicResponse.json();
+          return {
+            results: result.results || [],
+            count: result.count || 0,
+            next: result.next || null,
+            previous: result.previous || null,
+          };
+        }
+      }
+
+      const result = await this.handleResponse<any>(response);
+
+      return {
+        results: result.results || [],
+        count: result.count || 0,
+        next: result.next || null,
+        previous: result.previous || null,
+      };
+    } catch (error) {
+      console.warn("API search request failed:", error);
+      // Return empty search result if API fails
+      return {
+        results: [],
+        count: 0,
+        next: null,
+        previous: null,
+      };
+    }
+  }
+
   // Latest Projects
   async getLatestProjects(): Promise<ContentEntry[]> {
     const response = await fetch(`${this.baseURL}/latest-projects/`, {

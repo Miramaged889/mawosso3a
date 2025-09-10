@@ -369,6 +369,38 @@ export const useSearch = (query: string) => {
   );
 };
 
+// Hook for API-based search using the entries endpoint with search parameter
+export const useSearchWithParam = (query: string) => {
+  return useApiData(
+    () =>
+      query
+        ? apiClient.searchEntriesWithParam(query)
+        : Promise.resolve({
+            results: [],
+            count: 0,
+            next: null,
+            previous: null,
+          }),
+    () => {
+      if (!query)
+        return {
+          results: [],
+          count: 0,
+          next: null,
+          previous: null,
+        };
+      const results = searchItems(query);
+      return {
+        results: results.map(convertManuscriptToContentEntry),
+        count: results.length,
+        next: null,
+        previous: null,
+      };
+    },
+    [query]
+  );
+};
+
 // Hook for all entries without pagination
 export const useAllEntries = (page: number = 1, limit: number = 2000) => {
   return useApiData(

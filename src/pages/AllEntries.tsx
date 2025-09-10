@@ -1,10 +1,5 @@
-import React, { useState, useMemo } from "react";
-import {
-  useAllEntries,
-  useEntriesPaginated,
-  useCategories,
-  useKinds,
-} from "../hooks/useApi";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { useEntriesPaginated, useCategories, useKinds } from "../hooks/useApi";
 import { ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 import ItemCard from "../components/ItemCard";
@@ -13,17 +8,106 @@ const AllEntries: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedKind, setSelectedKind] = useState("");
+  const [searchCurrentPage, setSearchCurrentPage] = useState(1);
+  const [searchItemsPerPage] = useState(20);
+
+  // New state for managing search results with pagination
+  const [searchResults, setSearchResults] = useState<ContentEntry[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [totalSearchCount, setTotalSearchCount] = useState(0);
 
   const {
     data: paginatedData,
-    loading,
-    error,
+    loading: paginatedLoading,
+    error: paginatedError,
   } = useEntriesPaginated(currentPage, itemsPerPage);
-  const { data: allEntries } = useAllEntries();
   const { data: categoriesData } = useCategories();
   const { data: kindsData } = useKinds();
+
+  // Function to fetch search results for a specific page
+  const fetchSearchResults = useCallback(
+    async (query: string, page: number = 1) => {
+      if (!query.trim()) {
+        setSearchResults([]);
+        setTotalSearchCount(0);
+        return;
+      }
+
+      setSearchLoading(true);
+      setSearchError(null);
+
+      try {
+        // Create a custom API call with page parameter
+        const searchUrl = `/api/entries/?search=${encodeURIComponent(
+          query
+        )}&page=${page}`;
+        const response = await fetch(searchUrl, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          mode: "cors",
+          credentials: "omit",
+        });
+
+        let result;
+        if (!response.ok) {
+          // Try fallback URL
+          const fallbackUrl = `https://mawso3a.pythonanywhere.com/api/entries/?search=${encodeURIComponent(
+            query
+          )}&page=${page}`;
+          const fallbackResponse = await fetch(fallbackUrl, {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            mode: "cors",
+            credentials: "omit",
+          });
+
+          if (!fallbackResponse.ok) {
+            throw new Error(`HTTP error! status: ${fallbackResponse.status}`);
+          }
+
+          result = await fallbackResponse.json();
+        } else {
+          result = await response.json();
+        }
+
+        // Update state with results
+        setSearchResults(result.results || []);
+        setTotalSearchCount(result.count || 0);
+      } catch (error) {
+        console.error("Error fetching search results:", error);
+        setSearchError("فشل في تحميل نتائج البحث");
+        setSearchResults([]);
+        setTotalSearchCount(0);
+      } finally {
+        setSearchLoading(false);
+      }
+    },
+    []
+  );
+
+  // Debounce search term to prevent excessive API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setSearchCurrentPage(1); // Reset search page when search term changes
+
+      // Fetch first page of search results when search term changes
+      if (searchTerm.trim()) {
+        fetchSearchResults(searchTerm, 1);
+      } else {
+        setSearchResults([]);
+        setTotalSearchCount(0);
+      }
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, fetchSearchResults]);
 
   // Get unique categories from API
   const categories = useMemo(() => {
@@ -39,26 +123,14 @@ const AllEntries: React.FC = () => {
     return kindNames;
   }, [kindsData]);
 
-  // Get search results from all entries when searching
-  const searchResults = useMemo(() => {
-    if (!allEntries || !Array.isArray(allEntries) || searchTerm === "") {
-      return null; // No search active
-    }
-
-    return allEntries.filter((entry: ContentEntry) => {
-      return (
-        entry.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        entry.author?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        entry.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        entry.content?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    });
-  }, [allEntries, searchTerm]);
+  // Determine loading and error states
+  const loading = debouncedSearchTerm !== "" ? searchLoading : paginatedLoading;
+  const error = debouncedSearchTerm !== "" ? searchError : paginatedError;
 
   // Filter entries based on search term and selected filters
   const filteredEntries = useMemo(() => {
-    // If we're searching, use search results from all entries
-    if (searchTerm !== "" && searchResults) {
+    // If we're searching, use our search results
+    if (debouncedSearchTerm !== "" && searchResults.length > 0) {
       return searchResults.filter((entry: ContentEntry) => {
         // Apply category and kind filters to search results
         const matchesCategory =
@@ -128,7 +200,7 @@ const AllEntries: React.FC = () => {
   }, [
     paginatedData,
     searchResults,
-    searchTerm,
+    debouncedSearchTerm,
     categoriesData,
     kindsData,
     selectedCategory,
@@ -140,17 +212,35 @@ const AllEntries: React.FC = () => {
     ? Math.ceil(paginatedData.count / itemsPerPage)
     : 0;
 
-  // When searching, show all search results; when not searching, show paginated results
-  const currentEntries = searchTerm !== "" ? filteredEntries : filteredEntries;
+  // Search pagination logic - calculate total pages based on total count
+  const searchTotalPages =
+    debouncedSearchTerm !== "" && totalSearchCount > 0
+      ? Math.ceil(totalSearchCount / searchItemsPerPage)
+      : 0;
+
+  // When searching, show current search results; when not searching, show paginated results
+  const currentEntries =
+    debouncedSearchTerm !== "" ? filteredEntries : filteredEntries;
 
   // Reset to first page when filters change
   React.useEffect(() => {
     setCurrentPage(1);
+    setSearchCurrentPage(1);
   }, [searchTerm, selectedCategory, selectedKind]);
 
   // Pagination handlers
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Search pagination handlers
+  const handleSearchPageChange = (page: number) => {
+    setSearchCurrentPage(page);
+    // Fetch the new page of search results
+    if (debouncedSearchTerm.trim()) {
+      fetchSearchResults(debouncedSearchTerm, page);
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -286,22 +376,26 @@ const AllEntries: React.FC = () => {
             <p className="text-medium-gray">
               تم العثور على{" "}
               <span className="font-semibold text-olive-green text-lg">
-                {searchTerm !== ""
-                  ? filteredEntries.length
+                {debouncedSearchTerm !== ""
+                  ? totalSearchCount || filteredEntries.length
                   : paginatedData?.count || 0}
               </span>{" "}
               مادة
               {selectedCategory && ` في تصنيف "${selectedCategory}"`}
               {selectedKind && ` من نوع "${selectedKind}"`}
-              {searchTerm && ` تحتوي على "${searchTerm}"`}
+              {debouncedSearchTerm && ` تحتوي على "${debouncedSearchTerm}"`}
             </p>
             {(searchTerm || selectedCategory || selectedKind) && (
               <button
                 onClick={() => {
                   setSearchTerm("");
+                  setDebouncedSearchTerm("");
                   setSelectedCategory("");
                   setSelectedKind("");
                   setCurrentPage(1);
+                  setSearchCurrentPage(1);
+                  setSearchResults([]);
+                  setTotalSearchCount(0);
                 }}
                 className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors duration-200 text-sm font-medium whitespace-nowrap"
               >
@@ -324,19 +418,93 @@ const AllEntries: React.FC = () => {
             {/* Pagination Info */}
             <div className="text-center py-4 border-t border-gray-100">
               <p className="text-medium-gray mb-4">
-                صفحة{" "}
-                <span className="font-semibold text-olive-green">
-                  {currentPage}
-                </span>{" "}
-                من أصل{" "}
-                <span className="font-semibold text-blue-gray">
-                  {totalPages}
-                </span>{" "}
-                صفحة (إجمالي {paginatedData?.count || 0} مادة)
+                {debouncedSearchTerm !== "" ? (
+                  <>
+                    صفحة{" "}
+                    <span className="font-semibold text-olive-green">
+                      {searchCurrentPage}
+                    </span>{" "}
+                    من أصل{" "}
+                    <span className="font-semibold text-blue-gray">
+                      {searchTotalPages}
+                    </span>{" "}
+                    صفحة (عرض {currentEntries.length} من أصل {totalSearchCount}{" "}
+                    نتيجة بحث)
+                  </>
+                ) : (
+                  <>
+                    صفحة{" "}
+                    <span className="font-semibold text-olive-green">
+                      {currentPage}
+                    </span>{" "}
+                    من أصل{" "}
+                    <span className="font-semibold text-blue-gray">
+                      {totalPages}
+                    </span>{" "}
+                    صفحة (إجمالي {paginatedData?.count || 0} مادة)
+                  </>
+                )}
               </p>
 
               {/* Pagination Controls */}
-              {totalPages > 1 && (
+              {debouncedSearchTerm !== "" && searchTotalPages > 1 ? (
+                // Search pagination controls
+                <div className="flex justify-center items-center gap-2 flex-wrap">
+                  {/* Previous Button */}
+                  <button
+                    onClick={() =>
+                      handleSearchPageChange(searchCurrentPage - 1)
+                    }
+                    disabled={searchCurrentPage === 1}
+                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    السابق
+                  </button>
+
+                  {/* Page Numbers */}
+                  {Array.from(
+                    { length: Math.min(5, searchTotalPages) },
+                    (_, i) => {
+                      let pageNum;
+                      if (searchTotalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (searchCurrentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (searchCurrentPage >= searchTotalPages - 2) {
+                        pageNum = searchTotalPages - 4 + i;
+                      } else {
+                        pageNum = searchCurrentPage - 2 + i;
+                      }
+
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => handleSearchPageChange(pageNum)}
+                          className={`px-3 py-2 border rounded-lg text-sm ${
+                            searchCurrentPage === pageNum
+                              ? "bg-olive-green text-white border-olive-green"
+                              : "border-gray-300 hover:bg-gray-50"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    }
+                  )}
+
+                  {/* Next Button */}
+                  <button
+                    onClick={() =>
+                      handleSearchPageChange(searchCurrentPage + 1)
+                    }
+                    disabled={searchCurrentPage === searchTotalPages}
+                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    التالي
+                  </button>
+                </div>
+              ) : debouncedSearchTerm === "" && totalPages > 1 ? (
+                // Regular pagination controls
                 <div className="flex justify-center items-center gap-2 flex-wrap">
                   {/* Previous Button */}
                   <button
@@ -384,7 +552,7 @@ const AllEntries: React.FC = () => {
                     التالي
                   </button>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         ) : (
@@ -401,16 +569,25 @@ const AllEntries: React.FC = () => {
               <button
                 onClick={() => {
                   setSearchTerm("");
+                  setDebouncedSearchTerm("");
                   setSelectedCategory("");
                   setSelectedKind("");
                   setCurrentPage(1);
+                  setSearchCurrentPage(1);
+                  setSearchResults([]);
+                  setTotalSearchCount(0);
                 }}
                 className="bg-olive-green text-white px-8 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 font-semibold"
               >
                 إعادة تعيين الفلاتر
               </button>
               <button
-                onClick={() => setSearchTerm("")}
+                onClick={() => {
+                  setSearchTerm("");
+                  setDebouncedSearchTerm("");
+                  setSearchResults([]);
+                  setTotalSearchCount(0);
+                }}
                 className="bg-gray-100 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-200 transition-all duration-300 font-semibold"
               >
                 مسح البحث
