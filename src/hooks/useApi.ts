@@ -96,7 +96,7 @@ export const useApiData = <T>(
       setData(result);
     } catch (err) {
       console.warn("API call failed, attempting fallback:", err);
-      
+
       if (fallbackFunction) {
         try {
           const fallbackData = fallbackFunction();
@@ -108,7 +108,8 @@ export const useApiData = <T>(
           setError("Failed to load data from both API and fallback");
         }
       } else {
-        const errorMessage = err instanceof Error ? err.message : "An error occurred";
+        const errorMessage =
+          err instanceof Error ? err.message : "An error occurred";
         setError(errorMessage);
         console.error("No fallback available, error:", errorMessage);
       }
@@ -318,13 +319,40 @@ export const useEntry = (id: number | null) => {
 };
 
 // Hook for latest projects
-export const useLatestProjects = () => {
+export const useLatestProjects = (limit: number = 3) => {
   return useApiData(
-    () => apiClient.getEntries({ limit: 3 }),
+    async () => {
+      // Get all entries and sort by date
+      const allData = await apiClient.getEntries();
+
+      if (!allData || !Array.isArray(allData)) {
+        return [];
+      }
+
+      // Sort by created_at or updated_at in descending order (most recent first)
+      const sortedData = allData.sort((a: any, b: any) => {
+        // Helper function to get a valid date
+        const getValidDate = (entry: any) => {
+          const dateStr =
+            entry.created_at || entry.updated_at || entry.date || "";
+          const date = new Date(dateStr);
+          // If date is invalid, use a very old date to push to end
+          return isNaN(date.getTime()) ? new Date("1900-01-01") : date;
+        };
+
+        const dateA = getValidDate(a);
+        const dateB = getValidDate(b);
+        return dateB.getTime() - dateA.getTime();
+      });
+
+      // Return only the specified number of most recent entries
+      return sortedData.slice(0, limit);
+    },
     () => {
-      const latestItems = getLatestItems(3);
+      const latestItems = getLatestItems(limit);
       return latestItems.map(convertManuscriptToContentEntry);
-    }
+    },
+    [limit]
   );
 };
 
@@ -342,10 +370,11 @@ export const useSearch = (query: string) => {
 };
 
 // Hook for all entries without pagination
-export const useAllEntries = () => {
+export const useAllEntries = (page: number = 1, limit: number = 2000) => {
   return useApiData(
     () => apiClient.getEntries(),
-    () => allItems.map(convertManuscriptToContentEntry)
+    () => allItems.map(convertManuscriptToContentEntry),
+    [page, limit]
   );
 };
 

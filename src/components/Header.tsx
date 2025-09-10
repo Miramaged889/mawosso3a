@@ -73,6 +73,16 @@ const Header = () => {
               المخطوطات
             </Link>
             <Link
+              to="/all-entries"
+              className={`transition-colors ${
+                isActive("/all-entries")
+                  ? "text-heritage-gold font-semibold"
+                  : "text-dark-gray hover:text-heritage-gold"
+              }`}
+            >
+              الكل
+            </Link>
+            <Link
               to="/about-chinguit"
               className={`transition-colors ${
                 isActive("/about-chinguit")
@@ -178,17 +188,6 @@ const Header = () => {
                 تحقيقات
               </Link>
               <Link
-                to="/books-on-chinguitt"
-                className={`transition-colors ${
-                  isActive("/books-on-chinguitt")
-                    ? "text-heritage-gold font-semibold"
-                    : "text-dark-gray hover:text-heritage-gold"
-                }`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                عن شنقيط
-              </Link>
-              <Link
                 to="/manuscripts"
                 className={`transition-colors ${
                   isActive("/manuscripts")
@@ -198,6 +197,28 @@ const Header = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 المخطوطات
+              </Link>
+              <Link
+                to="/all-entries"
+                className={`transition-colors ${
+                  isActive("/all-entries")
+                    ? "text-heritage-gold font-semibold"
+                    : "text-dark-gray hover:text-heritage-gold"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                الكل
+              </Link>
+              <Link
+                to="/about-chinguit"
+                className={`transition-colors ${
+                  isActive("/about-chinguit")
+                    ? "text-heritage-gold font-semibold"
+                    : "text-dark-gray hover:text-heritage-gold"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                عن شنقيط
               </Link>
               <Link
                 to="/about"

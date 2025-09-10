@@ -1,2 +1,0 @@
-# Netlify redirects for CORS proxy
-/api/* https://mawso3a.pythonanywhere.com/api/:splat 200

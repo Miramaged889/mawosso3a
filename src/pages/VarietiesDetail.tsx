@@ -9,7 +9,7 @@ const VarietiesDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const numericId = id ? parseInt(id) : null;
 
-  const { data: item, error } = useEntry(numericId);
+  const { data: item, error, loading } = useEntry(numericId);
   const { data: relatedData } = useEntries({ category: "4" });
 
   const relatedItems = React.useMemo(() => {
@@ -69,6 +69,22 @@ const VarietiesDetail: React.FC = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-ivory flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-olive-green"></div>
+          <h2 className="text-2xl font-amiri font-bold text-blue-gray mt-4">
+            جاري التحميل...
+          </h2>
+          <p className="text-medium-gray">
+            Loading... يرجى الانتظار
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (error || !item) {
     return (
       <div className="min-h-screen bg-ivory flex items-center justify-center">
@@ -124,24 +140,23 @@ const VarietiesDetail: React.FC = () => {
 
   // Get kind name safely
   const getKindName = () => {
-    if (item.kind) {
+    if (item?.kind) {
       const kindNames: { [key: number]: string } = {
-        7: "منشور",
-        8: "مخطوطه",
-        9: "عن شنقيط",
-        10: "تحقيقات",
-        11: "مؤلفات",
-        12: "كتاب",
-        13: "محتوي",
+        1: "كتاب",
+        14: "منشور", 
+        15: "المولفات",
+        16: "المخطوطات",
+        17: "التحقيقات",
+        18: "عن الشنقيط",
       };
-      return kindNames[item.kind] || "غير محدد";
+      return kindNames[item?.kind] || "غير محدد";
     }
     return "غير محدد";
   };
 
   // Get page count safely
   const getPageCount = () => {
-    return item.pages || item.page_count || 0;
+    return item.pages || item?.page_count || 0;
   };
 
   return (

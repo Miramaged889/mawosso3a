@@ -9,7 +9,7 @@ const BenefitsDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const numericId = id ? parseInt(id) : null;
 
-  const { data: benefit, error } = useEntry(numericId);
+  const { data: benefit, error, loading } = useEntry(numericId);
   const { data: relatedData } = useEntries({ category: "8" });
 
   const relatedItems = React.useMemo(() => {
@@ -69,6 +69,22 @@ const BenefitsDetail: React.FC = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-ivory flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-olive-green"></div>
+          <h2 className="text-2xl font-amiri font-bold text-blue-gray mt-4">
+            جاري التحميل...
+          </h2>
+          <p className="text-medium-gray">
+            Loading... يرجى الانتظار
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (error || !benefit) {
     return (
       <div className="min-h-screen bg-ivory flex items-center justify-center">
@@ -123,18 +139,20 @@ const BenefitsDetail: React.FC = () => {
   };
 
   // Get kind name safely
-  const getKindName = () => {
-    if (benefit.kind) {
-      const kindNames: { [key: number]: string } = {
-        5: "كتاب",
-        6: "محتوي",
-        7: "منشور",
-        8: "مخطوطه",
-      };
-      return kindNames[benefit.kind] || "غير محدد";
-    }
-    return "غير محدد";
-  };
+   const getKindName = () => {
+     if (benefit?.kind) {
+       const kindNames: { [key: number]: string } = {
+         1: "كتاب",
+         14: "منشور",
+         15: "المولفات",
+         16: "المخطوطات",
+         17: "التحقيقات",
+         18: "عن الشنقيط",
+       };
+       return kindNames[benefit?.kind] || "غير محدد";
+     }
+     return "غير محدد";
+   };
 
   // Get page count safely
   const getPageCount = () => {

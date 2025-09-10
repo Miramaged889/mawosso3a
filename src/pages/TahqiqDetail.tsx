@@ -9,7 +9,7 @@ const TahqiqDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const numericId = id ? parseInt(id) : null;
 
-  const { data: item, error } = useEntry(numericId);
+  const { data: item, error, loading } = useEntry(numericId);
   const { data: relatedData } = useEntries({ entry_type: "investigation" });
 
   const relatedItems = React.useMemo(() => {
@@ -69,6 +69,22 @@ const TahqiqDetail: React.FC = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-ivory flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-olive-green"></div>
+          <h2 className="text-2xl font-amiri font-bold text-blue-gray mt-4">
+            جاري التحميل...
+          </h2>
+          <p className="text-medium-gray">
+            Loading... يرجى الانتظار
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (error || !item) {
     return (
       <div className="min-h-screen bg-ivory flex items-center justify-center">
@@ -124,25 +140,23 @@ const TahqiqDetail: React.FC = () => {
 
   // Get kind name safely
   const getKindName = () => {
-    if (item.kind) {
+    if (item?.kind) {
       const kindNames: { [key: number]: string } = {
-        5: "كتاب",
-        6: "محتوي",
-        7: "منشور",
-        8: "مخطوطه",
-        10: "تحقيقات",
-        11: "مؤلفات",
-        12: "كتاب",
-        13: "محتوي",
+        1: "كتاب",
+        14: "منشور", 
+        15: "المولفات",
+        16: "المخطوطات",
+        17: "التحقيقات",
+        18: "عن الشنقيط",
       };
-      return kindNames[item.kind] || "غير محدد";
+      return kindNames[item?.kind] || "غير محدد";
     }
     return "غير محدد";
   };
 
   // Get page count safely
   const getPageCount = () => {
-    return item.pages || item.page_count || 0;
+    return item.pages || item?.page_count || 0;
   };
 
   return (
@@ -157,7 +171,7 @@ const TahqiqDetail: React.FC = () => {
               <div className="h-64 md:h-80 overflow-hidden relative group">
                 <img
                   src={coverImageUrl}
-                  alt={item.title}
+                  alt={item?.title}
                   className="w-full h-full object-contain bg-gray-50 group-hover:scale-105 transition-transform duration-300"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -184,7 +198,7 @@ const TahqiqDetail: React.FC = () => {
                     {getKindName()}
                   </span>
                 </div>
-                <span className="text-medium-gray">{item.date}</span>
+                <span className="text-medium-gray">{item?.date}</span>
               </div>
 
               {/* Title and Author */}

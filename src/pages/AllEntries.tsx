@@ -1,21 +1,29 @@
 import React, { useState, useMemo } from "react";
-import { useEntriesPaginated, useCategories } from "../hooks/useApi";
+import {
+  useAllEntries,
+  useEntriesPaginated,
+  useCategories,
+  useKinds,
+} from "../hooks/useApi";
 import { ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 import ItemCard from "../components/ItemCard";
 
 const AllEntries: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [itemsPerPage] = useState(20);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedKind, setSelectedKind] = useState("");
 
   const {
     data: paginatedData,
     loading,
     error,
   } = useEntriesPaginated(currentPage, itemsPerPage);
+  const { data: allEntries } = useAllEntries();
   const { data: categoriesData } = useCategories();
+  const { data: kindsData } = useKinds();
 
   // Get unique categories from API
   const categories = useMemo(() => {
@@ -24,20 +32,70 @@ const AllEntries: React.FC = () => {
     return categoryNames;
   }, [categoriesData]);
 
-  // Filter entries based on search term and selected filters
-  const filteredEntries = useMemo(() => {
-    if (!paginatedData?.results) return [];
+  // Get unique kinds from API
+  const kinds = useMemo(() => {
+    if (!kindsData) return [];
+    const kindNames = kindsData.map((kind) => kind.name).sort();
+    return kindNames;
+  }, [kindsData]);
 
-    const filtered = paginatedData.results.filter((entry: ContentEntry) => {
-      // Search term filter
-      const matchesSearch =
-        searchTerm === "" ||
+  // Get search results from all entries when searching
+  const searchResults = useMemo(() => {
+    if (!allEntries || !Array.isArray(allEntries) || searchTerm === "") {
+      return null; // No search active
+    }
+
+    return allEntries.filter((entry: ContentEntry) => {
+      return (
         entry.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         entry.author?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         entry.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        entry.content?.toLowerCase().includes(searchTerm.toLowerCase());
+        entry.content?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    });
+  }, [allEntries, searchTerm]);
 
-      // Category filter
+  // Filter entries based on search term and selected filters
+  const filteredEntries = useMemo(() => {
+    // If we're searching, use search results from all entries
+    if (searchTerm !== "" && searchResults) {
+      return searchResults.filter((entry: ContentEntry) => {
+        // Apply category and kind filters to search results
+        const matchesCategory =
+          selectedCategory === "" ||
+          (() => {
+            if (typeof entry.category === "object" && entry.category?.name) {
+              const matches = entry.category.name === selectedCategory;
+              return matches;
+            } else if (typeof entry.category === "number") {
+              const categoryObj = categoriesData?.find(
+                (cat) => cat.id === entry.category
+              );
+              const matches = categoryObj?.name === selectedCategory;
+              return matches;
+            }
+            return false;
+          })();
+
+        const matchesKind =
+          selectedKind === "" ||
+          (() => {
+            if (entry.kind) {
+              const kindObj = kindsData?.find((kind) => kind.id === entry.kind);
+              const matches = kindObj?.name === selectedKind;
+              return matches;
+            }
+            return false;
+          })();
+
+        return matchesCategory && matchesKind;
+      });
+    }
+
+    // If not searching, use paginated data with category/kind filters
+    if (!paginatedData?.results) return [];
+
+    return paginatedData.results.filter((entry: ContentEntry) => {
       const matchesCategory =
         selectedCategory === "" ||
         (() => {
@@ -45,7 +103,6 @@ const AllEntries: React.FC = () => {
             const matches = entry.category.name === selectedCategory;
             return matches;
           } else if (typeof entry.category === "number") {
-            // Find category by ID from categoriesData
             const categoryObj = categoriesData?.find(
               (cat) => cat.id === entry.category
             );
@@ -55,32 +112,46 @@ const AllEntries: React.FC = () => {
           return false;
         })();
 
-      return matchesSearch && matchesCategory;
-    });
+      const matchesKind =
+        selectedKind === "" ||
+        (() => {
+          if (entry.kind) {
+            const kindObj = kindsData?.find((kind) => kind.id === entry.kind);
+            const matches = kindObj?.name === selectedKind;
+            return matches;
+          }
+          return false;
+        })();
 
-    return filtered;
-  }, [paginatedData, categoriesData, searchTerm, selectedCategory]);
+      return matchesCategory && matchesKind;
+    });
+  }, [
+    paginatedData,
+    searchResults,
+    searchTerm,
+    categoriesData,
+    kindsData,
+    selectedCategory,
+    selectedKind,
+  ]);
 
   // Pagination logic
   const totalPages = paginatedData
     ? Math.ceil(paginatedData.count / itemsPerPage)
     : 0;
-  const currentEntries = filteredEntries;
+
+  // When searching, show all search results; when not searching, show paginated results
+  const currentEntries = searchTerm !== "" ? filteredEntries : filteredEntries;
 
   // Reset to first page when filters change
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, selectedCategory]);
+  }, [searchTerm, selectedCategory, selectedKind]);
 
   // Pagination handlers
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleItemsPerPageChange = (newItemsPerPage: number) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1);
   };
 
   const breadcrumbItems = [
@@ -138,10 +209,10 @@ const AllEntries: React.FC = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-8 border border-gray-100">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Search Bar */}
-            <div className="lg:col-span-2">
+            <div className="md:col-span-2">
               <label className="block text-sm font-semibold text-blue-gray mb-3">
                 البحث
               </label>
@@ -151,9 +222,9 @@ const AllEntries: React.FC = () => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="ابحث في العناوين والمؤلفين والمحتوى..."
-                  className="w-full py-3 pr-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-green focus:border-transparent text-right"
+                  className="w-full py-3 px-4 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-green focus:border-transparent text-right"
                 />
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                   <svg
                     className="h-5 w-5 text-gray-400"
                     fill="none"
@@ -190,35 +261,23 @@ const AllEntries: React.FC = () => {
               </select>
             </div>
 
-            {/* Items Per Page Slider */}
+            {/* Kind Filter */}
             <div>
               <label className="block text-sm font-semibold text-blue-gray mb-3">
-                عدد العناصر: {itemsPerPage}
+                النوع
               </label>
-              <div className="px-2">
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  step="10"
-                  value={itemsPerPage}
-                  onChange={(e) =>
-                    handleItemsPerPageChange(Number(e.target.value))
-                  }
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                  style={{
-                    background: `linear-gradient(to right, #8B7355 0%, #8B7355 ${
-                      ((itemsPerPage - 10) / 90) * 100
-                    }%, #E5E7EB ${
-                      ((itemsPerPage - 10) / 90) * 100
-                    }%, #E5E7EB 100%)`,
-                  }}
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>10</span>
-                  <span>100</span>
-                </div>
-              </div>
+              <select
+                value={selectedKind}
+                onChange={(e) => setSelectedKind(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-green focus:border-transparent text-right"
+              >
+                <option value="">جميع الأنواع</option>
+                {kinds.map((kind: string) => (
+                  <option key={kind} value={kind}>
+                    {kind}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -227,20 +286,24 @@ const AllEntries: React.FC = () => {
             <p className="text-medium-gray">
               تم العثور على{" "}
               <span className="font-semibold text-olive-green text-lg">
-                {paginatedData?.count || 0}
+                {searchTerm !== ""
+                  ? filteredEntries.length
+                  : paginatedData?.count || 0}
               </span>{" "}
               مادة
               {selectedCategory && ` في تصنيف "${selectedCategory}"`}
+              {selectedKind && ` من نوع "${selectedKind}"`}
               {searchTerm && ` تحتوي على "${searchTerm}"`}
             </p>
-            {(searchTerm || selectedCategory) && (
+            {(searchTerm || selectedCategory || selectedKind) && (
               <button
                 onClick={() => {
                   setSearchTerm("");
                   setSelectedCategory("");
+                  setSelectedKind("");
                   setCurrentPage(1);
                 }}
-                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors duration-200 text-sm font-medium"
+                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors duration-200 text-sm font-medium whitespace-nowrap"
               >
                 إعادة تعيين الفلاتر
               </button>
@@ -339,6 +402,7 @@ const AllEntries: React.FC = () => {
                 onClick={() => {
                   setSearchTerm("");
                   setSelectedCategory("");
+                  setSelectedKind("");
                   setCurrentPage(1);
                 }}
                 className="bg-olive-green text-white px-8 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 font-semibold"

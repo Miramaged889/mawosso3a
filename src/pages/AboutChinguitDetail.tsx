@@ -9,7 +9,7 @@ const AboutChinguitDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const numericId = id ? parseInt(id) : null;
 
-  const { data: entry, error } = useEntry(numericId);
+  const { data: entry, error, loading } = useEntry(numericId);
   const { data: relatedData } = useEntries();
 
   const relatedItems = React.useMemo(() => {
@@ -87,11 +87,12 @@ const AboutChinguitDetail: React.FC = () => {
   const getKindName = () => {
     if (entry?.kind) {
       const kindNames: { [key: number]: string } = {
-        5: "كتاب",
-        6: "محتوي",
-        7: "منشور",
-        8: "مخطوطه",
-        9: "مؤلفات عن شنقيط",
+        1: "كتاب",
+        14: "منشور",
+        15: "المولفات",
+        16: "المخطوطات",
+        17: "التحقيقات",
+        18: "عن الشنقيط",
       };
       return kindNames[entry?.kind] || "غير محدد";
     }
@@ -107,7 +108,7 @@ const AboutChinguitDetail: React.FC = () => {
             المؤلفة غير موجودة
           </h2>
           <p className="text-medium-gray mb-8">
-            عذراً، لم نتمكن من العثور على المؤلفة المطلوبة.
+            {loading ? "جاري التحميل..." : "عذراً، لم نتمكن من العثور على المؤلفة المطلوبة."}
           </p>
           <Link
             to="/about-chinguit"
@@ -115,6 +116,21 @@ const AboutChinguitDetail: React.FC = () => {
           >
             العودة إلى مؤلفات عن شنقيط
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-ivory flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-olive-green"></div>
+          <h2 className="text-2xl font-amiri font-bold text-blue-gray mt-4">
+            جاري التحميل...
+          </h2>
+          <p className="text-medium-gray">Loading... يرجى الانتظار</p>
         </div>
       </div>
     );

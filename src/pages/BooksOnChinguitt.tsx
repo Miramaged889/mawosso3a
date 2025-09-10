@@ -11,7 +11,7 @@ const BooksOnChinguitt: React.FC = () => {
   // Fetch all entries from API
   const { data: entriesData, loading, error } = useEntries();
 
-  // Filter entries by kind 1 (كتاب) - only show books
+  // Filter entries by kind 15 (مؤلفات عن شنقيط) - only show books
   const booksOnChinguitt = useMemo(() => {
     const results = entriesData || [];
     const allEntries = Array.isArray(results)
@@ -19,8 +19,8 @@ const BooksOnChinguitt: React.FC = () => {
       : [];
 
     return allEntries.filter((entry: ContentEntry) => {
-      // Only show books with kind 1 (كتاب)
-      return entry.kind === 1;
+      // Only show books with kind 15 (مؤلفات عن شنقيط)
+      return entry.kind === 15;
     });
   }, [entriesData]);
 

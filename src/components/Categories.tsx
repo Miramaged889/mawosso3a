@@ -8,37 +8,31 @@ const Categories = () => {
     "العلوم الشرعية": {
       description: "مخطوطات وكتب في الفقه والحديث والتفسير والعقيدة",
       icon: "📖",
-      count: "245 مخطوطة",
       link: "/sharia-sciences",
     },
     "العلوم اللغوية": {
       description: "النحو والصرف والبلاغة واللغة العربية وآدابها",
       icon: "✍️",
-      count: "156 مخطوطة",
       link: "/linguistic-sciences",
     },
     "العلوم الاجتماعية": {
       description: "التاريخ والجغرافيا والسير والتراجم",
       icon: "🏛️",
-      count: "89 مخطوطة",
       link: "/social-sciences",
     },
     المنوعات: {
       description: "الطب والفلك والرياضيات وغيرها من العلوم",
       icon: "🔬",
-      count: "67 مخطوطة",
       link: "/varieties",
     },
     فوائد: {
       description: "مجموعة من الفوائد والنكت العلمية المتنوعة",
       icon: "💎",
-      count: "150 فائدة",
       link: "/benefits",
     },
     "مكتبة التعليم النظامي": {
       description: "مواد تعليمية للمراحل الأساسية والثانوية والجامعية",
       icon: "🎓",
-      count: "300 مادة",
       link: "/formal-education-library",
     },
   };
@@ -56,7 +50,6 @@ const Categories = () => {
           title: cat.name,
           description: staticData.description,
           icon: staticData.icon,
-          count: staticData.count,
           link: staticData.link,
         };
       });
@@ -70,7 +63,7 @@ const Categories = () => {
             تصنيفات الموسوعة
           </h2>
           <p className="text-lg text-medium-gray max-w-2xl mx-auto">
-            استكشف مجموعتنا الشاملة من المخطوطات والكتب الإسلامية التراثية
+            التصنيف الموضوعي لمنشورات الموسوعة
           </p>
         </div>
 
@@ -90,9 +83,6 @@ const Categories = () => {
               <p className="text-medium-gray mb-4 leading-relaxed">
                 {category.description}
               </p>
-              <div className="text-olive-green font-semibold">
-                {category.count}
-              </div>
             </Link>
           ))}
         </div>
