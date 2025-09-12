@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { useEntriesPaginated, useCategories, useKinds } from "../hooks/useApi";
 import { ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
@@ -8,7 +8,7 @@ const AllEntries: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [activeSearchTerm, setActiveSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedKind, setSelectedKind] = useState("");
   const [searchCurrentPage, setSearchCurrentPage] = useState(1);
@@ -91,23 +91,26 @@ const AllEntries: React.FC = () => {
     []
   );
 
-  // Debounce search term to prevent excessive API calls
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-      setSearchCurrentPage(1); // Reset search page when search term changes
+  // Function to handle search button click
+  const handleSearch = useCallback(() => {
+    setActiveSearchTerm(searchTerm);
+    setSearchCurrentPage(1); // Reset search page when search term changes
 
-      // Fetch first page of search results when search term changes
-      if (searchTerm.trim()) {
-        fetchSearchResults(searchTerm, 1);
-      } else {
-        setSearchResults([]);
-        setTotalSearchCount(0);
-      }
-    }, 500); // 500ms delay
-
-    return () => clearTimeout(timer);
+    // Fetch first page of search results when search button is clicked
+    if (searchTerm.trim()) {
+      fetchSearchResults(searchTerm, 1);
+    } else {
+      setSearchResults([]);
+      setTotalSearchCount(0);
+    }
   }, [searchTerm, fetchSearchResults]);
+
+  // Function to handle Enter key press in search input
+  const handleSearchKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
 
   // Get unique categories from API
   const categories = useMemo(() => {
@@ -124,13 +127,13 @@ const AllEntries: React.FC = () => {
   }, [kindsData]);
 
   // Determine loading and error states
-  const loading = debouncedSearchTerm !== "" ? searchLoading : paginatedLoading;
-  const error = debouncedSearchTerm !== "" ? searchError : paginatedError;
+  const loading = activeSearchTerm !== "" ? searchLoading : paginatedLoading;
+  const error = activeSearchTerm !== "" ? searchError : paginatedError;
 
   // Filter entries based on search term and selected filters
   const filteredEntries = useMemo(() => {
     // If we're searching, use our search results
-    if (debouncedSearchTerm !== "" && searchResults.length > 0) {
+    if (activeSearchTerm !== "" && searchResults.length > 0) {
       return searchResults.filter((entry: ContentEntry) => {
         // Apply category and kind filters to search results
         const matchesCategory =
@@ -200,7 +203,7 @@ const AllEntries: React.FC = () => {
   }, [
     paginatedData,
     searchResults,
-    debouncedSearchTerm,
+    activeSearchTerm,
     categoriesData,
     kindsData,
     selectedCategory,
@@ -214,13 +217,13 @@ const AllEntries: React.FC = () => {
 
   // Search pagination logic - calculate total pages based on total count
   const searchTotalPages =
-    debouncedSearchTerm !== "" && totalSearchCount > 0
+    activeSearchTerm !== "" && totalSearchCount > 0
       ? Math.ceil(totalSearchCount / searchItemsPerPage)
       : 0;
 
   // When searching, show current search results; when not searching, show paginated results
   const currentEntries =
-    debouncedSearchTerm !== "" ? filteredEntries : filteredEntries;
+    activeSearchTerm !== "" ? filteredEntries : filteredEntries;
 
   // Reset to first page when filters change
   React.useEffect(() => {
@@ -238,8 +241,8 @@ const AllEntries: React.FC = () => {
   const handleSearchPageChange = (page: number) => {
     setSearchCurrentPage(page);
     // Fetch the new page of search results
-    if (debouncedSearchTerm.trim()) {
-      fetchSearchResults(debouncedSearchTerm, page);
+    if (activeSearchTerm.trim()) {
+      fetchSearchResults(activeSearchTerm, page);
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -306,29 +309,46 @@ const AllEntries: React.FC = () => {
               <label className="block text-sm font-semibold text-blue-gray mb-3">
                 البحث
               </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="ابحث في العناوين والمؤلفين والمحتوى..."
-                  className="w-full py-3 px-4 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-green focus:border-transparent text-right"
-                />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <svg
-                    className="h-5 w-5 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyPress={handleSearchKeyPress}
+                    placeholder="ابحث في العناوين والمؤلفين والمحتوى..."
+                    className="w-full py-3 px-4 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-green focus:border-transparent text-right"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                  </div>
                 </div>
+                <button
+                  onClick={handleSearch}
+                  disabled={searchLoading}
+                  className="bg-olive-green text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 font-semibold disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  {searchLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>جاري البحث...</span>
+                    </div>
+                  ) : (
+                    "بحث"
+                  )}
+                </button>
               </div>
             </div>
 
@@ -376,20 +396,20 @@ const AllEntries: React.FC = () => {
             <p className="text-medium-gray">
               تم العثور على{" "}
               <span className="font-semibold text-olive-green text-lg">
-                {debouncedSearchTerm !== ""
+                {activeSearchTerm !== ""
                   ? totalSearchCount || filteredEntries.length
                   : paginatedData?.count || 0}
               </span>{" "}
               مادة
               {selectedCategory && ` في تصنيف "${selectedCategory}"`}
               {selectedKind && ` من نوع "${selectedKind}"`}
-              {debouncedSearchTerm && ` تحتوي على "${debouncedSearchTerm}"`}
+              {activeSearchTerm && ` تحتوي على "${activeSearchTerm}"`}
             </p>
             {(searchTerm || selectedCategory || selectedKind) && (
               <button
                 onClick={() => {
                   setSearchTerm("");
-                  setDebouncedSearchTerm("");
+                  setActiveSearchTerm("");
                   setSelectedCategory("");
                   setSelectedKind("");
                   setCurrentPage(1);
@@ -418,7 +438,7 @@ const AllEntries: React.FC = () => {
             {/* Pagination Info */}
             <div className="text-center py-4 border-t border-gray-100">
               <p className="text-medium-gray mb-4">
-                {debouncedSearchTerm !== "" ? (
+                {activeSearchTerm !== "" ? (
                   <>
                     صفحة{" "}
                     <span className="font-semibold text-olive-green">
@@ -447,7 +467,7 @@ const AllEntries: React.FC = () => {
               </p>
 
               {/* Pagination Controls */}
-              {debouncedSearchTerm !== "" && searchTotalPages > 1 ? (
+              {activeSearchTerm !== "" && searchTotalPages > 1 ? (
                 // Search pagination controls
                 <div className="flex justify-center items-center gap-2 flex-wrap">
                   {/* Previous Button */}
@@ -503,7 +523,7 @@ const AllEntries: React.FC = () => {
                     التالي
                   </button>
                 </div>
-              ) : debouncedSearchTerm === "" && totalPages > 1 ? (
+              ) : activeSearchTerm === "" && totalPages > 1 ? (
                 // Regular pagination controls
                 <div className="flex justify-center items-center gap-2 flex-wrap">
                   {/* Previous Button */}
@@ -569,7 +589,7 @@ const AllEntries: React.FC = () => {
               <button
                 onClick={() => {
                   setSearchTerm("");
-                  setDebouncedSearchTerm("");
+                  setActiveSearchTerm("");
                   setSelectedCategory("");
                   setSelectedKind("");
                   setCurrentPage(1);
@@ -584,7 +604,7 @@ const AllEntries: React.FC = () => {
               <button
                 onClick={() => {
                   setSearchTerm("");
-                  setDebouncedSearchTerm("");
+                  setActiveSearchTerm("");
                   setSearchResults([]);
                   setTotalSearchCount(0);
                 }}

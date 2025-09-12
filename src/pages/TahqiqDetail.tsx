@@ -262,7 +262,7 @@ const TahqiqDetail: React.FC = () => {
                     onClick={handlePdfDownload}
                     className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 flex items-center space-x-2 space-x-reverse font-semibold"
                   >
-                    <span>تحميل ملف</span>
+                    <span>تحميل الملف</span>
                     <svg
                       className="w-5 h-5"
                       fill="none"
