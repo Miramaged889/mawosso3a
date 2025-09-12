@@ -20,9 +20,9 @@ const Header = () => {
               className="flex items-center space-x-0 space-x-reverse"
             >
               <img
-                src="/logo1.png"
+                src="/log.png"
                 alt="Chinguitipedia Logo"
-                className="w-16 h-16 rounded-full"
+                className="w-20 h-20"
               />
               <h1 className="text-xl font-louguiya font-bold text-blue-gray">
                 الموسوعة الشنقيطية
