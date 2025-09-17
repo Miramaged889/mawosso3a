@@ -232,7 +232,11 @@ const ScientificNewsDetail: React.FC = () => {
               </div>
 
               {/* Description */}
-              <div className="prose prose-lg max-w-none">
+              <div
+                className="prose prose-lg max-w-none cursor-pointer hover:bg-gray-50 p-4 rounded-lg transition-colors duration-200"
+                onClick={handleShare}
+                title="انقر للمشاركة - Click to share"
+              >
                 <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
                   وصف الخبر
                 </h3>
