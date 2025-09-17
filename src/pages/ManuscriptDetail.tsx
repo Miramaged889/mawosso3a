@@ -77,7 +77,7 @@ const ManuscriptDetail: React.FC = () => {
     if (manuscript?.kind) {
       const kindNames: { [key: number]: string } = {
         1: "كتاب",
-        14: "منشور", 
+        14: "منشور",
         15: "المولفات",
         16: "المخطوطات",
         17: "التحقيقات",
@@ -96,9 +96,7 @@ const ManuscriptDetail: React.FC = () => {
           <h2 className="text-2xl font-amiri font-bold text-blue-gray mt-4">
             جاري التحميل...
           </h2>
-          <p className="text-medium-gray">
-            Loading... يرجى الانتظار
-          </p>
+          <p className="text-medium-gray">Loading... يرجى الانتظار</p>
         </div>
       </div>
     );
@@ -202,9 +200,13 @@ const ManuscriptDetail: React.FC = () => {
               <h1 className="text-3xl md:text-4xl font-amiri font-bold text-blue-gray mb-4 leading-tight">
                 {manuscript.title}
               </h1>
-              <h2 className="text-xl text-heritage-gold font-semibold mb-6">
-                {manuscript.author}
-              </h2>
+              {manuscript.author &&
+                manuscript.author !== "Unknown Author" &&
+                manuscript.author.trim() !== "" && (
+                  <h2 className="text-xl text-heritage-gold font-semibold mb-6">
+                    {manuscript.author}
+                  </h2>
+                )}
 
               {/* Metadata */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 p-6 bg-ivory rounded-lg">

@@ -1,10 +1,12 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useEntriesPaginated, useCategories, useKinds } from "../hooks/useApi";
 import { ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 import ItemCard from "../components/ItemCard";
+import { useSearchParams } from "react-router-dom";
 
 const AllEntries: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
   const [searchTerm, setSearchTerm] = useState("");
@@ -224,6 +226,18 @@ const AllEntries: React.FC = () => {
   // When searching, show current search results; when not searching, show paginated results
   const currentEntries =
     activeSearchTerm !== "" ? filteredEntries : filteredEntries;
+
+  // Handle URL search parameter on component mount
+  useEffect(() => {
+    const urlSearchTerm = searchParams.get("search");
+    if (urlSearchTerm) {
+      setSearchTerm(urlSearchTerm);
+      setActiveSearchTerm(urlSearchTerm);
+      setSearchCurrentPage(1);
+      // Automatically perform search with the URL parameter
+      fetchSearchResults(urlSearchTerm, 1);
+    }
+  }, [searchParams, fetchSearchResults]);
 
   // Reset to first page when filters change
   React.useEffect(() => {

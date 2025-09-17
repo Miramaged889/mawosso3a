@@ -1,42 +1,13 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import { useEntry, useEntries } from "../hooks/useApi";
-import { ContentEntry } from "../services/api";
+import { useEntry } from "../hooks/useApi";
 import Breadcrumb from "../components/Breadcrumb";
-import ItemCard from "../components/ItemCard";
 
 const AboutChinguitDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const numericId = id ? parseInt(id) : null;
 
   const { data: entry, error, loading } = useEntry(numericId);
-  const { data: relatedData } = useEntries();
-
-  const relatedItems = React.useMemo(() => {
-    if (!relatedData || !entry) return [];
-    const allEntries = (relatedData as ContentEntry[]) || [];
-
-    // Filter by kind 18 (عن الشنقيط) and exclude current entry
-    const filteredEntries = allEntries.filter(
-      (item: ContentEntry) => item.id !== numericId && item.kind === 18
-    );
-
-    // If we have entries with same category, prioritize them
-    const sameCategoryEntries = filteredEntries.filter(
-      (item: ContentEntry) =>
-        typeof item.category === "object" &&
-        typeof entry.category === "object" &&
-        item.category?.id === entry.category?.id
-    );
-
-    // Return same category entries first, then other entries
-    const relatedEntries = [
-      ...sameCategoryEntries,
-      ...filteredEntries.filter((item) => !sameCategoryEntries.includes(item)),
-    ];
-
-    return relatedEntries.slice(0, 3);
-  }, [relatedData, entry, numericId]);
 
   // Enhanced image URL formatting
   const getImageUrl = (url: string | null | undefined) => {
@@ -108,7 +79,9 @@ const AboutChinguitDetail: React.FC = () => {
             المؤلفة غير موجودة
           </h2>
           <p className="text-medium-gray mb-8">
-            {loading ? "جاري التحميل..." : "عذراً، لم نتمكن من العثور على المؤلفة المطلوبة."}
+            {loading
+              ? "جاري التحميل..."
+              : "عذراً، لم نتمكن من العثور على المؤلفة المطلوبة."}
           </p>
           <Link
             to="/about-chinguit"
@@ -121,7 +94,6 @@ const AboutChinguitDetail: React.FC = () => {
     );
   }
 
-  
   if (loading) {
     return (
       <div className="min-h-screen bg-ivory flex items-center justify-center">
@@ -212,9 +184,13 @@ const AboutChinguitDetail: React.FC = () => {
               <h1 className="text-3xl md:text-4xl font-amiri font-bold text-blue-gray mb-4 leading-tight">
                 {entry.title}
               </h1>
-              <h2 className="text-xl text-heritage-gold font-semibold mb-6">
-                {entry.author}
-              </h2>
+              {entry.author &&
+                entry.author !== "Unknown Author" &&
+                entry.author.trim() !== "" && (
+                  <h2 className="text-xl text-heritage-gold font-semibold mb-6">
+                    {entry.author}
+                  </h2>
+                )}
 
               {/* Metadata */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 p-6 bg-ivory rounded-lg">
@@ -307,20 +283,6 @@ const AboutChinguitDetail: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {/* Related Items */}
-          {relatedItems.length > 0 && (
-            <div>
-              <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-8 text-center">
-                مؤلفات ذات صلة
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {relatedItems.map((item) => (
-                  <ItemCard key={item.id} item={item} />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

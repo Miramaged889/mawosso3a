@@ -1,29 +1,13 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import { useEntry, useEntries } from "../hooks/useApi";
-import { ContentEntry } from "../services/api";
+import { useEntry } from "../hooks/useApi";
 import Breadcrumb from "../components/Breadcrumb";
-import ItemCard from "../components/ItemCard";
 
 const SocialSciencesDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const numericId = id ? parseInt(id) : null;
 
   const { data: item, error, loading } = useEntry(numericId);
-  const { data: relatedData } = useEntries({ category: "4" });
-
-  const relatedItems = React.useMemo(() => {
-    if (!relatedData || !item) return [];
-    return (relatedData as ContentEntry[])
-      .filter(
-        (contentItem: ContentEntry) =>
-          contentItem.id !== numericId &&
-          typeof contentItem.category === "object" &&
-          typeof item.category === "object" &&
-          contentItem.category?.id === item.category?.id
-      )
-      .slice(0, 3);
-  }, [relatedData, item, numericId]);
 
   // Enhanced image URL formatting
   const getImageUrl = (url: string | null | undefined) => {
@@ -77,9 +61,7 @@ const SocialSciencesDetail: React.FC = () => {
           <h2 className="text-2xl font-amiri font-bold text-blue-gray mt-4">
             جاري التحميل...
           </h2>
-          <p className="text-medium-gray">
-            Loading... يرجى الانتظار
-          </p>
+          <p className="text-medium-gray">Loading... يرجى الانتظار</p>
         </div>
       </div>
     );
@@ -143,7 +125,7 @@ const SocialSciencesDetail: React.FC = () => {
     if (item?.kind) {
       const kindNames: { [key: number]: string } = {
         1: "كتاب",
-        14: "منشور", 
+        14: "منشور",
         15: "المولفات",
         16: "المخطوطات",
         17: "التحقيقات",
@@ -205,9 +187,13 @@ const SocialSciencesDetail: React.FC = () => {
               <h1 className="text-3xl md:text-4xl font-amiri font-bold text-blue-gray mb-4 leading-tight">
                 {item.title}
               </h1>
-              <h2 className="text-xl text-heritage-gold font-semibold mb-6">
-                {item.author}
-              </h2>
+              {item.author &&
+                item.author !== "Unknown Author" &&
+                item.author.trim() !== "" && (
+                  <h2 className="text-xl text-heritage-gold font-semibold mb-6">
+                    {item.author}
+                  </h2>
+                )}
 
               {/* Metadata */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 p-6 bg-ivory rounded-lg">
@@ -300,20 +286,6 @@ const SocialSciencesDetail: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {/* Related Items */}
-          {relatedItems.length > 0 && (
-            <div>
-              <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-8 text-center">
-                مواد ذات صلة
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {relatedItems.map((item) => (
-                  <ItemCard key={item.id} item={item} />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

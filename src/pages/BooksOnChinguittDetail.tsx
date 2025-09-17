@@ -1,47 +1,13 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import { useEntry, useEntries } from "../hooks/useApi";
-import { ContentEntry } from "../services/api";
+import { useEntry } from "../hooks/useApi";
 import Breadcrumb from "../components/Breadcrumb";
-import ItemCard from "../components/ItemCard";
 
 const BooksOnChinguittDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const numericId = id ? parseInt(id) : null;
 
   const { data: book, error, loading } = useEntry(numericId);
-  const { data: relatedData } = useEntries();
-
-  const relatedItems = React.useMemo(() => {
-    if (!relatedData || !book) return [];
-    const allEntries = (relatedData as ContentEntry[]) || [];
-
-    // Filter by kind 1 (كتاب) and exclude current item
-    const filteredAuthors = allEntries.filter((entry: ContentEntry) => {
-      if (entry.id === numericId) return false; // Exclude current item
-
-      // Only show books with kind 1 (كتاب) or 15 (المولفات)
-      return entry.kind === 1 || entry.kind === 15;
-    });
-
-    // If we have authors with same category, prioritize them
-    const sameCategoryAuthors = filteredAuthors.filter(
-      (entry: ContentEntry) =>
-        typeof entry.category === "object" &&
-        typeof book.category === "object" &&
-        entry.category?.id === book.category?.id
-    );
-
-    // Return same category authors first, then other authors
-    const relatedAuthors = [
-      ...sameCategoryAuthors,
-      ...filteredAuthors.filter(
-        (entry) => !sameCategoryAuthors.includes(entry)
-      ),
-    ];
-
-    return relatedAuthors.slice(0, 3);
-  }, [relatedData, book, numericId]);
 
   // Enhanced image URL formatting
   const getImageUrl = (url: string | null | undefined) => {
@@ -95,9 +61,7 @@ const BooksOnChinguittDetail: React.FC = () => {
           <h2 className="text-2xl font-amiri font-bold text-blue-gray mt-4">
             جاري التحميل...
           </h2>
-          <p className="text-medium-gray">
-            Loading... يرجى الانتظار
-          </p>
+          <p className="text-medium-gray">Loading... يرجى الانتظار</p>
         </div>
       </div>
     );
@@ -223,9 +187,13 @@ const BooksOnChinguittDetail: React.FC = () => {
               <h1 className="text-3xl md:text-4xl font-amiri font-bold text-blue-gray mb-4 leading-tight">
                 {book.title}
               </h1>
-              <h2 className="text-xl text-heritage-gold font-semibold mb-6">
-                {book.author}
-              </h2>
+              {book.author &&
+                book.author !== "Unknown Author" &&
+                book.author.trim() !== "" && (
+                  <h2 className="text-xl text-heritage-gold font-semibold mb-6">
+                    {book.author}
+                  </h2>
+                )}
 
               {/* Metadata */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 p-6 bg-ivory rounded-lg">
@@ -318,20 +286,6 @@ const BooksOnChinguittDetail: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {/* Related Items */}
-          {relatedItems.length > 0 && (
-            <div>
-              <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-8 text-center">
-                كتب ذات صلة
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {relatedItems.map((item) => (
-                  <ItemCard key={item.id} item={item} />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
