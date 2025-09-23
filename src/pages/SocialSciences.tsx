@@ -4,18 +4,17 @@ import { ContentEntry } from "../services/api";
 import ItemCard from "../components/ItemCard";
 import SearchBar from "../components/SearchBar";
 import Breadcrumb from "../components/Breadcrumb";
-import { CATEGORY_IDS } from "../data/categoryMapping";
 
 const SocialSciences: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch entries for Social Sciences from API using category ID
+  // Fetch entries for Social Sciences from API using category slug
   const {
     data: entriesData,
     loading,
     error,
   } = useEntries({
-    category: CATEGORY_IDS.SOCIAL_SCIENCES,
+    category: "3lom_Agtma3ya",
   });
 
   const items = (entriesData as ContentEntry[]) || [];

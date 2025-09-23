@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { useEntry } from "../hooks/useApi";
-
+import { makeUrlsClickable } from "../utils/textUtils";
 import Breadcrumb from "../components/Breadcrumb";
 
 const FormalEducationLibraryDetail: React.FC = () => {
@@ -105,16 +105,14 @@ const FormalEducationLibraryDetail: React.FC = () => {
     } else if (typeof item.category === "number") {
       // Map category IDs to names
       const categoryNames: { [key: number]: string } = {
-        1: "العلوم الشرعية",
-        2: "العلوم اللغوية",
-        3: "العلوم الاجتماعية",
-        4: "المنوعات",
-        5: "فوائد",
-        6: "مكتبة التعليم النظامي",
-        7: "الأخبار العلمية",
-        8: "تحقيقات الشناقطة",
-        9: "مؤلفات عن شنقيط",
-        10: "مخطوطات",
+        33: "فوائد",
+        34: "الكل",
+        99: "الأخبار العلمية",
+        100: "العلوم الشرعية",
+        109: "العلوم اللغوية",
+        118: "علوم أجتماعية",
+        122: "مكتبة التعليم النظامي",
+        127: "المنوعات",
       };
       return categoryNames[item.category] || "غير محدد";
     }
@@ -233,16 +231,12 @@ const FormalEducationLibraryDetail: React.FC = () => {
               </div>
 
               {/* Description */}
-              <div
-                className="prose prose-lg max-w-none cursor-pointer hover:bg-gray-50 p-4 rounded-lg transition-colors duration-200"
-                onClick={handleShare}
-                title="انقر للمشاركة - Click to share"
-              >
+              <div className="prose prose-lg max-w-none p-4 rounded-lg">
                 <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
                   وصف المادة
                 </h3>
                 <p className="text-medium-gray leading-relaxed mb-6">
-                  {item.content || item.description}
+                  {makeUrlsClickable(item.content || item.description || "")}
                 </p>
               </div>
 

@@ -5,7 +5,6 @@ import { ContentEntry } from "../services/api";
 import ItemCard from "../components/ItemCard";
 import SearchBar from "../components/SearchBar";
 import Breadcrumb from "../components/Breadcrumb";
-import { CATEGORY_IDS } from "../data/categoryMapping";
 
 const ShariaSciences: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -16,13 +15,13 @@ const ShariaSciences: React.FC = () => {
   );
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch entries for Sharia Sciences from API using category ID
+  // Fetch entries for Sharia Sciences from API using category slug
   const {
     data: entriesData,
     loading,
     error,
   } = useEntries({
-    category: CATEGORY_IDS.SHARIA_SCIENCES,
+    category: "aلعلوم-aلشرعية",
   });
 
   const items = (entriesData as ContentEntry[]) || [];
@@ -94,8 +93,6 @@ const ShariaSciences: React.FC = () => {
           </div>
         )}
 
-
-
         {/* Error State */}
         {error && (
           <div className="text-center py-16">
@@ -113,10 +110,7 @@ const ShariaSciences: React.FC = () => {
         {!loading && !error && filteredItems.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredItems.map((item: ContentEntry) => (
-              <ItemCard
-                key={item.id}
-                item={item}
-              />
+              <ItemCard key={item.id} item={item} />
             ))}
           </div>
         ) : (

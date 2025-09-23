@@ -92,13 +92,6 @@ const Manuscripts: React.FC = () => {
     return filtered;
   }, [manuscripts, selectedCategory, selectedSubcategory, searchQuery]);
 
-  const categories = [
-    "الكل",
-    "العلوم الشرعية",
-    "العلوم اللغوية",
-    "العلوم الاجتماعية",
-    "المنوعات",
-  ];
 
   useEffect(() => {
     if (categoryFromUrl) {
@@ -150,22 +143,7 @@ const Manuscripts: React.FC = () => {
           />
         </div>
 
-        {/* Category Filter */}
-        <div className="flex flex-wrap justify-center gap-4 mb-6">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => handleCategoryFilter(category)}
-              className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
-                selectedCategory === category
-                  ? "bg-olive-green text-white shadow-lg"
-                  : "bg-white text-heritage-gold border-2 border-heritage-gold hover:bg-heritage-gold hover:text-white"
-              }`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
+      
 
         {/* Subcategory Filter - Only show if subcategories are available and a category is selected */}
         {selectedCategory !== "الكل" &&

@@ -15,13 +15,13 @@ const FormalEducationLibrary: React.FC = () => {
   );
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch entries for Formal Education Library from API using category ID
+  // Fetch entries for Formal Education Library from API using category slug
   const {
     data: entriesData,
     loading,
     error,
   } = useEntries({
-    category: "6",
+    category: "مكتبة-aلتعليم-aلنظaمي",
   });
 
   const items = (entriesData as ContentEntry[]) || [];

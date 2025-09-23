@@ -15,13 +15,13 @@ const Varieties: React.FC = () => {
   );
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch entries for Varieties from API using category name
+  // Fetch entries for Varieties from API using category slug
   const {
     data: entriesData,
     loading,
     error,
   } = useEntries({
-    category: "4", // Category name from database
+    category: "aلمنوعaت", // Category slug from database
   });
 
   const items = (entriesData as ContentEntry[]) || [];

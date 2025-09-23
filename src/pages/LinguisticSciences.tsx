@@ -6,8 +6,6 @@ import ItemCard from "../components/ItemCard";
 import SearchBar from "../components/SearchBar";
 import Breadcrumb from "../components/Breadcrumb";
 
-import { CATEGORY_IDS } from "../data/categoryMapping";
-
 const LinguisticSciences: React.FC = () => {
   const [searchParams] = useSearchParams();
   const categoryFromUrl = searchParams.get("category");
@@ -17,13 +15,13 @@ const LinguisticSciences: React.FC = () => {
   );
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch entries for Linguistic Sciences from API using category ID
+  // Fetch entries for Linguistic Sciences from API using category slug
   const {
     data: entriesData,
     loading,
     error,
   } = useEntries({
-    category: CATEGORY_IDS.LINGUISTIC_SCIENCES,
+    category: "aلعلوم-aللغوية",
   });
 
   const items = (entriesData as ContentEntry[]) || [];

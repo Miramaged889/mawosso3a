@@ -8,13 +8,13 @@ import Breadcrumb from "../components/Breadcrumb";
 const Benefits: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch entries for Benefits from API using category ID
+  // Fetch entries for Benefits from API using category slug
   const {
     data: entriesData,
     loading,
     error,
   } = useEntries({
-    category: "5",
+    category: "فوaئد",
   });
 
   const items = (entriesData as ContentEntry[]) || [];

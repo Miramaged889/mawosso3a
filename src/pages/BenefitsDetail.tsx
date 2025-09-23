@@ -2,6 +2,7 @@ import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { useEntry } from "../hooks/useApi";
 import Breadcrumb from "../components/Breadcrumb";
+import { makeUrlsClickable } from "../utils/textUtils";
 
 const BenefitsDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -104,16 +105,14 @@ const BenefitsDetail: React.FC = () => {
     } else if (typeof benefit.category === "number") {
       // Map category IDs to names
       const categoryNames: { [key: number]: string } = {
-        1: "العلوم الشرعية",
-        2: "العلوم اللغوية",
-        3: "العلوم الاجتماعية",
-        4: "المنوعات",
-        5: "فوائد",
-        6: "مكتبة التعليم النظامي",
-        7: "الأخبار العلمية",
-        8: "تحقيقات الشناقطة",
-        9: "مؤلفات عن شنقيط",
-        10: "مخطوطات",
+        33: "فوائد",
+        34: "الكل",
+        99: "الأخبار العلمية",
+        100: "العلوم الشرعية",
+        109: "العلوم اللغوية",
+        118: "علوم أجتماعية",
+        122: "مكتبة التعليم النظامي",
+        127: "المنوعات",
       };
       return categoryNames[benefit.category] || "غير محدد";
     }
@@ -232,16 +231,14 @@ const BenefitsDetail: React.FC = () => {
               </div>
 
               {/* Description */}
-              <div
-                className="prose prose-lg max-w-none cursor-pointer hover:bg-gray-50 p-4 rounded-lg transition-colors duration-200"
-                onClick={handleShare}
-                title="انقر للمشاركة - Click to share"
-              >
+              <div className="prose prose-lg max-w-none p-4 rounded-lg">
                 <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
                   وصف الفائدة
                 </h3>
                 <p className="text-medium-gray leading-relaxed mb-6">
-                  {benefit.content || benefit.description}
+                  {makeUrlsClickable(
+                    benefit.content || benefit.description || ""
+                  )}
                 </p>
               </div>
 

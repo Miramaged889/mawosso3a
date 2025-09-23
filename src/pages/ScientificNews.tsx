@@ -8,13 +8,13 @@ import Breadcrumb from "../components/Breadcrumb";
 const ScientificNews: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch entries for Scientific News from API using category ID
+  // Fetch entries for Scientific News from API using category slug
   const {
     data: entriesData,
     loading,
     error,
   } = useEntries({
-    category: "7", // Category ID for scientific news
+    category: "aلaخبaر-aلعلمية", // Category slug for scientific news
   });
 
   // Ensure we have an array of items and handle both array and object responses
@@ -95,8 +95,6 @@ const ScientificNews: React.FC = () => {
           </div>
         )}
 
-
-
         {/* Error State */}
         {error && (
           <div className="text-center py-16">
@@ -115,10 +113,7 @@ const ScientificNews: React.FC = () => {
         {!loading && !error && filteredItems.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredItems.map((item: ContentEntry) => (
-              <ItemCard
-                key={item.id}
-                item={item}
-              />
+              <ItemCard key={item.id} item={item} />
             ))}
           </div>
         ) : (

@@ -65,9 +65,85 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
     return `${url}`;
   };
 
+  // Check if author should be displayed (hide if "Unknown Author")
+  const shouldShowAuthor = () => {
+    return (
+      item.author &&
+      item.author.trim() !== "" &&
+      item.author !== "Unknown Author"
+    );
+  };
+
+  // Get category slug safely
+  const getCategorySlug = () => {
+    if (typeof item.category === "object" && item.category?.slug) {
+      return item.category.slug;
+    } else if (typeof item.category === "number") {
+      // Map category IDs to slugs based on API response
+      const categorySlugs: { [key: number]: string } = {
+        1: "uncategorized",
+        32: "مقaلaت",
+        33: "فوaئd",
+        34: "aلكل",
+        67: "خطب-و-دروس",
+        99: "aلaخبaر-aلعلمية",
+        100: "aلعلوم-aلشرعية",
+        109: "aلعلوم-aللغوية",
+        118: "3lom_Agtma3ya",
+        122: "مكتبة-aلتعليم-aلنظaمي",
+        127: "aلمنوعaت",
+      };
+      return categorySlugs[item.category] || "uncategorized";
+    }
+    return "uncategorized";
+  };
+
   // Determine the correct route based on kind and category
   const getDetailRoute = () => {
-    // Route based on kind first
+    // Get category slug first to check for special category routing
+    let categorySlug = null;
+    if (typeof item.category === "object" && item.category?.slug) {
+      categorySlug = item.category.slug;
+    } else if (typeof item.category === "number") {
+      categorySlug = getCategorySlug();
+    }
+
+    // Route based on category slug first (for specific category routing)
+    if (categorySlug === "aلمنوعaت") {
+      // المنوعات - always route to varieties regardless of kind
+      return `/varieties/${item.id}`;
+    }
+    if (categorySlug === "فوaئd") {
+      // فوائد - always route to benefits regardless of kind
+      return `/benefits/${item.id}`;
+    }
+    if (categorySlug === "aلعلوم-aللغوية") {
+      // العلوم اللغوية - always route to linguistic sciences regardless of kind
+      return `/linguistic-sciences/${item.id}`;
+    }
+    if (categorySlug === "aلعلوم-aلشرعية") {
+      // العلوم الشرعية - always route to sharia sciences regardless of kind
+      return `/sharia-sciences/${item.id}`;
+    }
+    if (categorySlug === "3lom_Agtma3ya") {
+      // علوم أخرى - always route to social sciences regardless of kind
+      return `/social-sciences/${item.id}`;
+    }
+    if (categorySlug === "مقaلaت") {
+      // مقالات
+      return `/varieties/${item.id}`;
+    }
+
+     if (categorySlug === "مكتبة-aلتعليم-aلنظaمي") {
+       // مكتبة التعليم النظامي
+       return `/formal-education-library/${item.id}`;
+     }
+
+
+
+
+
+    // Route based on kind for other categories
     if (item.kind === 1) {
       // كتاب
       return `/books-on-chinguitt/${item.id}`;
@@ -91,62 +167,6 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
     if (item.kind === 18) {
       // عن الشنقيط
       return `/about-chinguit/${item.id}`;
-    }
-
-    // If no specific kind or kind is not 1, try to determine from category ID
-    let categoryId = null;
-
-    // Get category ID from different possible formats
-    if (typeof item.category === "object" && item.category?.id) {
-      categoryId = item.category.id;
-    } else if (typeof item.category === "number") {
-      categoryId = item.category;
-    }
-
-    // Route based on category ID (updated to match new API categories)
-    if (categoryId === 99) {
-      // الأخبار العلمية
-      return `/scientific-news/${item.id}`;
-    }
-
-    if (categoryId === 122) {
-      // مكتبة التعليم النظامي
-      return `/formal-education-library/${item.id}`;
-    }
-
-    if (categoryId === 33) {
-      // فوائد
-      return `/benefits/${item.id}`;
-    }
-
-    if (categoryId === 127) {
-      // المنوعات
-      return `/varieties/${item.id}`;
-    }
-
-    if (categoryId === 109) {
-      // العلوم اللغوية
-      return `/linguistic-sciences/${item.id}`;
-    }
-
-    if (categoryId === 100) {
-      // العلوم الشرعية
-      return `/sharia-sciences/${item.id}`;
-    }
-
-    if (categoryId === 118) {
-      // علوم أخرى
-      return `/social-sciences/${item.id}`;
-    }
-
-    if (categoryId === 67) {
-      // خطب و دروس
-      return `/varieties/${item.id}`;
-    }
-
-    if (categoryId === 32) {
-      // مقالات
-      return `/varieties/${item.id}`;
     }
 
     // Default to books if no specific category is found
@@ -208,7 +228,9 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
             {item.title}
           </h3>
         </Link>
-        <p className="text-heritage-gold font-semibold mb-2">{item.author}</p>
+        {shouldShowAuthor() && (
+          <p className="text-heritage-gold font-semibold mb-2">{item.author}</p>
+        )}
         <p className="text-medium-gray leading-relaxed mb-4 line-clamp-3">
           {item.description}
         </p>

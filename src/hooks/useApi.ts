@@ -212,56 +212,14 @@ export const useEntries = (params?: {
 }) => {
   return useApiData(
     async () => {
-      // First try to get all entries, then filter client-side
-      const allData = await apiClient.getEntries(); // Get all without filters
+      // Pass the category parameter directly to the API for server-side filtering
+      const data = await apiClient.getEntries(params);
 
-      if (!allData || !Array.isArray(allData)) {
+      if (!data || !Array.isArray(data)) {
         return [];
       }
 
-      let filteredData = allData;
-
-      // Apply client-side filtering
-      if (params?.category) {
-        const categoryId = parseInt(params.category);
-        filteredData = filteredData.filter(
-          (item: any) =>
-            item.category === categoryId || item.category === params.category
-        );
-      }
-
-      if (params?.subcategory) {
-        filteredData = filteredData.filter(
-          (item: any) =>
-            item.subcategory === params.subcategory ||
-            (typeof item.subcategory === "object" &&
-              item.subcategory?.name === params.subcategory)
-        );
-      }
-
-      // For entry_type, map to categories or use tags
-      if (params?.entry_type) {
-        if (params.entry_type === "manuscript") {
-          // Manuscripts might be in category 10 or have "المخطوطات" in tags
-          filteredData = filteredData.filter(
-            (item: any) =>
-              item.category === 10 ||
-              (item.tags && item.tags.includes("المخطوطات"))
-          );
-        } else if (params.entry_type === "book") {
-          // Books might have "كتاب" in tags
-          filteredData = filteredData.filter(
-            (item: any) => item.tags && item.tags.includes("كتاب")
-          );
-        } else if (params.entry_type === "investigation") {
-          // Investigations might be in a specific category
-          filteredData = filteredData.filter(
-            (item: any) => item.category === 8 // Assuming investigations are in category 8
-          );
-        }
-      }
-
-      return filteredData;
+      return data;
     },
     () => {
       // Fallback to local data when API fails
@@ -404,7 +362,7 @@ export const useSearchWithParam = (query: string) => {
 // Hook for all entries without pagination
 export const useAllEntries = (page: number = 1, limit: number = 2000) => {
   return useApiData(
-    () => apiClient.getEntries(),
+    () => apiClient.getEntries({ limit }),
     () => allItems.map(convertManuscriptToContentEntry),
     [page, limit]
   );
