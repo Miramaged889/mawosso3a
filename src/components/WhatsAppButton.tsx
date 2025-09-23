@@ -1,11 +1,11 @@
 import React from 'react';
 
 const WhatsAppButton: React.FC = () => {
-  const whatsappNumber = "1234567890"; // رقم الواتساب
+  const whatsappNumber = "22241803272"; // رقم الواتساب الجديد
   const message = "السلام عليكم، أريد الاستفسار عن الموسوعة الشنقيطية";
   
   const handleWhatsAppClick = () => {
-    const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+    const url = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
   };
 
