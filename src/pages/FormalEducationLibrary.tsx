@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
 import { useEntries } from "../hooks/useApi";
 import { ContentEntry } from "../services/api";
 import ItemCard from "../components/ItemCard";
@@ -7,12 +6,6 @@ import SearchBar from "../components/SearchBar";
 import Breadcrumb from "../components/Breadcrumb";
 
 const FormalEducationLibrary: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const categoryFromUrl = searchParams.get("category");
-
-  const [selectedCategory, setSelectedCategory] = useState(
-    categoryFromUrl || "الكل"
-  );
   const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch entries for Formal Education Library from API using category slug
@@ -40,18 +33,8 @@ const FormalEducationLibrary: React.FC = () => {
     return filtered;
   }, [items, searchQuery]);
 
-  React.useEffect(() => {
-    if (categoryFromUrl) {
-      handleCategoryFilter(categoryFromUrl);
-    }
-  }, [categoryFromUrl]);
-
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-  };
-
-  const handleCategoryFilter = (category: string) => {
-    setSelectedCategory(category);
   };
 
   const breadcrumbItems = [{ label: "مكتبة التعليم النظامي" }];
