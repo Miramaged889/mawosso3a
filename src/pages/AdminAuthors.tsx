@@ -20,7 +20,7 @@ const AdminAuthors: React.FC = () => {
     loading,
     error,
     refetch,
-  } = useAllEntriesPaginated(currentPage, itemsPerPage);
+  } = useAllEntriesPaginated(currentPage, itemsPerPage, "lmolft");
   const { data: categories } = useCategories();
 
   // Format image URL
@@ -37,7 +37,7 @@ const AdminAuthors: React.FC = () => {
     }
   }, [isAuthenticated, initialized, navigate]);
 
-  // Filter authors based on kind field (المولفات)
+  // Filter authors based on kind field (المولفات - slug: lmolft)
   const allAuthors = useMemo(() => {
     if (!paginatedData?.results) return [];
     return paginatedData.results.filter((item: ContentEntry) => {
@@ -324,8 +324,7 @@ const AdminAuthors: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="text-sm text-medium-gray">
                 صفحة {currentPage} من أصل {totalPages} صفحة - عرض{" "}
-                {allAuthors.length} مؤلفة من أصل {allAuthors.length || 0}{" "}
-                إدخال
+                {allAuthors.length} مؤلفة من أصل {allAuthors.length || 0} إدخال
               </div>
               <div className="flex items-center gap-2">
                 {/* Previous Button */}

@@ -213,8 +213,8 @@ export const useEntries = (params?: {
 }) => {
   return useApiData(
     async () => {
-      // Pass the category parameter directly to the API for server-side filtering
-      const data = await apiClient.getEntries(params);
+      // Use getAllEntries to fetch all entries from all pages
+      const data = await apiClient.getAllEntries(params);
 
       if (!data || !Array.isArray(data)) {
         return [];
@@ -372,11 +372,12 @@ export const useAllEntries = (page: number = 1, limit: number = 2000) => {
 // Hook for AdminBooks with pagination (like AllEntries)
 export const useAllEntriesPaginated = (
   page: number = 1,
-  limit: number = 2000
+  limit: number = 2000,
+  kind?: string
 ) => {
   return useApiData(
     async () => {
-      const data = await apiClient.getAllEntriesPaginated(page, limit);
+      const data = await apiClient.getAllEntriesPaginated(page, limit, kind);
       return data;
     },
     () => {
@@ -392,7 +393,7 @@ export const useAllEntriesPaginated = (
         previous: page > 1 ? `page=${page - 1}` : null,
       };
     },
-    [page, limit]
+    [page, limit, kind]
   );
 };
 // Authentication hook

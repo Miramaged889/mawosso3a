@@ -20,7 +20,7 @@ const AdminAboutChinguit: React.FC = () => {
     loading,
     error,
     refetch,
-  } = useAllEntriesPaginated(currentPage, itemsPerPage);
+  } = useAllEntriesPaginated(currentPage, itemsPerPage, "aan-lshnkyt");
   const { data: categories } = useCategories();
 
   // Format image URL
@@ -37,7 +37,7 @@ const AdminAboutChinguit: React.FC = () => {
     }
   }, [isAuthenticated, initialized, navigate]);
 
-  // Filter about chinguit based on kind field (عن الشنقيط)
+  // Filter about chinguit based on kind field (عن الشنقيط - kind 18, slug: aan-lshnkyt)
   const allAboutChinguit = useMemo(() => {
     if (!paginatedData?.results) return [];
     return paginatedData.results.filter((item: ContentEntry) => {
@@ -295,8 +295,8 @@ const AdminAboutChinguit: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="text-sm text-medium-gray">
                 صفحة {currentPage} من أصل {totalPages} صفحة - عرض{" "}
-                {allAboutChinguit.length} مؤلفة من أصل {allAboutChinguit.length || 0}{" "}
-                إدخال
+                {allAboutChinguit.length} مؤلفة من أصل{" "}
+                {allAboutChinguit.length || 0} إدخال
               </div>
               <div className="flex items-center gap-2">
                 {/* Previous Button */}

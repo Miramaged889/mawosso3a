@@ -19,7 +19,7 @@ const AdminEditManuscript: React.FC = () => {
   const [formData, setFormData] = useState({
     title: "",
     author: "",
-    category: 10,
+    category: 0,
     date: "2024-01-01",
     description: "",
     content: "",
@@ -27,7 +27,7 @@ const AdminEditManuscript: React.FC = () => {
     tags: "",
     page_count: "",
     size: "",
-    kind: 0,
+    kind: 16,
     cover_image_link: "",
     pdf_file_link: "",
   });
@@ -37,9 +37,8 @@ const AdminEditManuscript: React.FC = () => {
   // Use all categories
   const allCategories = categories || [];
 
-  // Filter kinds for manuscripts (المخطوطات)
-  const availableKinds =
-    kinds?.filter((kind) => kind.name === "المخطوطات") || [];
+  // Filter kinds for manuscripts (مخطوط - kind 16)
+  const availableKinds = kinds?.filter((kind) => kind.id === 16) || [];
 
   useEffect(() => {
     if (initialized && !isAuthenticated) {
@@ -57,7 +56,7 @@ const AdminEditManuscript: React.FC = () => {
           typeof manuscript.category === "object" &&
           manuscript.category !== null
             ? manuscript.category.id
-            : (manuscript.category as number) || 10,
+            : (manuscript.category as number) || 0,
         date: manuscript.date || "2024-01-01",
         description: manuscript.description || "",
         content: manuscript.content || "",
@@ -68,7 +67,7 @@ const AdminEditManuscript: React.FC = () => {
           manuscript.pages?.toString() ||
           "",
         size: manuscript.size?.toString() || "",
-        kind: manuscript.kind || 0,
+        kind: manuscript.kind || 16,
         cover_image_link: manuscript.cover_image_link || "",
         pdf_file_link: manuscript.pdf_file_link || "",
       });
@@ -131,7 +130,7 @@ const AdminEditManuscript: React.FC = () => {
         tags: formData.tags.trim(),
         page_count: pageCount,
         size: formData.size.trim() || null,
-        kind: formData.kind,
+        kind: 16, // Set to مخطوط (kind 16) for manuscripts
         published: true,
       };
 

@@ -42,9 +42,8 @@ const AdminAddPost: React.FC = () => {
   // Filter out manuscripts category (ID 10) from available categories
   const availableCategories = categories?.filter((cat) => cat.id !== 14) || [];
 
-  // Filter kinds for posts (بوست)
-  const availableKinds =
-    kinds?.filter((kind) => kind.name === "منشور") || [];
+  // Filter kinds for posts (أخبار - kind 14)
+  const availableKinds = kinds?.filter((kind) => kind.id === 14) || [];
 
   useEffect(() => {
     if (initialized && !isAuthenticated) {
@@ -112,7 +111,7 @@ const AdminAddPost: React.FC = () => {
         tags: formData.tags.trim(),
         page_count: pageCount,
         size: sizeValue,
-        kind: formData.kind,
+        kind: 14, // Set to أخبار (kind 14) for posts
         published: true, // Set to published by default for posts
         // Remove slug - let backend generate it automatically
       };

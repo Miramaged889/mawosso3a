@@ -20,7 +20,7 @@ const AdminInvestigations: React.FC = () => {
     loading,
     error,
     refetch,
-  } = useAllEntriesPaginated(currentPage, itemsPerPage);
+  } = useAllEntriesPaginated(currentPage, itemsPerPage, "lthkykt");
   const { data: categories } = useCategories();
 
   // Format image URL
@@ -37,7 +37,7 @@ const AdminInvestigations: React.FC = () => {
     }
   }, [isAuthenticated, initialized, navigate]);
 
-  // Filter investigations based on kind field (التحقيقات)
+  // Filter investigations based on kind field (التحقيقات - kind 17, slug: lthkykt)
   const allInvestigations = useMemo(() => {
     if (!paginatedData?.results) return [];
     return paginatedData.results.filter((item: ContentEntry) => {
@@ -299,8 +299,8 @@ const AdminInvestigations: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="text-sm text-medium-gray">
                 صفحة {currentPage} من أصل {totalPages} صفحة - عرض{" "}
-                {allInvestigations.length} تحقيق من أصل {allInvestigations.length || 0}{" "}
-                إدخال
+                {allInvestigations.length} تحقيق من أصل{" "}
+                {allInvestigations.length || 0} إدخال
               </div>
               <div className="flex items-center gap-2">
                 {/* Previous Button */}

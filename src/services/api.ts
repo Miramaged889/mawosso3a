@@ -427,6 +427,76 @@ class ApiClient {
     return data.results || data;
   }
 
+  // Get all entries by fetching all pages
+  async getAllEntries(params?: {
+    category?: string;
+    subcategory?: string;
+    entry_type?: string;
+    kind?: string;
+  }): Promise<ContentEntry[]> {
+    const allEntries: ContentEntry[] = [];
+    let currentPage = 1;
+    let hasNextPage = true;
+
+    while (hasNextPage) {
+      try {
+        const searchParams = new URLSearchParams();
+
+        if (params?.category) searchParams.append("category", params.category);
+        if (params?.subcategory)
+          searchParams.append("subcategory", params.subcategory);
+        if (params?.entry_type)
+          searchParams.append("entry_type", params.entry_type);
+        if (params?.kind) searchParams.append("kind", params.kind);
+        searchParams.append("page", currentPage.toString());
+        searchParams.append("limit", "20"); // Standard page size
+
+        const response = await this.fetchWithFallback(
+          `${this.baseURL}/entries/?${searchParams}`,
+          {
+            headers: this.getHeaders(),
+            mode: "cors",
+            credentials: "omit",
+          }
+        );
+
+        // If 403 error, try without authentication
+        if (response.status === 403) {
+          const publicResponse = await this.fetchWithFallback(
+            `${this.baseURL}/entries/?${searchParams}`,
+            {
+              headers: this.getPublicHeaders(),
+              mode: "cors",
+              credentials: "omit",
+            }
+          );
+
+          if (publicResponse.ok) {
+            const result = await publicResponse.json();
+            allEntries.push(...(result.results || []));
+            hasNextPage = !!result.next;
+            currentPage++;
+            continue;
+          }
+        }
+
+        if (response.ok) {
+          const result = await this.handleResponse<any>(response);
+          allEntries.push(...(result.results || []));
+          hasNextPage = !!result.next;
+          currentPage++;
+        } else {
+          hasNextPage = false;
+        }
+      } catch (error) {
+        console.warn(`Error fetching page ${currentPage}:`, error);
+        hasNextPage = false;
+      }
+    }
+
+    return allEntries;
+  }
+
   // Content Entries
   async getEntries(params?: {
     category?: string;
@@ -527,21 +597,26 @@ class ApiClient {
   // Get all entries with pagination support (for AdminBooks)
   async getAllEntriesPaginated(
     page: number = 1,
-    limit: number = 2000
+    limit: number = 2000,
+    kind?: string
   ): Promise<{
     results: ContentEntry[];
     count: number;
     next: string | null;
     previous: string | null;
   }> {
-    const response = await fetch(
-      `${this.baseURL}/entries/?page=${page}&limit=${limit}`,
-      {
-        headers: this.getHeaders(),
-        mode: "cors",
-        credentials: "omit",
-      }
-    );
+    const searchParams = new URLSearchParams();
+    searchParams.append("page", page.toString());
+    searchParams.append("limit", limit.toString());
+    if (kind) {
+      searchParams.append("kind", kind);
+    }
+
+    const response = await fetch(`${this.baseURL}/entries/?${searchParams}`, {
+      headers: this.getHeaders(),
+      mode: "cors",
+      credentials: "omit",
+    });
 
     const result = await this.handleResponse<any>(response);
 

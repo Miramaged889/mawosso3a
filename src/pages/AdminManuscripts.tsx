@@ -4,7 +4,6 @@ import { useAllEntriesPaginated, useAuth } from "../hooks/useApi";
 import { apiClient, ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
-
 const AdminManuscripts: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, initialized } = useAuth();
@@ -17,13 +16,13 @@ const AdminManuscripts: React.FC = () => {
     loading,
     error,
     refetch,
-  } = useAllEntriesPaginated(currentPage, itemsPerPage);
+  } = useAllEntriesPaginated(currentPage, itemsPerPage, "lmkhtott");
 
-  // Filter manuscripts based on kind field (المخطوطات)
+  // Filter manuscripts based on kind field (مخطوط - kind 16, slug: lmkhtott)
   const allManuscripts = useMemo(() => {
     if (!paginatedData?.results) return [];
     return paginatedData.results.filter((item: ContentEntry) => {
-      // Only include items with kind 16 (المخطوطات)
+      // Only include items with kind 16 (مخطوط)
       return item.kind === 16;
     });
   }, [paginatedData]);
@@ -225,7 +224,7 @@ const AdminManuscripts: React.FC = () => {
                         </td>
                         <td className="px-6 py-4">
                           <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm">
-                            {manuscript.kind === 16 ? "المخطوطات" : "غير محدد"}
+                            {manuscript.kind === 16 ? "مخطوط" : "غير محدد"}
                           </span>
                         </td>
 
@@ -289,8 +288,8 @@ const AdminManuscripts: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="text-sm text-medium-gray">
                 صفحة {currentPage} من أصل {totalPages} صفحة - عرض{" "}
-                {allManuscripts.length} مخطوطة من أصل {allManuscripts.length || 0}{" "}
-                إدخال
+                {allManuscripts.length} مخطوطة من أصل{" "}
+                {allManuscripts.length || 0} إدخال
               </div>
               <div className="flex items-center gap-2">
                 {/* Previous Button */}

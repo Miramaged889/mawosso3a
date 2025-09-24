@@ -20,7 +20,7 @@ const AdminBooks: React.FC = () => {
     loading,
     error,
     refetch,
-  } = useAllEntriesPaginated(currentPage, itemsPerPage);
+  } = useAllEntriesPaginated(currentPage, itemsPerPage, "book");
   const { data: categories } = useCategories();
 
   // Format image URL
@@ -37,7 +37,7 @@ const AdminBooks: React.FC = () => {
     }
   }, [isAuthenticated, initialized, navigate]);
 
-  // Filter books based on kind field (كتاب only)
+  // Filter books based on kind field (كتاب - kind 1, slug: book)
   const allBooks = useMemo(() => {
     if (!paginatedData?.results) return [];
     return paginatedData.results.filter((item: ContentEntry) => {
@@ -53,7 +53,6 @@ const AdminBooks: React.FC = () => {
   const books = allBooks;
 
   console.log(allBooks);
-
 
   // Pagination handlers
   const handlePageChange = (page: number) => {

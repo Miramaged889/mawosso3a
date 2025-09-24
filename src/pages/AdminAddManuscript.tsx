@@ -12,7 +12,7 @@ const AdminAddManuscript: React.FC = () => {
   const [formData, setFormData] = useState({
     title: "",
     author: "",
-    category: 10, // تعيين القيمة الافتراضية للتصنيف إلى المخطوطات (10)
+    category: 0, // تعيين القيمة الافتراضية للتصنيف إلى المخطوطات (10)
     date: "2024-01-01", // تعيين التاريخ الافتراضي
     description: "",
     content: "",
@@ -20,7 +20,7 @@ const AdminAddManuscript: React.FC = () => {
     tags: "",
     page_count: "",
     size: "",
-    kind: 0,
+    kind: 16,
     cover_image_link: "",
     pdf_file_link: "", // تغيير من ملف إلى رابط
   });

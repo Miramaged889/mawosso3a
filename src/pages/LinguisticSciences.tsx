@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
 import { useEntries } from "../hooks/useApi";
 import { ContentEntry } from "../services/api";
 import ItemCard from "../components/ItemCard";
@@ -7,13 +6,9 @@ import SearchBar from "../components/SearchBar";
 import Breadcrumb from "../components/Breadcrumb";
 
 const LinguisticSciences: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const categoryFromUrl = searchParams.get("category");
-
-  const [selectedCategory, setSelectedCategory] = useState(
-    categoryFromUrl || "الكل"
-  );
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(20);
 
   // Fetch entries for Linguistic Sciences from API using category slug
   const {
@@ -40,18 +35,20 @@ const LinguisticSciences: React.FC = () => {
     return filtered;
   }, [items, searchQuery]);
 
-  React.useEffect(() => {
-    if (categoryFromUrl) {
-      handleCategoryFilter(categoryFromUrl);
-    }
-  }, [categoryFromUrl]);
+  // Pagination logic
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedItems = filteredItems.slice(startIndex, endIndex);
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-  };
-
-  const handleCategoryFilter = (category: string) => {
-    setSelectedCategory(category);
   };
 
   const breadcrumbItems = [{ label: "العلوم اللغوية" }];
@@ -66,10 +63,6 @@ const LinguisticSciences: React.FC = () => {
           <h1 className="text-4xl md:text-5xl font-amiri font-bold text-blue-gray mb-4">
             العلوم اللغوية
           </h1>
-          <p className="text-lg text-medium-gray max-w-3xl mx-auto leading-relaxed">
-            اكتشف مجموعتنا المتميزة من العلوم اللغوية المحققة والمدروسة بعناية
-            فائقة
-          </p>
         </div>
 
         {/* Search Bar */}
@@ -107,9 +100,9 @@ const LinguisticSciences: React.FC = () => {
         )}
 
         {/* Items Grid */}
-        {!loading && !error && filteredItems.length > 0 ? (
+        {!loading && !error && paginatedItems.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredItems.map((item: ContentEntry) => (
+            {paginatedItems.map((item: ContentEntry) => (
               <ItemCard key={item.id} item={item} />
             ))}
           </div>
@@ -126,6 +119,69 @@ const LinguisticSciences: React.FC = () => {
               </p>
             </div>
           )
+        )}
+
+        {/* Pagination Controls */}
+        {!loading && !error && totalPages > 1 && (
+          <div className="text-center py-4 border-t border-gray-100 mt-8">
+            <p className="text-medium-gray mb-4">
+              صفحة{" "}
+              <span className="font-semibold text-olive-green">
+                {currentPage}
+              </span>{" "}
+              من أصل{" "}
+              <span className="font-semibold text-blue-gray">{totalPages}</span>{" "}
+              صفحة (إجمالي {filteredItems.length} عنصر)
+            </p>
+
+            <div className="flex justify-center items-center gap-2 flex-wrap">
+              {/* Previous Button */}
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                السابق
+              </button>
+
+              {/* Page Numbers */}
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`px-3 py-2 border rounded-lg text-sm ${
+                      currentPage === pageNum
+                        ? "bg-olive-green text-white border-olive-green"
+                        : "border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              {/* Next Button */}
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                التالي
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>

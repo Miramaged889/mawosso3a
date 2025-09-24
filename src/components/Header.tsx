@@ -72,16 +72,7 @@ const Header = () => {
             >
               المخطوطات
             </Link>
-            <Link
-              to="/all-entries"
-              className={`transition-colors ${
-                isActive("/all-entries")
-                  ? "text-heritage-gold font-semibold"
-                  : "text-dark-gray hover:text-heritage-gold"
-              }`}
-            >
-              الكل
-            </Link>
+
             <Link
               to="/about-chinguit"
               className={`transition-colors ${
@@ -92,6 +83,16 @@ const Header = () => {
               onClick={() => setIsMenuOpen(false)}
             >
               عن شنقيط
+            </Link>
+            <Link
+              to="/all-entries"
+              className={`transition-colors ${
+                isActive("/all-entries")
+                  ? "text-heritage-gold font-semibold"
+                  : "text-dark-gray hover:text-heritage-gold"
+              }`}
+            >
+              الكل
             </Link>
 
             <Link
@@ -119,7 +120,7 @@ const Header = () => {
           {/* WhatsApp Button */}
           <div className="hidden md:block">
             <a
-              href="https://wa.me/1234567890"
+              href="https://wa.me/22241803272"
               className="bg-olive-green text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300 flex items-center space-x-2 space-x-reverse"
             >
               <span>واتساب</span>
@@ -243,7 +244,7 @@ const Header = () => {
                 اتصل بنا
               </Link>
               <a
-                href="https://wa.me/1234567890"
+                href="https://wa.me/22241803272"
                 className="bg-olive-green text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300 inline-flex items-center justify-center space-x-2 space-x-reverse w-fit"
               >
                 <span>واتساب</span>

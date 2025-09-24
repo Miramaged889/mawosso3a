@@ -20,7 +20,7 @@ const AdminPosts: React.FC = () => {
     loading,
     error,
     refetch,
-  } = useAllEntriesPaginated(currentPage, itemsPerPage);
+  } = useAllEntriesPaginated(currentPage, itemsPerPage, "mnshor");
   const { data: categories } = useCategories();
 
   // Format image URL
@@ -37,11 +37,11 @@ const AdminPosts: React.FC = () => {
     }
   }, [isAuthenticated, initialized, navigate]);
 
-  // Filter posts based on kind field (منشور)
+  // Filter posts based on kind field (أخبار - kind 14, slug: mnshor)
   const allPosts = useMemo(() => {
     if (!paginatedData?.results) return [];
     return paginatedData.results.filter((item: ContentEntry) => {
-      // Only include items with kind 14 (منشور)
+      // Only include items with kind 14 (أخبار)
       return item.kind === 14;
     });
   }, [paginatedData]);
@@ -215,7 +215,7 @@ const AdminPosts: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm">
-                          {post.kind === 14 ? "منشور" : "غير محدد"}
+                          {post.kind === 14 ? "أخبار" : "غير محدد"}
                         </span>
                       </td>
 
