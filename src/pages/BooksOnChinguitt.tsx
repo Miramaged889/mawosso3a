@@ -8,20 +8,23 @@ import Breadcrumb from "../components/Breadcrumb";
 const BooksOnChinguitt: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch all entries from API
-  const { data: entriesData, loading, error } = useEntries();
+  // Fetch entries with kind slug "lmolft" (المولفات)
+  const {
+    data: entriesData,
+    loading,
+    error,
+  } = useEntries({
+    kind: "lmolft",
+  });
 
-  // Filter entries by kind 15 (مؤلفات عن شنقيط) - only show books
+  // Entries are already filtered by kind from API
   const booksOnChinguitt = useMemo(() => {
     const results = entriesData || [];
     const allEntries = Array.isArray(results)
       ? (results as ContentEntry[])
       : [];
 
-    return allEntries.filter((entry: ContentEntry) => {
-      // Only show books with kind 15 (مؤلفات عن شنقيط)
-      return entry.kind === 15;
-    });
+    return allEntries;
   }, [entriesData]);
 
   const filteredItems = useMemo(() => {

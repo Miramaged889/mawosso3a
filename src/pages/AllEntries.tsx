@@ -22,6 +22,12 @@ const AllEntries: React.FC = () => {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [totalSearchCount, setTotalSearchCount] = useState(0);
 
+  // State for filtered results when using category/kind filters
+  const [filteredResults, setFilteredResults] = useState<ContentEntry[]>([]);
+  const [filteredLoading, setFilteredLoading] = useState(false);
+  const [filteredError, setFilteredError] = useState<string | null>(null);
+  const [totalFilteredCount, setTotalFilteredCount] = useState(0);
+
   const {
     data: paginatedData,
     loading: paginatedLoading,
@@ -29,6 +35,58 @@ const AllEntries: React.FC = () => {
   } = useEntriesPaginated(currentPage, itemsPerPage);
   const { data: categoriesData } = useCategories();
   const { data: kindsData } = useKinds();
+
+  // Function to fetch filtered results by category or kind
+  const fetchFilteredResults = useCallback(
+    async (category: string = "", kind: string = "", page: number = 1) => {
+      if (!category && !kind) {
+        setFilteredResults([]);
+        setTotalFilteredCount(0);
+        return;
+      }
+
+      setFilteredLoading(true);
+      setFilteredError(null);
+
+      try {
+        let apiUrl = `/api/entries/?page=${page}`;
+        
+        if (category) {
+          apiUrl += `&category=${encodeURIComponent(category)}`;
+        }
+        
+        if (kind) {
+          apiUrl += `&kind=${encodeURIComponent(kind)}`;
+        }
+
+        const response = await fetch(apiUrl, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          mode: "cors",
+          credentials: "omit",
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        // Update state with results
+        setFilteredResults(result.results || []);
+        setTotalFilteredCount(result.count || 0);
+      } catch (error) {
+        console.error("Error fetching filtered results:", error);
+        setFilteredError("فشل في تحميل المواد المفلترة");
+        setFilteredResults([]);
+        setTotalFilteredCount(0);
+      } finally {
+        setFilteredLoading(false);
+      }
+    },
+    []
+  );
 
   // Function to fetch search results for a specific page
   const fetchSearchResults = useCallback(
@@ -114,103 +172,48 @@ const AllEntries: React.FC = () => {
     }
   };
 
-  // Get unique categories from API
+  // Get categories from API with their slugs and names
   const categories = useMemo(() => {
     if (!categoriesData) return [];
-    const categoryNames = categoriesData.map((cat) => cat.name).sort();
-    return categoryNames;
+    return categoriesData.sort((a, b) => a.name.localeCompare(b.name));
   }, [categoriesData]);
 
   // Get unique kinds from API
   const kinds = useMemo(() => {
     if (!kindsData) return [];
-    const kindNames = kindsData.map((kind) => kind.name).sort();
-    return kindNames;
+    return kindsData.sort((a, b) => a.name.localeCompare(b.name));
   }, [kindsData]);
 
-  // Determine loading and error states
-  const loading = activeSearchTerm !== "" ? searchLoading : paginatedLoading;
-  const error = activeSearchTerm !== "" ? searchError : paginatedError;
-
-  // Filter entries based on search term and selected filters
-  const filteredEntries = useMemo(() => {
-    // If we're searching, use our search results
-    if (activeSearchTerm !== "" && searchResults.length > 0) {
-      return searchResults.filter((entry: ContentEntry) => {
-        // Apply category and kind filters to search results
-        const matchesCategory =
-          selectedCategory === "" ||
-          (() => {
-            if (typeof entry.category === "object" && entry.category?.name) {
-              const matches = entry.category.name === selectedCategory;
-              return matches;
-            } else if (typeof entry.category === "number") {
-              const categoryObj = categoriesData?.find(
-                (cat) => cat.id === entry.category
-              );
-              const matches = categoryObj?.name === selectedCategory;
-              return matches;
-            }
-            return false;
-          })();
-
-        const matchesKind =
-          selectedKind === "" ||
-          (() => {
-            if (entry.kind) {
-              const kindObj = kindsData?.find((kind) => kind.id === entry.kind);
-              const matches = kindObj?.name === selectedKind;
-              return matches;
-            }
-            return false;
-          })();
-
-        return matchesCategory && matchesKind;
-      });
+  // Handle filter changes
+  useEffect(() => {
+    if (selectedCategory || selectedKind) {
+      fetchFilteredResults(selectedCategory, selectedKind, 1);
+      setCurrentPage(1);
+    } else {
+      setFilteredResults([]);
+      setTotalFilteredCount(0);
     }
+  }, [selectedCategory, selectedKind, fetchFilteredResults]);
 
-    // If not searching, use paginated data with category/kind filters
-    if (!paginatedData?.results) return [];
+  // Determine loading and error states
+  const loading = activeSearchTerm !== "" ? searchLoading : 
+                 (selectedCategory || selectedKind) ? filteredLoading : 
+                 paginatedLoading;
+  
+  const error = activeSearchTerm !== "" ? searchError : 
+               (selectedCategory || selectedKind) ? filteredError : 
+               paginatedError;
 
-    return paginatedData.results.filter((entry: ContentEntry) => {
-      const matchesCategory =
-        selectedCategory === "" ||
-        (() => {
-          if (typeof entry.category === "object" && entry.category?.name) {
-            const matches = entry.category.name === selectedCategory;
-            return matches;
-          } else if (typeof entry.category === "number") {
-            const categoryObj = categoriesData?.find(
-              (cat) => cat.id === entry.category
-            );
-            const matches = categoryObj?.name === selectedCategory;
-            return matches;
-          }
-          return false;
-        })();
-
-      const matchesKind =
-        selectedKind === "" ||
-        (() => {
-          if (entry.kind) {
-            const kindObj = kindsData?.find((kind) => kind.id === entry.kind);
-            const matches = kindObj?.name === selectedKind;
-            return matches;
-          }
-          return false;
-        })();
-
-      return matchesCategory && matchesKind;
-    });
-  }, [
-    paginatedData,
-    searchResults,
-    activeSearchTerm,
-    categoriesData,
-    kindsData,
-    selectedCategory,
-    selectedKind,
-  ]);
+  // Determine which entries to show
+  const currentEntries = useMemo(() => {
+    if (activeSearchTerm !== "") {
+      return searchResults;
+    } else if (selectedCategory || selectedKind) {
+      return filteredResults;
+    } else {
+      return paginatedData?.results || [];
+    }
+  }, [activeSearchTerm, searchResults, selectedCategory, selectedKind, filteredResults, paginatedData]);
 
   // Pagination logic
   const totalPages = paginatedData
@@ -223,9 +226,11 @@ const AllEntries: React.FC = () => {
       ? Math.ceil(totalSearchCount / searchItemsPerPage)
       : 0;
 
-  // When searching, show current search results; when not searching, show paginated results
-  const currentEntries =
-    activeSearchTerm !== "" ? filteredEntries : filteredEntries;
+  // Filtered pagination logic
+  const filteredTotalPages =
+    (selectedCategory || selectedKind) && totalFilteredCount > 0
+      ? Math.ceil(totalFilteredCount / itemsPerPage)
+      : 0;
 
   // Handle URL search parameter on component mount
   useEffect(() => {
@@ -247,6 +252,9 @@ const AllEntries: React.FC = () => {
 
   // Pagination handlers
   const handlePageChange = (page: number) => {
+    if (selectedCategory || selectedKind) {
+      fetchFilteredResults(selectedCategory, selectedKind, page);
+    }
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -377,9 +385,9 @@ const AllEntries: React.FC = () => {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-green focus:border-transparent text-right"
               >
                 <option value="">جميع التصنيفات</option>
-                {categories.map((category: string) => (
-                  <option key={category} value={category}>
-                    {category}
+                {categories.map((category) => (
+                  <option key={category.id} value={category.slug}>
+                    {category.name}
                   </option>
                 ))}
               </select>
@@ -396,9 +404,9 @@ const AllEntries: React.FC = () => {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-green focus:border-transparent text-right"
               >
                 <option value="">جميع الأنواع</option>
-                {kinds.map((kind: string) => (
-                  <option key={kind} value={kind}>
-                    {kind}
+                {kinds.map((kind) => (
+                  <option key={kind.id} value={kind.slug}>
+                    {kind.name}
                   </option>
                 ))}
               </select>
@@ -411,12 +419,20 @@ const AllEntries: React.FC = () => {
               تم العثور على{" "}
               <span className="font-semibold text-olive-green text-lg">
                 {activeSearchTerm !== ""
-                  ? totalSearchCount || filteredEntries.length
+                  ? totalSearchCount
+                  : (selectedCategory || selectedKind)
+                  ? totalFilteredCount
                   : paginatedData?.count || 0}
               </span>{" "}
               مادة
-              {selectedCategory && ` في تصنيف "${selectedCategory}"`}
-              {selectedKind && ` من نوع "${selectedKind}"`}
+              {selectedCategory &&
+                ` في تصنيف "${
+                  categories.find((cat) => cat.slug === selectedCategory)
+                    ?.name || selectedCategory
+                }"`}
+              {selectedKind && ` من نوع "${
+                kinds.find((kind) => kind.slug === selectedKind)?.name || selectedKind
+              }"`}
               {activeSearchTerm && ` تحتوي على "${activeSearchTerm}"`}
             </p>
             {(searchTerm || selectedCategory || selectedKind) && (
@@ -430,6 +446,8 @@ const AllEntries: React.FC = () => {
                   setSearchCurrentPage(1);
                   setSearchResults([]);
                   setTotalSearchCount(0);
+                  setFilteredResults([]);
+                  setTotalFilteredCount(0);
                 }}
                 className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors duration-200 text-sm font-medium whitespace-nowrap"
               >
@@ -440,7 +458,7 @@ const AllEntries: React.FC = () => {
         </div>
 
         {/* Results */}
-        {filteredEntries.length > 0 ? (
+        {currentEntries.length > 0 ? (
           <div className="space-y-8">
             {/* Results Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -464,6 +482,18 @@ const AllEntries: React.FC = () => {
                     </span>{" "}
                     صفحة (عرض {currentEntries.length} من أصل {totalSearchCount}{" "}
                     نتيجة بحث)
+                  </>
+                ) : (selectedCategory || selectedKind) ? (
+                  <>
+                    صفحة{" "}
+                    <span className="font-semibold text-olive-green">
+                      {currentPage}
+                    </span>{" "}
+                    من أصل{" "}
+                    <span className="font-semibold text-blue-gray">
+                      {filteredTotalPages}
+                    </span>{" "}
+                    صفحة (إجمالي {totalFilteredCount} مادة)
                   </>
                 ) : (
                   <>
@@ -537,7 +567,56 @@ const AllEntries: React.FC = () => {
                     التالي
                   </button>
                 </div>
-              ) : activeSearchTerm === "" && totalPages > 1 ? (
+              ) : (selectedCategory || selectedKind) && filteredTotalPages > 1 ? (
+                // Filtered pagination controls
+                <div className="flex justify-center items-center gap-2 flex-wrap">
+                  {/* Previous Button */}
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    السابق
+                  </button>
+
+                  {/* Page Numbers */}
+                  {Array.from({ length: Math.min(5, filteredTotalPages) }, (_, i) => {
+                    let pageNum;
+                    if (filteredTotalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= filteredTotalPages - 2) {
+                      pageNum = filteredTotalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`px-3 py-2 border rounded-lg text-sm ${
+                          currentPage === pageNum
+                            ? "bg-olive-green text-white border-olive-green"
+                            : "border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+
+                  {/* Next Button */}
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === filteredTotalPages}
+                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    التالي
+                  </button>
+                </div>
+              ) : activeSearchTerm === "" && !selectedCategory && !selectedKind && totalPages > 1 ? (
                 // Regular pagination controls
                 <div className="flex justify-center items-center gap-2 flex-wrap">
                   {/* Previous Button */}
@@ -610,6 +689,8 @@ const AllEntries: React.FC = () => {
                   setSearchCurrentPage(1);
                   setSearchResults([]);
                   setTotalSearchCount(0);
+                  setFilteredResults([]);
+                  setTotalFilteredCount(0);
                 }}
                 className="bg-olive-green text-white px-8 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 font-semibold"
               >

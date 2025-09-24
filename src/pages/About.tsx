@@ -17,10 +17,12 @@ const About = () => {
 
               <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
                 <div className="flex items-center justify-center mb-6">
-                  <div className="w-16 h-16 bg-heritage-gold rounded-full flex items-center justify-center">
-                    <span className="text-white font-louguiya font-bold text-3xl">
-                      ش
-                    </span>
+                  <div className="w-32 h-32 bg-heritage-gold rounded-full flex items-center justify-center">
+                    <img 
+                      src="log.png" 
+                      alt="الموسوعة الشنقيطية" 
+                      className="w-32 h-32 rounded-full object-cover"
+                    />
                   </div>
                 </div>
                 <h2 className="text-2xl font-louguiya font-bold text-blue-gray">

@@ -209,6 +209,7 @@ export const useEntries = (params?: {
   category?: string;
   subcategory?: string;
   entry_type?: string;
+  kind?: string;
 }) => {
   return useApiData(
     async () => {
@@ -259,7 +260,7 @@ export const useEntries = (params?: {
 
       return filteredItems.map(convertManuscriptToContentEntry);
     },
-    [params?.category, params?.subcategory, params?.entry_type]
+    [params?.category, params?.subcategory, params?.entry_type, params?.kind]
   );
 };
 

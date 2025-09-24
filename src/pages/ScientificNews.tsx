@@ -8,13 +8,13 @@ import Breadcrumb from "../components/Breadcrumb";
 const ScientificNews: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch entries for Scientific News from API using category slug
+  // Fetch entries for Scientific News from API using kind slug
   const {
     data: entriesData,
     loading,
     error,
   } = useEntries({
-    category: "aلaخبaر-aلعلمية", // Category slug for scientific news
+    kind: "mnshor", // Kind slug for أخبار
   });
 
   // Ensure we have an array of items and handle both array and object responses

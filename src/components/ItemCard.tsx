@@ -36,9 +36,9 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
     if (!item.kind) return null;
     const kindNames: { [key: number]: string } = {
       1: "كتاب",
-      14: "منشور",
+      14: "أخبار",
       15: "المولفات",
-      16: "المخطوطات",
+      16: "مخطوط",
       17: "التحقيقات",
       18: "عن الشنقيط",
     };
@@ -134,37 +134,48 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
       return `/varieties/${item.id}`;
     }
 
-     if (categorySlug === "مكتبة-aلتعليم-aلنظaمي") {
-       // مكتبة التعليم النظامي
-       return `/formal-education-library/${item.id}`;
-     }
+    if (categorySlug === "مكتبة-aلتعليم-aلنظaمي") {
+      // مكتبة التعليم النظامي
+      return `/formal-education-library/${item.id}`;
+    }
 
+    // Route based on kind slug for other categories
+    const getKindSlug = () => {
+      // Map kind IDs to slugs
+      const kindSlugs: { [key: number]: string } = {
+        1: "book",
+        14: "mnshor",
+        15: "lmolft",
+        16: "lmkhtott",
+        17: "lthkykt",
+        18: "aan-lshnkyt",
+      };
+      return kindSlugs[item.kind || 0] || null;
+    };
 
+    const kindSlug = getKindSlug();
 
-
-
-    // Route based on kind for other categories
-    if (item.kind === 1) {
+    if (kindSlug === "book") {
       // كتاب
       return `/books-on-chinguitt/${item.id}`;
     }
-    if (item.kind === 14) {
-      // منشور
-      return `/varieties/${item.id}`;
+    if (kindSlug === "mnshor") {
+      // أخبار
+      return `/scientific-news/${item.id}`;
     }
-    if (item.kind === 15) {
+    if (kindSlug === "lmolft") {
       // المولفات
       return `/books-on-chinguitt/${item.id}`;
     }
-    if (item.kind === 16) {
-      // المخطوطات
+    if (kindSlug === "lmkhtott") {
+      // مخطوط
       return `/manuscripts/${item.id}`;
     }
-    if (item.kind === 17) {
+    if (kindSlug === "lthkykt") {
       // التحقيقات
       return `/tahqiq/${item.id}`;
     }
-    if (item.kind === 18) {
+    if (kindSlug === "aan-lshnkyt") {
       // عن الشنقيط
       return `/about-chinguit/${item.id}`;
     }

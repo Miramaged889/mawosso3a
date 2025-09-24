@@ -19,14 +19,21 @@ const Manuscripts: React.FC = () => {
   );
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch manuscripts from API - filter by kind 8 (مخطوطه)
-  const { data: entriesData, loading, error, refetch } = useEntries();
+  // Fetch manuscripts from API - filter by kind slug "lmkhtott" (مخطوط)
+  const {
+    data: entriesData,
+    loading,
+    error,
+    refetch,
+  } = useEntries({
+    kind: "lmkhtott",
+  });
 
   // Fetch subcategories
   const { data: subcategories, loading: subcategoriesLoading } =
     useSubcategories();
 
-  // Filter manuscripts by kind 1 (كتاب) - only show books
+  // Entries are already filtered by kind from API
   const manuscripts = useMemo(() => {
     const results = entriesData || [];
 
@@ -34,10 +41,7 @@ const Manuscripts: React.FC = () => {
       ? (results as ContentEntry[])
       : [];
 
-    // Filter by kind 16 (المخطوطات) - only show manuscripts
-    const filteredManuscripts = allEntries.filter((entry) => entry.kind === 16);
-
-    return filteredManuscripts;
+    return allEntries;
   }, [entriesData]);
 
   // Get available subcategories for the selected category
@@ -92,7 +96,6 @@ const Manuscripts: React.FC = () => {
     return filtered;
   }, [manuscripts, selectedCategory, selectedSubcategory, searchQuery]);
 
-
   useEffect(() => {
     if (categoryFromUrl) {
       handleCategoryFilter(categoryFromUrl);
@@ -142,8 +145,6 @@ const Manuscripts: React.FC = () => {
             placeholder="ابحث في المخطوطات..."
           />
         </div>
-
-      
 
         {/* Subcategory Filter - Only show if subcategories are available and a category is selected */}
         {selectedCategory !== "الكل" &&

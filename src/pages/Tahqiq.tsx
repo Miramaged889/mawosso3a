@@ -8,20 +8,23 @@ import Breadcrumb from "../components/Breadcrumb";
 const Tahqiq: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch all entries from API
-  const { data: entriesData, loading, error } = useEntries();
+  // Fetch entries with kind slug "lthkykt" (التحقيقات)
+  const {
+    data: entriesData,
+    loading,
+    error,
+  } = useEntries({
+    kind: "lthkykt",
+  });
 
-  // Filter entries by kind 1 (كتاب) - only show books
+  // Entries are already filtered by kind from API
   const tahqiqat = useMemo(() => {
     const results = entriesData || [];
     const allEntries = Array.isArray(results)
       ? (results as ContentEntry[])
       : [];
 
-    return allEntries.filter((entry: ContentEntry) => {
-      // Only show investigations with kind 17 (التحقيقات)
-      return entry.kind === 17;
-    });
+    return allEntries;
   }, [entriesData]);
 
   const filteredItems = useMemo(() => {

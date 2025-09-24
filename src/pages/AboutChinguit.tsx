@@ -19,24 +19,28 @@ const AboutChinguit: React.FC = () => {
   );
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch entries with kind 9 (مؤلفات عن شنقيط)
-  const { data: entriesData, loading, error, refetch } = useEntries();
+  // Fetch entries with kind slug "aan-lshnkyt" (عن الشنقيط)
+  const {
+    data: entriesData,
+    loading,
+    error,
+    refetch,
+  } = useEntries({
+    kind: "aan-lshnkyt",
+  });
 
   // Fetch subcategories
   const { data: subcategories, loading: subcategoriesLoading } =
     useSubcategories();
 
-  // Filter entries by kind 1 (كتاب) - only show books
+  // Entries are already filtered by kind from API
   const aboutChinguitEntries = useMemo(() => {
     const results = entriesData || [];
     const allEntries = Array.isArray(results)
       ? (results as ContentEntry[])
       : [];
 
-    // Filter by kind 18 (عن الشنقيط) - only show about chinguit content
-    const filteredEntries = allEntries.filter((entry) => entry.kind === 18);
-
-    return filteredEntries;
+    return allEntries;
   }, [entriesData]);
 
   // Get available subcategories for the selected category
@@ -96,8 +100,6 @@ const AboutChinguit: React.FC = () => {
     searchQuery,
   ]);
 
-
-
   useEffect(() => {
     if (categoryFromUrl) {
       handleCategoryFilter(categoryFromUrl);
@@ -132,7 +134,7 @@ const AboutChinguit: React.FC = () => {
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-amiri font-bold text-blue-gray mb-4">
-            مؤلفات عن شنقيط
+            عن شنقيط
           </h1>
           <p className="text-lg text-medium-gray max-w-3xl mx-auto leading-relaxed">
             اكتشف مجموعة المؤلفات والكتب التي تتحدث عن مدينة شنقيط التاريخية
@@ -147,8 +149,6 @@ const AboutChinguit: React.FC = () => {
             placeholder="ابحث في المؤلفات عن شنقيط..."
           />
         </div>
-
-
 
         {/* Subcategory Filter - Only show if subcategories are available and a category is selected */}
         {selectedCategory !== "الكل" &&

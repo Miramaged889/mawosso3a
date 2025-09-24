@@ -432,6 +432,7 @@ class ApiClient {
     category?: string;
     subcategory?: string;
     entry_type?: string;
+    kind?: string;
     page?: number;
     limit?: number;
   }): Promise<ContentEntry[]> {
@@ -442,6 +443,7 @@ class ApiClient {
       searchParams.append("subcategory", params.subcategory);
     if (params?.entry_type)
       searchParams.append("entry_type", params.entry_type);
+    if (params?.kind) searchParams.append("kind", params.kind);
     if (params?.page) searchParams.append("page", params.page.toString());
     if (params?.limit) searchParams.append("limit", params.limit.toString());
 
