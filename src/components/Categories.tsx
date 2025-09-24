@@ -6,32 +6,26 @@ const Categories = () => {
   // Static categories with icons and descriptions
   const staticCategoryData = {
     "العلوم الشرعية": {
-      description: "مخطوطات وكتب في الفقه والحديث والتفسير والعقيدة",
       icon: "📖",
       link: "/sharia-sciences",
     },
     "العلوم اللغوية": {
-      description: "النحو والصرف والبلاغة واللغة العربية وآدابها",
       icon: "✍️",
       link: "/linguistic-sciences",
     },
     "العلوم الاجتماعية": {
-      description: "التاريخ والجغرافيا والسير والتراجم",
       icon: "🏛️",
       link: "/social-sciences",
     },
     المنوعات: {
-      description: "الطب والفلك والرياضيات وغيرها من العلوم",
       icon: "🔬",
       link: "/varieties",
     },
     فوائد: {
-      description: "مجموعة من الفوائد والنكت العلمية المتنوعة",
       icon: "💎",
       link: "/benefits",
     },
     "مكتبة التعليم النظامي": {
-      description: "مواد تعليمية للمراحل الأساسية والثانوية والجامعية",
       icon: "🎓",
       link: "/formal-education-library",
     },
@@ -48,7 +42,6 @@ const Categories = () => {
           staticCategoryData[cat.name as keyof typeof staticCategoryData];
         return {
           title: cat.name,
-          description: staticData.description,
           icon: staticData.icon,
           link: staticData.link,
         };
@@ -80,9 +73,6 @@ const Categories = () => {
               <h3 className="text-xl font-amiri font-bold text-blue-gray mb-3">
                 {category.title}
               </h3>
-              <p className="text-medium-gray mb-4 leading-relaxed">
-                {category.description}
-              </p>
             </Link>
           ))}
         </div>
