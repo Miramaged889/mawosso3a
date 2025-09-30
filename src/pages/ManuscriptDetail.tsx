@@ -140,10 +140,14 @@ const ManuscriptDetail: React.FC = () => {
 
   // Handle share functionality
   const handleShare = () => {
+    const descriptionText = Array.isArray(manuscript?.description)
+      ? manuscript.description.join(" ")
+      : manuscript?.description || "";
+
     if (navigator.share) {
       navigator.share({
         title: manuscript?.title || "مخطوطة من شنقيط",
-        text: manuscript?.content || "",
+        text: descriptionText,
         url: window.location.href,
       });
     } else {
@@ -245,12 +249,29 @@ const ManuscriptDetail: React.FC = () => {
 
               {/* Description */}
               <div className="prose prose-lg max-w-none p-4 rounded-lg">
-                <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
-                  وصف المخطوطة
-                </h3>
-                <p className="text-medium-gray leading-relaxed mb-6">
-                  {makeUrlsClickable(manuscript.content || "")}
-                </p>
+                {manuscript.description_header && (
+                  <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
+                    {manuscript.description_header}
+                  </h3>
+                )}
+                <div className="space-y-4">
+                  {Array.isArray(manuscript.description) ? (
+                    manuscript.description.map((desc, index) => (
+                      <p
+                        key={index}
+                        className="text-medium-gray leading-relaxed"
+                      >
+                        {makeUrlsClickable(desc)}
+                      </p>
+                    ))
+                  ) : (
+                    <p className="text-medium-gray leading-relaxed">
+                      {makeUrlsClickable(
+                        manuscript.content || manuscript.description || ""
+                      )}
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* Action Buttons */}

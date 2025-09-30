@@ -54,15 +54,12 @@ const convertManuscriptToContentEntry = (manuscript: any): ContentEntry => ({
 
 // Fallback categories based on API response
 const fallbackCategories: Category[] = [
-  { id: 1, name: "Uncategorized", slug: "uncategorized" },
-  { id: 32, name: "مقالات", slug: "مقaلaت" },
-  { id: 33, name: "فوائد", slug: "فوaئd" },
+  { id: 33, name: "فوائد", slug: "فوaئد" },
   { id: 34, name: "الكل", slug: "aلكل" },
-  { id: 67, name: "خطب و دروس", slug: "خطب-و-دروس" },
   { id: 99, name: "الأخبار العلمية", slug: "aلaخبaر-aلعلمية" },
-  { id: 100, name: "العلوم الشرعية", slug: "aلعلوم-aلشرعية" },
+  { id: 100, name: "العلوم الشرعية", slug: "sharia-sciences" },
   { id: 109, name: "العلوم اللغوية", slug: "aلعلوم-aللغوية" },
-  { id: 118, name: "علوم أخرى", slug: "علوم-aخرى" },
+  { id: 118, name: "علوم أجتماعية", slug: "3lom_Agtma3ya" },
   { id: 122, name: "مكتبة التعليم النظامي", slug: "مكتبة-aلتعليم-aلنظaمي" },
   { id: 127, name: "المنوعات", slug: "aلمنوعaت" },
 ];
@@ -160,6 +157,37 @@ export const useSubcategories = () => {
   );
 };
 
+// Hook for subcategories by category slug
+export const useSubcategoriesByCategorySlug = (categorySlug: string) => {
+  return useApiData(
+    () => apiClient.getSubcategoriesByCategorySlug(categorySlug),
+    () => {
+      // Fallback to empty array if no category slug provided
+      if (!categorySlug) return [];
+
+      const subcategories: Subcategory[] = [];
+      localCategories.forEach((category) => {
+        if (category.subcategories && category.slug === categorySlug) {
+          category.subcategories.forEach((sub) => {
+            subcategories.push({
+              id: parseInt(
+                sub.id.replace(/[^\d]/g, "") || Math.random().toString()
+              ),
+              name: sub.name,
+              slug: sub.slug,
+              category: parseInt(
+                category.id.replace(/[^\d]/g, "") || Math.random().toString()
+              ),
+            });
+          });
+        }
+      });
+      return subcategories;
+    },
+    [categorySlug]
+  );
+};
+
 // Hook for kinds
 export const useKinds = () => {
   return useApiData(
@@ -176,31 +204,6 @@ export const useKinds = () => {
       ];
       return fallbackKinds;
     }
-  );
-};
-
-// Hook for paginated entries (used by AllEntries page)
-export const useEntriesPaginated = (page: number = 1, limit: number = 20) => {
-  return useApiData(
-    async () => {
-      // Get paginated entries
-      const data = await apiClient.getEntriesPaginated(page, limit);
-      return data;
-    },
-    () => {
-      // Fallback to local data when API fails
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const paginatedItems = allItems.slice(startIndex, endIndex);
-
-      return {
-        results: paginatedItems.map(convertManuscriptToContentEntry),
-        count: allItems.length,
-        next: endIndex < allItems.length ? `page=${page + 1}` : null,
-        previous: page > 1 ? `page=${page - 1}` : null,
-      };
-    },
-    [page, limit]
   );
 };
 
@@ -261,6 +264,85 @@ export const useEntries = (params?: {
       return filteredItems.map(convertManuscriptToContentEntry);
     },
     [params?.category, params?.subcategory, params?.entry_type, params?.kind]
+  );
+};
+
+// Hook for paginated entries with category filtering
+export const useEntriesPaginated = (
+  params?: {
+    category?: string;
+    subcategory?: string;
+    entry_type?: string;
+    kind?: string;
+  },
+  page: number = 1,
+  limit: number = 20
+) => {
+  return useApiData(
+    async () => {
+      // Use the new API method that supports category filtering with pagination
+      const result = await apiClient.getEntriesPaginatedWithFilter(
+        params,
+        page,
+        limit
+      );
+      return result;
+    },
+    () => {
+      // Fallback to local data when API fails
+      let filteredItems = [...allItems];
+
+      if (params?.entry_type) {
+        if (params.entry_type === "investigation") {
+          filteredItems = tahqiqat;
+        } else if (params.entry_type === "book") {
+          filteredItems = booksOnChinguitt;
+        } else if (params.entry_type === "manuscript") {
+          filteredItems = manuscripts;
+        }
+      }
+
+      // For category filtering, match both numeric IDs and text names
+      if (params?.category) {
+        const categoryParam = params.category;
+        filteredItems = filteredItems.filter((item) => {
+          // Check if category matches by ID or name
+          const categoryMatches =
+            item.category === categoryParam || // Direct match
+            item.category.toString() === categoryParam || // String comparison
+            item.category.toLowerCase().includes(categoryParam.toLowerCase()); // Text match
+
+          return categoryMatches;
+        });
+      }
+
+      if (params?.subcategory) {
+        filteredItems = filteredItems.filter((item) =>
+          item.subcategory
+            ?.toLowerCase()
+            .includes(params.subcategory!.toLowerCase())
+        );
+      }
+
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedItems = filteredItems.slice(startIndex, endIndex);
+
+      return {
+        results: paginatedItems.map(convertManuscriptToContentEntry),
+        count: filteredItems.length,
+        next: endIndex < filteredItems.length ? `page=${page + 1}` : null,
+        previous: page > 1 ? `page=${page - 1}` : null,
+      };
+    },
+    [
+      params?.category,
+      params?.subcategory,
+      params?.entry_type,
+      params?.kind,
+      page,
+      limit,
+    ]
   );
 };
 
@@ -369,7 +451,7 @@ export const useAllEntries = (page: number = 1, limit: number = 2000) => {
   );
 };
 
-// Hook for AdminBooks with pagination (like AllEntries)
+// Hook for all entries with pagination
 export const useAllEntriesPaginated = (
   page: number = 1,
   limit: number = 2000,

@@ -36,9 +36,9 @@ const Admin: React.FC = () => {
           <div className="max-w-md mx-auto">
             <div className="bg-white rounded-lg shadow-lg p-8">
               <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-heritage-gold rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white font-amiri font-bold text-2xl">
-                    ش
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="font-amiri font-bold text-2xl">
+                   <img src="log.png" alt="logo" className="w-24 h-24 rounded-full" />
                   </span>
                 </div>
                 <h1 className="text-2xl font-amiri font-bold text-blue-gray mb-2">
@@ -148,12 +148,6 @@ const Admin: React.FC = () => {
       description: "إضافة وتعديل وحذف المخطوطات",
       icon: "📜",
       link: "/admin/manuscripts",
-    },
-    {
-      title: "إدارة الكتب والمحتوى",
-      description: "إضافة وتعديل وحذف الكتب والمحتوى",
-      icon: "📚",
-      link: "/admin/books",
     },
     {
       title: "إدارة المؤلفات",

@@ -22,9 +22,6 @@ import Admin from "./pages/Admin";
 import AdminManuscripts from "./pages/AdminManuscripts";
 import AdminAddManuscript from "./pages/AdminAddManuscript";
 import AdminEditManuscript from "./pages/AdminEditManuscript";
-import AdminBooks from "./pages/AdminBooks";
-import AdminAddBook from "./pages/AdminAddBook";
-import AdminEditBook from "./pages/AdminEditBook";
 import AdminPosts from "./pages/AdminPosts";
 import AdminAddPost from "./pages/AdminAddPost";
 import AdminEditPost from "./pages/AdminEditPost";
@@ -136,9 +133,6 @@ function App() {
               path="/admin/manuscripts/edit/:id"
               element={<AdminEditManuscript />}
             />
-            <Route path="/admin/books" element={<AdminBooks />} />
-            <Route path="/admin/books/add" element={<AdminAddBook />} />
-            <Route path="/admin/books/edit/:id" element={<AdminEditBook />} />
             <Route path="/admin/posts" element={<AdminPosts />} />
             <Route path="/admin/posts/add" element={<AdminAddPost />} />
             <Route path="/admin/posts/edit/:id" element={<AdminEditPost />} />

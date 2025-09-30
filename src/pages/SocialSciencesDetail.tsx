@@ -41,10 +41,14 @@ const SocialSciencesDetail: React.FC = () => {
 
   // Handle share functionality
   const handleShare = () => {
+    const descriptionText = Array.isArray(item?.description)
+      ? item.description.join(" ")
+      : item?.description || "";
+
     if (navigator.share) {
       navigator.share({
         title: item?.title || "مادة من العلوم الاجتماعية",
-        text: item?.description || "",
+        text: descriptionText,
         url: window.location.href,
       });
     } else {
@@ -232,12 +236,29 @@ const SocialSciencesDetail: React.FC = () => {
 
               {/* Description */}
               <div className="prose prose-lg max-w-none p-4 rounded-lg">
-                <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
-                  وصف المادة
-                </h3>
-                <p className="text-medium-gray leading-relaxed mb-6">
-                  {makeUrlsClickable(item.content || item.description || "")}
-                </p>
+                {item.description_header && (
+                  <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
+                    {item.description_header}
+                  </h3>
+                )}
+                <div className="space-y-4">
+                  {Array.isArray(item.description) ? (
+                    item.description.map((desc, index) => (
+                      <p
+                        key={index}
+                        className="text-medium-gray leading-relaxed"
+                      >
+                        {makeUrlsClickable(desc)}
+                      </p>
+                    ))
+                  ) : (
+                    <p className="text-medium-gray leading-relaxed">
+                      {makeUrlsClickable(
+                        item.content || item.description || ""
+                      )}
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* Action Buttons */}

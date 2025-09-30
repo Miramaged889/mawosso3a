@@ -24,7 +24,8 @@ const AdminAddAboutChinguit: React.FC = () => {
     category: 0,
     subcategory: 0,
     date: "2024-01-01",
-    description: "",
+    description_header: "",
+    description: [""],
     content: "",
     language: "العربية",
     tags: "",
@@ -73,12 +74,36 @@ const AdminAddAboutChinguit: React.FC = () => {
     }));
   };
 
+  const handleDescriptionChange = (index: number, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      description: prev.description.map((item, i) =>
+        i === index ? value : item
+      ),
+    }));
+  };
+
+  const addDescriptionField = () => {
+    setFormData((prev) => ({
+      ...prev,
+      description: [...prev.description, ""],
+    }));
+  };
+
+  const removeDescriptionField = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      description: prev.description.filter((_, i) => i !== index),
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (
       !formData.title.trim() ||
       !formData.author.trim() ||
-      !formData.category
+      !formData.category ||
+      !formData.description_header.trim()
     ) {
       alert("يرجى ملء جميع الحقول المطلوبة");
       return;
@@ -118,7 +143,8 @@ const AdminAddAboutChinguit: React.FC = () => {
         page_count: pageCount,
         size: sizeValue,
         kind: formData.kind,
-        description: formData.description.trim(),
+        description_header: formData.description_header.trim(),
+        description: formData.description.filter((item) => item.trim() !== ""),
         content: formData.content.trim(),
         language: formData.language.trim(),
         tags: formData.tags.trim(),
@@ -379,16 +405,50 @@ const AdminAddAboutChinguit: React.FC = () => {
           </div>
 
           <div>
-            <label className="block mb-2">الوصف المختصر *</label>
-            <textarea
-              name="description"
-              value={formData.description}
+            <label className="block mb-2">عنوان الوصف *</label>
+            <input
+              type="text"
+              name="description_header"
+              value={formData.description_header}
               onChange={handleChange}
-              rows={3}
               className="w-full border p-3 rounded text-right"
               required
-              placeholder="وصف مختصر للمؤلفة"
-            ></textarea>
+              placeholder="عنوان الوصف"
+            />
+          </div>
+          <div>
+            <label className="block mb-2">وصف المحتوى</label>
+            {formData.description.map((desc, index) => (
+              <div key={index} className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={desc}
+                  onChange={(e) =>
+                    handleDescriptionChange(index, e.target.value)
+                  }
+                  className="flex-1 border p-3 rounded text-right"
+                  placeholder={`وصف ${index + 1}`}
+                />
+                {formData.description.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeDescriptionField(index)}
+                    className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600"
+                  >
+                    -
+                  </button>
+                )}
+                {index === formData.description.length - 1 && (
+                  <button
+                    type="button"
+                    onClick={addDescriptionField}
+                    className="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600"
+                  >
+                    +
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
           <div>
             <label className="block mb-2">المحتوى</label>

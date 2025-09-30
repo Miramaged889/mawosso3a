@@ -41,10 +41,14 @@ const BenefitsDetail: React.FC = () => {
 
   // Handle share functionality
   const handleShare = () => {
+    const descriptionText = Array.isArray(benefit?.description)
+      ? benefit.description.join(" ")
+      : benefit?.description || "";
+
     if (navigator.share) {
       navigator.share({
         title: benefit?.title || "فائدة من شنقيط",
-        text: benefit?.description || "",
+        text: descriptionText,
         url: window.location.href,
       });
     } else {
@@ -235,11 +239,29 @@ const BenefitsDetail: React.FC = () => {
                 <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
                   وصف الفائدة
                 </h3>
-                <p className="text-medium-gray leading-relaxed mb-6">
-                  {makeUrlsClickable(
-                    benefit.content || benefit.description || ""
+                {benefit.description_header && (
+                  <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
+                    {benefit.description_header}
+                  </h3>
+                )}
+                <div className="space-y-4">
+                  {Array.isArray(benefit.description) ? (
+                    benefit.description.map((desc, index) => (
+                      <p
+                        key={index}
+                        className="text-medium-gray leading-relaxed"
+                      >
+                        {makeUrlsClickable(desc)}
+                      </p>
+                    ))
+                  ) : (
+                    <p className="text-medium-gray leading-relaxed">
+                      {makeUrlsClickable(
+                        benefit.content || benefit.description || ""
+                      )}
+                    </p>
                   )}
-                </p>
+                </div>
               </div>
 
               {/* Action Buttons */}

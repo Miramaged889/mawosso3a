@@ -31,7 +31,8 @@ export interface ContentEntry {
   title: string;
   slug?: string;
   author: string;
-  description: string;
+  description_header?: string;
+  description: string | string[];
   content?: string;
   full_description?: string;
   category: Category | number;
@@ -304,21 +305,18 @@ class ApiClient {
       console.warn("API request failed, using fallback data:", error);
       // Return fallback categories if API fails
       return [
-        { id: 1, name: "Uncategorized", slug: "uncategorized" },
-        { id: 32, name: "مقالات", slug: "مقالات" },
-        { id: 33, name: "فوائد", slug: "فوائد" },
-        { id: 34, name: "الكل", slug: "الكل" },
-        { id: 67, name: "خطب و دروس", slug: "خطب-و-دروس" },
-        { id: 99, name: "الأخبار العلمية", slug: "الأخبار-العلمية" },
-        { id: 100, name: "العلوم الشرعية", slug: "العلوم-الشرعية" },
-        { id: 109, name: "العلوم اللغوية", slug: "العلوم-اللغوية" },
-        { id: 118, name: "علوم أخرى", slug: "علوم-أخرى" },
+        { id: 33, name: "فوائد", slug: "فوaئد" },
+        { id: 34, name: "الكل", slug: "aلكل" },
+        { id: 99, name: "الأخبار العلمية", slug: "aلaخبaر-aلعلمية" },
+        { id: 100, name: "العلوم الشرعية", slug: "sharia-sciences" },
+        { id: 109, name: "العلوم اللغوية", slug: "aلعلوم-aللغوية" },
+        { id: 118, name: "علوم أجتماعية", slug: "3lom_Agtma3ya" },
         {
           id: 122,
           name: "مكتبة التعليم النظامي",
-          slug: "مكتبة-التعليم-النظامي",
+          slug: "مكتبة-aلتعليم-aلنظaمي",
         },
-        { id: 127, name: "المنوعات", slug: "المنوعات" },
+        { id: 127, name: "المنوعات", slug: "aلمنوعaت" },
       ];
     }
   }
@@ -415,6 +413,47 @@ class ApiClient {
       }
     );
     return this.handleResponse<Subcategory[]>(response);
+  }
+
+  async getSubcategoriesByCategorySlug(
+    categorySlug: string
+  ): Promise<Subcategory[]> {
+    try {
+      const response = await this.fetchWithFallback(
+        `${this.baseURL}/subcategories/?category=${categorySlug}`,
+        {
+          headers: this.getHeaders(),
+          mode: "cors",
+          credentials: "omit",
+        }
+      );
+
+      // If 403 error, try without authentication
+      if (response.status === 403) {
+        const publicResponse = await this.fetchWithFallback(
+          `${this.baseURL}/subcategories/?category=${categorySlug}`,
+          {
+            headers: this.getPublicHeaders(),
+            mode: "cors",
+            credentials: "omit",
+          }
+        );
+
+        if (publicResponse.ok) {
+          const data = await publicResponse.json();
+          return data.results || data;
+        }
+      }
+
+      const data = await this.handleResponse<any>(response);
+      return data.results || data;
+    } catch (error) {
+      console.warn(
+        "API request failed for subcategories by category slug:",
+        error
+      );
+      return [];
+    }
   }
 
   // Kinds
@@ -594,7 +633,7 @@ class ApiClient {
     }
   }
 
-  // Get all entries with pagination support (for AdminBooks)
+  // Get all entries with pagination support
   async getAllEntriesPaginated(
     page: number = 1,
     limit: number = 2000,
@@ -626,6 +665,84 @@ class ApiClient {
       next: result.next || null,
       previous: result.previous || null,
     };
+  }
+
+  // Get entries with pagination and category filtering
+  async getEntriesPaginatedWithFilter(
+    params?: {
+      category?: string;
+      subcategory?: string;
+      entry_type?: string;
+      kind?: string;
+    },
+    page: number = 1,
+    limit: number = 20
+  ): Promise<{
+    results: ContentEntry[];
+    count: number;
+    next: string | null;
+    previous: string | null;
+  }> {
+    const searchParams = new URLSearchParams();
+    searchParams.append("page", page.toString());
+    searchParams.append("limit", limit.toString());
+
+    if (params?.category) searchParams.append("category", params.category);
+    if (params?.subcategory)
+      searchParams.append("subcategory", params.subcategory);
+    if (params?.entry_type)
+      searchParams.append("entry_type", params.entry_type);
+    if (params?.kind) searchParams.append("kind", params.kind);
+
+    try {
+      const response = await this.fetchWithFallback(
+        `${this.baseURL}/entries/?${searchParams}`,
+        {
+          headers: this.getHeaders(),
+          mode: "cors",
+          credentials: "omit",
+        }
+      );
+
+      // If 403 error, try without authentication
+      if (response.status === 403) {
+        const publicResponse = await this.fetchWithFallback(
+          `${this.baseURL}/entries/?${searchParams}`,
+          {
+            headers: this.getPublicHeaders(),
+            mode: "cors",
+            credentials: "omit",
+          }
+        );
+
+        if (publicResponse.ok) {
+          const result = await publicResponse.json();
+          return {
+            results: result.results || [],
+            count: result.count || 0,
+            next: result.next || null,
+            previous: result.previous || null,
+          };
+        }
+      }
+
+      const result = await this.handleResponse<any>(response);
+      return {
+        results: result.results || [],
+        count: result.count || 0,
+        next: result.next || null,
+        previous: result.previous || null,
+      };
+    } catch (error) {
+      console.warn("API request failed, using fallback data:", error);
+      // Return empty paginated result if API fails
+      return {
+        results: [],
+        count: 0,
+        next: null,
+        previous: null,
+      };
+    }
   }
 
   // Get entries with pagination

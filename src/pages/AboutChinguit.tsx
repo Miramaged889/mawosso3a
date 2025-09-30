@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useEntries, useSubcategories } from "../hooks/useApi";
-import { ContentEntry } from "../services/api";
+import { useEntriesPaginated, useSubcategories } from "../hooks/useApi";
 import ItemCard from "../components/ItemCard";
 import SearchBar from "../components/SearchBar";
 import Breadcrumb from "../components/Breadcrumb";
+import Pagination from "../components/Pagination";
 
 const AboutChinguit: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -21,29 +21,27 @@ const AboutChinguit: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
 
-  // Fetch entries with kind slug "aan-lshnkyt" (عن الشنقيط)
+  // Fetch paginated entries with kind slug "aan-lshnkyt" (عن الشنقيط)
   const {
-    data: entriesData,
+    data: paginatedData,
     loading,
     error,
     refetch,
-  } = useEntries({
-    kind: "aan-lshnkyt",
-  });
+  } = useEntriesPaginated(
+    {
+      kind: "aan-lshnkyt",
+    },
+    currentPage,
+    itemsPerPage
+  );
 
   // Fetch subcategories
   const { data: subcategories, loading: subcategoriesLoading } =
     useSubcategories();
 
-  // Entries are already filtered by kind from API
-  const aboutChinguitEntries = useMemo(() => {
-    const results = entriesData || [];
-    const allEntries = Array.isArray(results)
-      ? (results as ContentEntry[])
-      : [];
-
-    return allEntries;
-  }, [entriesData]);
+  const aboutChinguitEntries = paginatedData?.results || [];
+  const totalItems = paginatedData?.count || 0;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   // Get available subcategories for the selected category
   const availableSubcategories = useMemo(() => {
@@ -101,12 +99,6 @@ const AboutChinguit: React.FC = () => {
     selectedSubcategory,
     searchQuery,
   ]);
-
-  // Pagination logic
-  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedItems = filteredItems.slice(startIndex, endIndex);
 
   // Handle page change
   const handlePageChange = (page: number) => {
@@ -203,7 +195,7 @@ const AboutChinguit: React.FC = () => {
           <p className="text-medium-gray">
             عدد النتائج:{" "}
             <span className="font-bold text-heritage-gold">
-              {filteredItems.length}
+              {searchQuery ? filteredItems.length : totalItems}
             </span>{" "}
             مؤلفة
           </p>
@@ -241,9 +233,9 @@ const AboutChinguit: React.FC = () => {
         )}
 
         {/* Entries Grid */}
-        {!loading && !error && paginatedItems.length > 0 ? (
+        {!loading && !error && filteredItems.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {paginatedItems.map((entry) => (
+            {filteredItems.map((entry) => (
               <ItemCard key={entry.id} item={entry} />
             ))}
           </div>
@@ -263,66 +255,14 @@ const AboutChinguit: React.FC = () => {
         )}
 
         {/* Pagination Controls */}
-        {!loading && !error && totalPages > 1 && (
-          <div className="text-center py-4 border-t border-gray-100 mt-8">
-            <p className="text-medium-gray mb-4">
-              صفحة{" "}
-              <span className="font-semibold text-olive-green">
-                {currentPage}
-              </span>{" "}
-              من أصل{" "}
-              <span className="font-semibold text-blue-gray">{totalPages}</span>{" "}
-              صفحة (إجمالي {filteredItems.length} مؤلفة)
-            </p>
-
-            <div className="flex justify-center items-center gap-2 flex-wrap">
-              {/* Previous Button */}
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-              >
-                السابق
-              </button>
-
-              {/* Page Numbers */}
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNum = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = currentPage - 2 + i;
-                }
-
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => handlePageChange(pageNum)}
-                    className={`px-3 py-2 border rounded-lg text-sm ${
-                      currentPage === pageNum
-                        ? "bg-olive-green text-white border-olive-green"
-                        : "border-gray-300 hover:bg-gray-50"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-
-              {/* Next Button */}
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-              >
-                التالي
-              </button>
-            </div>
-          </div>
+        {!loading && !error && totalPages > 1 && !searchQuery && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            onPageChange={handlePageChange}
+            loading={loading}
+          />
         )}
       </div>
     </div>

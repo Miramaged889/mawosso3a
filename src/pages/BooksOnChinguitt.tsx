@@ -1,33 +1,32 @@
 import React, { useState, useMemo } from "react";
-import { useEntries } from "../hooks/useApi";
+import { useEntriesPaginated } from "../hooks/useApi";
 import { ContentEntry } from "../services/api";
 import ItemCard from "../components/ItemCard";
 import SearchBar from "../components/SearchBar";
 import Breadcrumb from "../components/Breadcrumb";
+import Pagination from "../components/Pagination";
 
 const BooksOnChinguitt: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
 
-  // Fetch entries with kind slug "lmolft" (المولفات)
+  // Fetch paginated entries with kind slug "lmolft" (المولفات)
   const {
-    data: entriesData,
+    data: paginatedData,
     loading,
     error,
-  } = useEntries({
-    kind: "lmolft",
-  });
+  } = useEntriesPaginated(
+    {
+      kind: "lmolft",
+    },
+    currentPage,
+    itemsPerPage
+  );
 
-  // Entries are already filtered by kind from API
-  const booksOnChinguitt = useMemo(() => {
-    const results = entriesData || [];
-    const allEntries = Array.isArray(results)
-      ? (results as ContentEntry[])
-      : [];
-
-    return allEntries;
-  }, [entriesData]);
+  const booksOnChinguitt = paginatedData?.results || [];
+  const totalItems = paginatedData?.count || 0;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   const filteredItems = useMemo(() => {
     let filtered = booksOnChinguitt;
@@ -37,17 +36,11 @@ const BooksOnChinguitt: React.FC = () => {
         (item: ContentEntry) =>
           item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           item.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.description?.toLowerCase().includes(searchQuery.toLowerCase())
+          item.description_header?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     return filtered;
   }, [booksOnChinguitt, searchQuery]);
-
-  // Pagination logic
-  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedItems = filteredItems.slice(startIndex, endIndex);
 
   // Handle page change
   const handlePageChange = (page: number) => {
@@ -87,7 +80,7 @@ const BooksOnChinguitt: React.FC = () => {
             <p className="text-medium-gray">
               عدد النتائج:{" "}
               <span className="font-bold text-heritage-gold">
-                {filteredItems.length}
+                {searchQuery ? filteredItems.length : totalItems}
               </span>{" "}
               كتاب
             </p>
@@ -108,9 +101,9 @@ const BooksOnChinguitt: React.FC = () => {
         )}
 
         {/* Books Grid */}
-        {!loading && !error && paginatedItems.length > 0 ? (
+        {!loading && !error && filteredItems.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {paginatedItems.map((book: ContentEntry) => (
+            {filteredItems.map((book: ContentEntry) => (
               <ItemCard key={book.id} item={book} />
             ))}
           </div>
@@ -130,66 +123,14 @@ const BooksOnChinguitt: React.FC = () => {
         )}
 
         {/* Pagination Controls */}
-        {!loading && !error && totalPages > 1 && (
-          <div className="text-center py-4 border-t border-gray-100 mt-8">
-            <p className="text-medium-gray mb-4">
-              صفحة{" "}
-              <span className="font-semibold text-olive-green">
-                {currentPage}
-              </span>{" "}
-              من أصل{" "}
-              <span className="font-semibold text-blue-gray">{totalPages}</span>{" "}
-              صفحة (إجمالي {filteredItems.length} كتاب)
-            </p>
-
-            <div className="flex justify-center items-center gap-2 flex-wrap">
-              {/* Previous Button */}
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-              >
-                السابق
-              </button>
-
-              {/* Page Numbers */}
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNum = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = currentPage - 2 + i;
-                }
-
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => handlePageChange(pageNum)}
-                    className={`px-3 py-2 border rounded-lg text-sm ${
-                      currentPage === pageNum
-                        ? "bg-olive-green text-white border-olive-green"
-                        : "border-gray-300 hover:bg-gray-50"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-
-              {/* Next Button */}
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-              >
-                التالي
-              </button>
-            </div>
-          </div>
+        {!loading && !error && totalPages > 1 && !searchQuery && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            onPageChange={handlePageChange}
+            loading={loading}
+          />
         )}
       </div>
     </div>

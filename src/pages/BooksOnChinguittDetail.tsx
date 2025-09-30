@@ -41,10 +41,14 @@ const BooksOnChinguittDetail: React.FC = () => {
 
   // Handle share functionality
   const handleShare = () => {
+    const descriptionText = Array.isArray(book?.description)
+      ? book.description.join(" ")
+      : book?.description || "";
+
     if (navigator.share) {
       navigator.share({
         title: book?.title || "كتاب عن شنقيط",
-        text: book?.description || "",
+        text: descriptionText,
         url: window.location.href,
       });
     } else {
@@ -232,12 +236,29 @@ const BooksOnChinguittDetail: React.FC = () => {
 
               {/* Description */}
               <div className="prose prose-lg max-w-none p-4 rounded-lg">
-                <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
-                  وصف الكتاب
-                </h3>
-                <p className="text-medium-gray leading-relaxed mb-6">
-                  {makeUrlsClickable(book.content || book.description || "")}
-                </p>
+                {book.description_header && (
+                  <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
+                    {book.description_header}
+                  </h3>
+                )}
+                <div className="space-y-4">
+                  {Array.isArray(book.description) ? (
+                    book.description.map((desc, index) => (
+                      <p
+                        key={index}
+                        className="text-medium-gray leading-relaxed"
+                      >
+                        {makeUrlsClickable(desc)}
+                      </p>
+                    ))
+                  ) : (
+                    <p className="text-medium-gray leading-relaxed">
+                      {makeUrlsClickable(
+                        book.content || book.description || ""
+                      )}
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* Action Buttons */}

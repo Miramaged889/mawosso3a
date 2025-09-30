@@ -70,7 +70,7 @@ const Header = () => {
                   : "text-dark-gray hover:text-heritage-gold"
               }`}
             >
-              المخطوطات
+              مخطوطات
             </Link>
 
             <Link
@@ -197,7 +197,7 @@ const Header = () => {
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                المخطوطات
+                مخطوطات
               </Link>
               <Link
                 to="/all-entries"

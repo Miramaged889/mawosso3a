@@ -1,25 +1,46 @@
 import React, { useState, useMemo } from "react";
-import { useEntries } from "../hooks/useApi";
+import {
+  useEntriesPaginated,
+  useSubcategoriesByCategorySlug,
+} from "../hooks/useApi";
 import { ContentEntry } from "../services/api";
 import ItemCard from "../components/ItemCard";
 import SearchBar from "../components/SearchBar";
 import Breadcrumb from "../components/Breadcrumb";
+import Pagination from "../components/Pagination";
 
 const FormalEducationLibrary: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState("الكل");
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<
+    number | null
+  >(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
 
-  // Fetch entries for Formal Education Library from API using category slug
+  // Fetch paginated entries for Formal Education Library from API
   const {
-    data: entriesData,
+    data: paginatedData,
     loading,
     error,
-  } = useEntries({
-    category: "مكتبة-aلتعليم-aلنظaمي",
-  });
+  } = useEntriesPaginated(
+    {
+      category: "مكتبة-aلتعليم-aلنظaمي",
+      subcategory: selectedSubcategoryId
+        ? selectedSubcategoryId.toString()
+        : undefined,
+    },
+    currentPage,
+    itemsPerPage
+  );
 
-  const items = (entriesData as ContentEntry[]) || [];
+  // Fetch subcategories for Formal Education Library
+  const { data: subcategories, loading: subcategoriesLoading } =
+    useSubcategoriesByCategorySlug("مكتبة-aلتعليم-aلنظaمي");
+
+  const items = paginatedData?.results || [];
+  const totalItems = paginatedData?.count || 0;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   const filteredItems = useMemo(() => {
     let filtered = items;
@@ -29,17 +50,11 @@ const FormalEducationLibrary: React.FC = () => {
         (item: ContentEntry) =>
           item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           item.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.description?.toLowerCase().includes(searchQuery.toLowerCase())
+          item.description_header?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     return filtered;
   }, [items, searchQuery]);
-
-  // Pagination logic
-  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedItems = filteredItems.slice(startIndex, endIndex);
 
   // Handle page change
   const handlePageChange = (page: number) => {
@@ -49,6 +64,15 @@ const FormalEducationLibrary: React.FC = () => {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
+  };
+
+  const handleSubcategoryFilter = (
+    subcategory: string,
+    subcategoryId?: number
+  ) => {
+    setSelectedSubcategory(subcategory);
+    setSelectedSubcategoryId(subcategoryId || null);
+    setCurrentPage(1); // Reset to first page when changing subcategory
   };
 
   const breadcrumbItems = [{ label: "مكتبة التعليم النظامي" }];
@@ -73,13 +97,51 @@ const FormalEducationLibrary: React.FC = () => {
           />
         </div>
 
+        {/* Subcategory Filter - Only show if subcategories are available */}
+        {subcategories && subcategories.length > 0 && !subcategoriesLoading && (
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-center mb-3 text-olive-green">
+              التصنيفات الفرعية
+            </h3>
+            <div className="flex flex-wrap justify-center gap-3">
+              <button
+                key="all-subcategories"
+                onClick={() => handleSubcategoryFilter("الكل")}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  selectedSubcategory === "الكل"
+                    ? "bg-olive-green text-white shadow-md"
+                    : "bg-white text-olive-green border border-olive-green hover:bg-olive-green hover:text-white"
+                }`}
+              >
+                الكل
+              </button>
+
+              {subcategories.map((subcategory) => (
+                <button
+                  key={subcategory.id}
+                  onClick={() =>
+                    handleSubcategoryFilter(subcategory.name, subcategory.id)
+                  }
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                    selectedSubcategory === subcategory.name
+                      ? "bg-olive-green text-white shadow-md"
+                      : "bg-white text-olive-green border border-olive-green hover:bg-olive-green hover:text-white"
+                  }`}
+                >
+                  {subcategory.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Results Count */}
         {!loading && (
           <div className="text-center mb-8">
             <p className="text-medium-gray">
               عدد النتائج:{" "}
               <span className="font-bold text-heritage-gold">
-                {filteredItems.length}
+                {searchQuery ? filteredItems.length : totalItems}
               </span>{" "}
               عنصر
             </p>
@@ -100,9 +162,9 @@ const FormalEducationLibrary: React.FC = () => {
         )}
 
         {/* Items Grid */}
-        {!loading && !error && paginatedItems.length > 0 ? (
+        {!loading && !error && filteredItems.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {paginatedItems.map((item: ContentEntry) => (
+            {filteredItems.map((item: ContentEntry) => (
               <ItemCard key={item.id} item={item} />
             ))}
           </div>
@@ -122,67 +184,19 @@ const FormalEducationLibrary: React.FC = () => {
         )}
 
         {/* Pagination Controls */}
-        {!loading && !error && totalPages > 1 && (
-          <div className="text-center py-4 border-t border-gray-100 mt-8">
-            <p className="text-medium-gray mb-4">
-              صفحة{" "}
-              <span className="font-semibold text-olive-green">
-                {currentPage}
-              </span>{" "}
-              من أصل{" "}
-              <span className="font-semibold text-blue-gray">{totalPages}</span>{" "}
-              صفحة (إجمالي {filteredItems.length} عنصر)
-            </p>
-
-            <div className="flex justify-center items-center gap-2 flex-wrap">
-              {/* Previous Button */}
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-              >
-                السابق
-              </button>
-
-              {/* Page Numbers */}
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNum = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = currentPage - 2 + i;
-                }
-
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => handlePageChange(pageNum)}
-                    className={`px-3 py-2 border rounded-lg text-sm ${
-                      currentPage === pageNum
-                        ? "bg-olive-green text-white border-olive-green"
-                        : "border-gray-300 hover:bg-gray-50"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-
-              {/* Next Button */}
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-              >
-                التالي
-              </button>
-            </div>
-          </div>
-        )}
+        {!loading &&
+          !error &&
+          totalPages > 1 &&
+          !searchQuery &&
+          selectedSubcategory === "الكل" && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              onPageChange={handlePageChange}
+              loading={loading}
+            />
+          )}
       </div>
     </div>
   );

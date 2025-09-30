@@ -1,12 +1,63 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ContentEntry } from "../services/api";
+import { ContentEntry, Subcategory } from "../services/api";
 
 interface ItemCardProps {
   item: ContentEntry;
 }
 
+// Cache for subcategories to avoid multiple API calls
+let subcategoriesCache: Subcategory[] | null = null;
+let subcategoriesPromise: Promise<Subcategory[]> | null = null;
+
 const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+
+  // Fetch subcategories on component mount with caching
+  useEffect(() => {
+    const fetchSubcategories = async () => {
+      // Return cached data if available
+      if (subcategoriesCache) {
+        setSubcategories(subcategoriesCache);
+        return;
+      }
+
+      // Return existing promise if one is in progress
+      if (subcategoriesPromise) {
+        try {
+          const data = await subcategoriesPromise;
+          setSubcategories(data);
+        } catch (error) {
+          console.error("Error fetching subcategories:", error);
+        }
+        return;
+      }
+
+      // Create new promise and cache it
+      subcategoriesPromise = (async () => {
+        try {
+          const response = await fetch("api/subcategories/");
+          const data = await response.json();
+          const results = data.results || [];
+          subcategoriesCache = results;
+          setSubcategories(results);
+          return results;
+        } catch (error) {
+          console.error("Error fetching subcategories:", error);
+          throw error;
+        }
+      })();
+
+      try {
+        await subcategoriesPromise;
+      } catch (error) {
+        // Error already logged above
+      }
+    };
+
+    fetchSubcategories();
+  }, []);
+
   // Get category name safely
   const getCategoryName = () => {
     if (typeof item.category === "object" && item.category?.name) {
@@ -48,6 +99,12 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   const getSubcategoryName = () => {
     if (typeof item.subcategory === "object" && item.subcategory?.name) {
       return item.subcategory.name;
+    } else if (typeof item.subcategory === "number") {
+      // Find subcategory by ID from fetched subcategories
+      const subcategory = subcategories.find(
+        (sub) => sub.id === item.subcategory
+      );
+      return subcategory?.name || null;
     }
     return null;
   };
