@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import { useEntry } from "../hooks/useApi";
+import { useEntry, useAllSubcategories } from "../hooks/useApi";
 import Breadcrumb from "../components/Breadcrumb";
 import { makeUrlsClickable } from "../utils/textUtils";
 
@@ -9,6 +9,7 @@ const ManuscriptDetail: React.FC = () => {
   const numericId = id ? parseInt(id) : null;
 
   const { data: manuscript, error, loading } = useEntry(numericId);
+  const { data: subcategories } = useAllSubcategories();
 
   // Debug image URLs
   React.useEffect(() => {
@@ -85,6 +86,23 @@ const ManuscriptDetail: React.FC = () => {
       return kindNames[manuscript?.kind] || "غير محدد";
     }
     return "غير محدد";
+  };
+
+  // Get subcategory name safely
+  const getSubcategoryName = () => {
+    if (
+      typeof manuscript?.subcategory === "object" &&
+      manuscript?.subcategory?.name
+    ) {
+      return manuscript.subcategory.name;
+    } else if (typeof manuscript?.subcategory === "number" && subcategories) {
+      // Find subcategory by ID from fetched subcategories
+      const subcategory = subcategories.find(
+        (sub) => sub.id === manuscript.subcategory
+      );
+      return subcategory?.name || null;
+    }
+    return null;
   };
 
   if (loading) {
@@ -192,6 +210,11 @@ const ManuscriptDetail: React.FC = () => {
                   <span className="bg-heritage-gold text-white px-4 py-2 rounded-full text-sm font-semibold">
                     {getCategoryName()}
                   </span>
+                  {getSubcategoryName() && (
+                    <span className="bg-dark-gray text-white px-4 py-2 rounded-full text-sm font-semibold">
+                      {getSubcategoryName()}
+                    </span>
+                  )}
                   <span className="bg-olive-green text-white px-4 py-2 rounded-full text-sm font-semibold">
                     {getKindName()}
                   </span>

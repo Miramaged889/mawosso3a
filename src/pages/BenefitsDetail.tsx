@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import { useEntry } from "../hooks/useApi";
+import { useEntry, useAllSubcategories } from "../hooks/useApi";
 import Breadcrumb from "../components/Breadcrumb";
 import { makeUrlsClickable } from "../utils/textUtils";
 
@@ -9,6 +9,7 @@ const BenefitsDetail: React.FC = () => {
   const numericId = id ? parseInt(id) : null;
 
   const { data: benefit, error, loading } = useEntry(numericId);
+  const { data: subcategories } = useAllSubcategories();
 
   // Enhanced image URL formatting
   const getImageUrl = (url: string | null | undefined) => {
@@ -139,6 +140,20 @@ const BenefitsDetail: React.FC = () => {
     return "غير محدد";
   };
 
+  // Get subcategory name safely
+  const getSubcategoryName = () => {
+    if (typeof benefit.subcategory === "object" && benefit.subcategory?.name) {
+      return benefit.subcategory.name;
+    } else if (typeof benefit.subcategory === "number" && subcategories) {
+      // Find subcategory by ID from fetched subcategories
+      const subcategory = subcategories.find(
+        (sub) => sub.id === benefit.subcategory
+      );
+      return subcategory?.name || null;
+    }
+    return null;
+  };
+
   // Get page count safely
   const getPageCount = () => {
     return benefit?.page_count || benefit?.pages || 0;
@@ -179,6 +194,11 @@ const BenefitsDetail: React.FC = () => {
                   <span className="bg-heritage-gold text-white px-4 py-2 rounded-full text-sm font-semibold">
                     {getCategoryName()}
                   </span>
+                  {getSubcategoryName() && (
+                    <span className="bg-dark-gray text-white px-4 py-2 rounded-full text-sm font-semibold">
+                      {getSubcategoryName()}
+                    </span>
+                  )}
                   <span className="bg-olive-green text-white px-4 py-2 rounded-full text-sm font-semibold">
                     {getKindName()}
                   </span>

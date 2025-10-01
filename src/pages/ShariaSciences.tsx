@@ -12,8 +12,8 @@ import Pagination from "../components/Pagination";
 const ShariaSciences: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubcategory, setSelectedSubcategory] = useState("الكل");
-  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<
-    number | null
+  const [selectedSubcategorySlug, setSelectedSubcategorySlug] = useState<
+    string | null
   >(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
@@ -26,9 +26,7 @@ const ShariaSciences: React.FC = () => {
   } = useEntriesPaginated(
     {
       category: "sharia-sciences",
-      subcategory: selectedSubcategoryId
-        ? selectedSubcategoryId.toString()
-        : undefined,
+      subcategory: selectedSubcategorySlug || undefined,
     },
     currentPage,
     itemsPerPage
@@ -50,7 +48,9 @@ const ShariaSciences: React.FC = () => {
         (item: ContentEntry) =>
           item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           item.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.description_header?.toLowerCase().includes(searchQuery.toLowerCase())
+          item.description_header
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase())
       );
     }
     return filtered;
@@ -68,10 +68,10 @@ const ShariaSciences: React.FC = () => {
 
   const handleSubcategoryFilter = (
     subcategory: string,
-    subcategoryId?: number
+    subcategorySlug?: string
   ) => {
     setSelectedSubcategory(subcategory);
-    setSelectedSubcategoryId(subcategoryId || null);
+    setSelectedSubcategorySlug(subcategorySlug || null);
     setCurrentPage(1); // Reset to first page when changing subcategory
   };
 
@@ -120,7 +120,7 @@ const ShariaSciences: React.FC = () => {
                 <button
                   key={subcategory.id}
                   onClick={() =>
-                    handleSubcategoryFilter(subcategory.name, subcategory.id)
+                    handleSubcategoryFilter(subcategory.name, subcategory.slug)
                   }
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
                     selectedSubcategory === subcategory.name
@@ -184,19 +184,15 @@ const ShariaSciences: React.FC = () => {
         )}
 
         {/* Pagination Controls */}
-        {!loading &&
-          !error &&
-          totalPages > 1 &&
-          !searchQuery &&
-          selectedSubcategory === "الكل" && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              onPageChange={handlePageChange}
-              loading={loading}
-            />
-          )}
+        {!loading && !error && totalPages > 1 && !searchQuery && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            onPageChange={handlePageChange}
+            loading={loading}
+          />
+        )}
       </div>
     </div>
   );

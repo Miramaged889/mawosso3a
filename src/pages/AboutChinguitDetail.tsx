@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import { useEntry } from "../hooks/useApi";
+import { useEntry, useAllSubcategories } from "../hooks/useApi";
 import Breadcrumb from "../components/Breadcrumb";
 import { makeUrlsClickable } from "../utils/textUtils";
 
@@ -9,6 +9,7 @@ const AboutChinguitDetail: React.FC = () => {
   const numericId = id ? parseInt(id) : null;
 
   const { data: entry, error, loading } = useEntry(numericId);
+  const { data: subcategories } = useAllSubcategories();
 
   // Enhanced image URL formatting
   const getImageUrl = (url: string | null | undefined) => {
@@ -67,6 +68,20 @@ const AboutChinguitDetail: React.FC = () => {
       return kindNames[entry?.kind] || "غير محدد";
     }
     return "غير محدد";
+  };
+
+  // Get subcategory name safely
+  const getSubcategoryName = () => {
+    if (typeof entry?.subcategory === "object" && entry?.subcategory?.name) {
+      return entry.subcategory.name;
+    } else if (typeof entry?.subcategory === "number" && subcategories) {
+      // Find subcategory by ID from fetched subcategories
+      const subcategory = subcategories.find(
+        (sub) => sub.id === entry.subcategory
+      );
+      return subcategory?.name || null;
+    }
+    return null;
   };
 
   if (error || !entry) {
@@ -172,6 +187,11 @@ const AboutChinguitDetail: React.FC = () => {
                   <span className="bg-heritage-gold text-white px-4 py-2 rounded-full text-sm font-semibold">
                     {getCategoryName()}
                   </span>
+                  {getSubcategoryName() && (
+                    <span className="bg-dark-gray text-white px-4 py-2 rounded-full text-sm font-semibold">
+                      {getSubcategoryName()}
+                    </span>
+                  )}
                   <span className="bg-olive-green text-white px-4 py-2 rounded-full text-sm font-semibold">
                     {getKindName()}
                   </span>
@@ -232,9 +252,29 @@ const AboutChinguitDetail: React.FC = () => {
                 <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
                   وصف المؤلفة
                 </h3>
-                <p className="text-medium-gray leading-relaxed mb-6">
-                  {makeUrlsClickable(entry.content || entry.description || "")}
-                </p>
+                {entry.description_header && (
+                  <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
+                    {entry.description_header}
+                  </h3>
+                )}
+                <div className="space-y-4">
+                  {Array.isArray(entry.description) ? (
+                    entry.description.map((desc, index) => (
+                      <p
+                        key={index}
+                        className="text-medium-gray leading-relaxed"
+                      >
+                        {makeUrlsClickable(desc)}
+                      </p>
+                    ))
+                  ) : (
+                    <p className="text-medium-gray leading-relaxed">
+                      {makeUrlsClickable(
+                        entry.content || entry.description || ""
+                      )}
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* Action Buttons */}

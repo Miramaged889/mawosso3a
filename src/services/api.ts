@@ -366,6 +366,32 @@ class ApiClient {
     return data.results || data;
   }
 
+  // Get all subcategories with pagination support
+  async getAllSubcategories(): Promise<Subcategory[]> {
+    try {
+      let allSubcategories: Subcategory[] = [];
+      let nextUrl = `${this.baseURL}/subcategories/?limit=100`;
+
+      while (nextUrl) {
+        const response = await fetch(nextUrl, {
+          headers: this.getHeaders(),
+        });
+        const data = await this.handleResponse<any>(response);
+        const results = data.results || [];
+        allSubcategories = [...allSubcategories, ...results];
+
+        nextUrl = data.next
+          ? data.next.replace(/^https?:\/\/[^\/]+/, "")
+          : null;
+      }
+
+      return allSubcategories;
+    } catch (error) {
+      console.error("Error fetching all subcategories:", error);
+      return [];
+    }
+  }
+
   async createSubcategory(data: Partial<Subcategory>): Promise<Subcategory> {
     const response = await fetch(`${this.baseURL}/subcategories/`, {
       method: "POST",

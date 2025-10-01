@@ -9,7 +9,7 @@ const Footer = () => {
           <div className="lg:col-span-1">
             <div className="flex items-center space-x-4 space-x-reverse mb-4">
               <img
-                src="log.png"
+                src="img/log.png"
                 alt="الموسوعة الشنقيطية"
                 className="w-20 h-20 rounded-full object-cover bg-white p-1"
               />
@@ -72,7 +72,9 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div className="lg:col-span-1">
-            <h4 className="text-lg font-amiri font-bold mb-4 text-center">روابط سريعة</h4>
+            <h4 className="text-lg font-amiri font-bold mb-4 text-center">
+              روابط سريعة
+            </h4>
             <ul className="space-y-2 text-center">
               <li>
                 <Link
@@ -110,7 +112,9 @@ const Footer = () => {
           </div>
 
           <div className="lg:col-span-1">
-            <h4 className="text-lg font-amiri font-bold mb-4 text-center">من نحن</h4>
+            <h4 className="text-lg font-amiri font-bold mb-4 text-center">
+              من نحن
+            </h4>
             <ul className="space-y-2 text-center">
               <li>
                 <Link

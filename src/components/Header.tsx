@@ -20,7 +20,7 @@ const Header = () => {
               className="flex items-center space-x-0 space-x-reverse"
             >
               <img
-                src="/log.png"
+                src="img/log.png"
                 alt="Chinguitipedia Logo"
                 className="w-20 h-20"
               />

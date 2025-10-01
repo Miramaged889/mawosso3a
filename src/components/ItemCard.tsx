@@ -36,12 +36,26 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
       // Create new promise and cache it
       subcategoriesPromise = (async () => {
         try {
-          const response = await fetch("api/subcategories/");
-          const data = await response.json();
-          const results = data.results || [];
-          subcategoriesCache = results;
-          setSubcategories(results);
-          return results;
+          // Fetch all subcategories with pagination
+          let allSubcategories: Subcategory[] = [];
+          let nextUrl = "api/subcategories/?limit=100"; // Start with high limit
+
+          // Fetch all pages
+          while (nextUrl) {
+            const response = await fetch(nextUrl);
+            const data = await response.json();
+            const results = data.results || [];
+            allSubcategories = [...allSubcategories, ...results];
+
+            // Check if there's a next page
+            nextUrl = data.next
+              ? data.next.replace(/^https?:\/\/[^\/]+/, "")
+              : null;
+          }
+
+          subcategoriesCache = allSubcategories;
+          setSubcategories(allSubcategories);
+          return allSubcategories;
         } catch (error) {
           console.error("Error fetching subcategories:", error);
           throw error;
@@ -99,7 +113,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   const getSubcategoryName = () => {
     if (typeof item.subcategory === "object" && item.subcategory?.name) {
       return item.subcategory.name;
-    } else if (typeof item.subcategory === "number") {
+    } else if (typeof item.subcategory === "number" && subcategories) {
       // Find subcategory by ID from fetched subcategories
       const subcategory = subcategories.find(
         (sub) => sub.id === item.subcategory
@@ -177,7 +191,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
       // العلوم اللغوية - always route to linguistic sciences regardless of kind
       return `/linguistic-sciences/${item.id}`;
     }
-    if (categorySlug === "aلعلوم-aلشرعية") {
+    if (categorySlug === "sharia-sciences") {
       // العلوم الشرعية - always route to sharia sciences regardless of kind
       return `/sharia-sciences/${item.id}`;
     }

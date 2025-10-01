@@ -157,6 +157,33 @@ export const useSubcategories = () => {
   );
 };
 
+// Hook for all subcategories with pagination
+export const useAllSubcategories = () => {
+  return useApiData(
+    () => apiClient.getAllSubcategories(),
+    () => {
+      const subcategories: Subcategory[] = [];
+      localCategories.forEach((category) => {
+        if (category.subcategories) {
+          category.subcategories.forEach((sub) => {
+            subcategories.push({
+              id: parseInt(
+                sub.id.replace(/[^\d]/g, "") || Math.random().toString()
+              ),
+              name: sub.name,
+              slug: sub.slug,
+              category: parseInt(
+                category.id.replace(/[^\d]/g, "") || Math.random().toString()
+              ),
+            });
+          });
+        }
+      });
+      return subcategories;
+    }
+  );
+};
+
 // Hook for subcategories by category slug
 export const useSubcategoriesByCategorySlug = (categorySlug: string) => {
   return useApiData(

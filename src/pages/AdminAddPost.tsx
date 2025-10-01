@@ -130,7 +130,9 @@ const AdminAddPost: React.FC = () => {
         category: parseInt(formData.category),
         date: formData.date,
         description_header: formData.description_header.trim(),
-        description: formData.description.filter((item) => item.trim() !== ""),
+        description: JSON.stringify(
+          formData.description.filter((item) => item.trim() !== "")
+        ),
         content: formData.content.trim(),
         language: formData.language.trim(),
         tags: formData.tags.trim(),
@@ -160,17 +162,9 @@ const AdminAddPost: React.FC = () => {
         entryData.cover_image_link = coverImageLink;
       }
 
+      // Only add pdf_file_link if it's not empty and skip validation
       if (formData.pdf_file_link.trim()) {
-        // إضافة http:// إذا لم يكن موجوداً
-        let pdfFileLink = formData.pdf_file_link.trim();
-        if (
-          pdfFileLink &&
-          !pdfFileLink.startsWith("http://") &&
-          !pdfFileLink.startsWith("https://")
-        ) {
-          pdfFileLink = "http://" + pdfFileLink;
-        }
-        entryData.pdf_file_link = pdfFileLink;
+        entryData.pdf_file_link = formData.pdf_file_link.trim();
       }
 
       // إضافة معلومات تصحيح
