@@ -4,7 +4,7 @@ const Footer = () => {
   return (
     <footer className="bg-blue-gray text-white">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Logo and Description */}
           <div className="lg:col-span-1">
             <div className="flex items-center space-x-4 space-x-reverse mb-4">
@@ -72,24 +72,16 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div className="lg:col-span-1">
-            <h4 className="text-lg font-amiri font-bold mb-4 text-center">
+            <h4 className="text-lg font-amiri font-bold mb-4">
               روابط سريعة
             </h4>
-            <ul className="space-y-2 text-center">
+            <ul className="space-y-2">
               <li>
                 <Link
-                  to="/manuscripts"
+                  to="/"
                   className="text-gray-300 hover:text-heritage-gold transition-colors"
                 >
-                  المخطوطات
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/tahqiq"
-                  className="text-gray-300 hover:text-heritage-gold transition-colors"
-                >
-                  تحقيقات
+                  الرئيسية
                 </Link>
               </li>
               <li>
@@ -102,42 +94,34 @@ const Footer = () => {
               </li>
               <li>
                 <Link
+                  to="/tahqiq"
+                  className="text-gray-300 hover:text-heritage-gold transition-colors"
+                >
+                  تحقيقات
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/manuscripts"
+                  className="text-gray-300 hover:text-heritage-gold transition-colors"
+                >
+                  مخطوطات
+                </Link>
+              </li>
+              <li>
+                <Link
                   to="/about-chinguit"
                   className="text-gray-300 hover:text-heritage-gold transition-colors"
                 >
                   عن شنقيط
                 </Link>
               </li>
-            </ul>
-          </div>
-
-          <div className="lg:col-span-1">
-            <h4 className="text-lg font-amiri font-bold mb-4 text-center">
-              من نحن
-            </h4>
-            <ul className="space-y-2 text-center">
               <li>
                 <Link
-                  to="/about-chinguit"
+                  to="/all-entries"
                   className="text-gray-300 hover:text-heritage-gold transition-colors"
                 >
                   الكل
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/about"
-                  className="text-gray-300 hover:text-heritage-gold transition-colors"
-                >
-                  من نحن
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/contact"
-                  className="text-gray-300 hover:text-heritage-gold transition-colors"
-                >
-                  اتصل بنا
                 </Link>
               </li>
             </ul>
