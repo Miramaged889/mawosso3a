@@ -37,7 +37,9 @@ const Tahqiq: React.FC = () => {
         (item: ContentEntry) =>
           item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           item.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.description_header?.toLowerCase().includes(searchQuery.toLowerCase())
+          item.description_header
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase())
       );
     }
 
@@ -54,7 +56,7 @@ const Tahqiq: React.FC = () => {
     setSearchQuery(query);
   };
 
-  const breadcrumbItems = [{ label: "تحقيقات الشناقطة" }];
+  const breadcrumbItems = [{ label: "تحقيقات" }];
 
   return (
     <div className="min-h-screen bg-ivory">
@@ -64,8 +66,11 @@ const Tahqiq: React.FC = () => {
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-amiri font-bold text-blue-gray mb-4">
-            تحقيقات الشناقطة
+            تحقيقات
           </h1>
+          <p className="text-lg text-medium-gray max-w-3xl mx-auto">
+            استكشف المؤلفات التي حققها الشناقطة
+          </p>
         </div>
 
         {/* Search Bar */}

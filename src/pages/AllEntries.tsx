@@ -1,5 +1,10 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
-import { useEntriesPaginated, useCategories, useKinds } from "../hooks/useApi";
+import {
+  useEntriesPaginated,
+  useCategories,
+  useKinds,
+  useSubcategories,
+} from "../hooks/useApi";
 import { ContentEntry } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 import ItemCard from "../components/ItemCard";
@@ -13,6 +18,7 @@ const AllEntries: React.FC = () => {
   const [activeSearchTerm, setActiveSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedKind, setSelectedKind] = useState("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [searchCurrentPage, setSearchCurrentPage] = useState(1);
   const [searchItemsPerPage] = useState(20);
 
@@ -32,14 +38,20 @@ const AllEntries: React.FC = () => {
     data: paginatedData,
     loading: paginatedLoading,
     error: paginatedError,
-  } = useEntriesPaginated(currentPage, itemsPerPage);
+  } = useEntriesPaginated({}, currentPage, itemsPerPage);
   const { data: categoriesData } = useCategories();
   const { data: kindsData } = useKinds();
+  const { data: subcategoriesData } = useSubcategories();
 
-  // Function to fetch filtered results by category or kind
+  // Function to fetch filtered results by category, kind, or subcategory
   const fetchFilteredResults = useCallback(
-    async (category: string = "", kind: string = "", page: number = 1) => {
-      if (!category && !kind) {
+    async (
+      category: string = "",
+      kind: string = "",
+      subcategory: string = "",
+      page: number = 1
+    ) => {
+      if (!category && !kind && !subcategory) {
         setFilteredResults([]);
         setTotalFilteredCount(0);
         return;
@@ -50,13 +62,17 @@ const AllEntries: React.FC = () => {
 
       try {
         let apiUrl = `/api/entries/?page=${page}`;
-        
+
         if (category) {
           apiUrl += `&category=${encodeURIComponent(category)}`;
         }
-        
+
         if (kind) {
           apiUrl += `&kind=${encodeURIComponent(kind)}`;
+        }
+
+        if (subcategory) {
+          apiUrl += `&subcategory=${encodeURIComponent(subcategory)}`;
         }
 
         const response = await fetch(apiUrl, {
@@ -184,36 +200,66 @@ const AllEntries: React.FC = () => {
     return kindsData.sort((a, b) => a.name.localeCompare(b.name));
   }, [kindsData]);
 
+  // Get subcategories from API
+  const subcategories = useMemo(() => {
+    if (!subcategoriesData) return [];
+    return subcategoriesData.sort((a, b) => a.name.localeCompare(b.name));
+  }, [subcategoriesData]);
+
   // Handle filter changes
   useEffect(() => {
-    if (selectedCategory || selectedKind) {
-      fetchFilteredResults(selectedCategory, selectedKind, 1);
+    if (selectedCategory || selectedKind || selectedSubcategory) {
+      fetchFilteredResults(
+        selectedCategory,
+        selectedKind,
+        selectedSubcategory,
+        1
+      );
       setCurrentPage(1);
     } else {
       setFilteredResults([]);
       setTotalFilteredCount(0);
     }
-  }, [selectedCategory, selectedKind, fetchFilteredResults]);
+  }, [
+    selectedCategory,
+    selectedKind,
+    selectedSubcategory,
+    fetchFilteredResults,
+  ]);
 
   // Determine loading and error states
-  const loading = activeSearchTerm !== "" ? searchLoading : 
-                 (selectedCategory || selectedKind) ? filteredLoading : 
-                 paginatedLoading;
-  
-  const error = activeSearchTerm !== "" ? searchError : 
-               (selectedCategory || selectedKind) ? filteredError : 
-               paginatedError;
+  const loading =
+    activeSearchTerm !== ""
+      ? searchLoading
+      : selectedCategory || selectedKind || selectedSubcategory
+      ? filteredLoading
+      : paginatedLoading;
+
+  const error =
+    activeSearchTerm !== ""
+      ? searchError
+      : selectedCategory || selectedKind || selectedSubcategory
+      ? filteredError
+      : paginatedError;
 
   // Determine which entries to show
   const currentEntries = useMemo(() => {
     if (activeSearchTerm !== "") {
       return searchResults;
-    } else if (selectedCategory || selectedKind) {
+    } else if (selectedCategory || selectedKind || selectedSubcategory) {
       return filteredResults;
     } else {
       return paginatedData?.results || [];
     }
-  }, [activeSearchTerm, searchResults, selectedCategory, selectedKind, filteredResults, paginatedData]);
+  }, [
+    activeSearchTerm,
+    searchResults,
+    selectedCategory,
+    selectedKind,
+    selectedSubcategory,
+    filteredResults,
+    paginatedData,
+  ]);
 
   // Pagination logic
   const totalPages = paginatedData
@@ -228,7 +274,8 @@ const AllEntries: React.FC = () => {
 
   // Filtered pagination logic
   const filteredTotalPages =
-    (selectedCategory || selectedKind) && totalFilteredCount > 0
+    (selectedCategory || selectedKind || selectedSubcategory) &&
+    totalFilteredCount > 0
       ? Math.ceil(totalFilteredCount / itemsPerPage)
       : 0;
 
@@ -248,12 +295,17 @@ const AllEntries: React.FC = () => {
   React.useEffect(() => {
     setCurrentPage(1);
     setSearchCurrentPage(1);
-  }, [searchTerm, selectedCategory, selectedKind]);
+  }, [searchTerm, selectedCategory, selectedKind, selectedSubcategory]);
 
   // Pagination handlers
   const handlePageChange = (page: number) => {
-    if (selectedCategory || selectedKind) {
-      fetchFilteredResults(selectedCategory, selectedKind, page);
+    if (selectedCategory || selectedKind || selectedSubcategory) {
+      fetchFilteredResults(
+        selectedCategory,
+        selectedKind,
+        selectedSubcategory,
+        page
+      );
     }
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -318,14 +370,13 @@ const AllEntries: React.FC = () => {
             جميع المواد
           </h1>
           <p className="text-lg text-medium-gray max-w-3xl mx-auto">
-            استكشف جميع المواد المتاحة في موسوعة شنقيط، بما في ذلك المخطوطات
-            والتحقيقات والمؤلفات والأخبار العلمية
+            استكشف جميع المواد المنشورة على موقع الموسوعة الشنقيطية
           </p>
         </div>
 
         {/* Search and Filters */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             {/* Search Bar */}
             <div className="md:col-span-2">
               <label className="block text-sm font-semibold text-blue-gray mb-3">
@@ -411,6 +462,25 @@ const AllEntries: React.FC = () => {
                 ))}
               </select>
             </div>
+
+            {/* Subcategory Filter */}
+            <div>
+              <label className="block text-sm font-semibold text-blue-gray mb-3">
+                التصنيف الفرعي
+              </label>
+              <select
+                value={selectedSubcategory}
+                onChange={(e) => setSelectedSubcategory(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-green focus:border-transparent text-right"
+              >
+                <option value="">جميع التصنيفات الفرعية</option>
+                {subcategories.map((subcategory) => (
+                  <option key={subcategory.id} value={subcategory.slug}>
+                    {subcategory.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Results Count and Reset Button */}
@@ -420,7 +490,7 @@ const AllEntries: React.FC = () => {
               <span className="font-semibold text-olive-green text-lg">
                 {activeSearchTerm !== ""
                   ? totalSearchCount
-                  : (selectedCategory || selectedKind)
+                  : selectedCategory || selectedKind
                   ? totalFilteredCount
                   : paginatedData?.count || 0}
               </span>{" "}
@@ -430,18 +500,29 @@ const AllEntries: React.FC = () => {
                   categories.find((cat) => cat.slug === selectedCategory)
                     ?.name || selectedCategory
                 }"`}
-              {selectedKind && ` من نوع "${
-                kinds.find((kind) => kind.slug === selectedKind)?.name || selectedKind
-              }"`}
+              {selectedKind &&
+                ` من نوع "${
+                  kinds.find((kind) => kind.slug === selectedKind)?.name ||
+                  selectedKind
+                }"`}
+              {selectedSubcategory &&
+                ` في التصنيف الفرعي "${
+                  subcategories.find((sub) => sub.slug === selectedSubcategory)
+                    ?.name || selectedSubcategory
+                }"`}
               {activeSearchTerm && ` تحتوي على "${activeSearchTerm}"`}
             </p>
-            {(searchTerm || selectedCategory || selectedKind) && (
+            {(searchTerm ||
+              selectedCategory ||
+              selectedKind ||
+              selectedSubcategory) && (
               <button
                 onClick={() => {
                   setSearchTerm("");
                   setActiveSearchTerm("");
                   setSelectedCategory("");
                   setSelectedKind("");
+                  setSelectedSubcategory("");
                   setCurrentPage(1);
                   setSearchCurrentPage(1);
                   setSearchResults([]);
@@ -483,7 +564,7 @@ const AllEntries: React.FC = () => {
                     صفحة (عرض {currentEntries.length} من أصل {totalSearchCount}{" "}
                     نتيجة بحث)
                   </>
-                ) : (selectedCategory || selectedKind) ? (
+                ) : selectedCategory || selectedKind || selectedSubcategory ? (
                   <>
                     صفحة{" "}
                     <span className="font-semibold text-olive-green">
@@ -567,7 +648,8 @@ const AllEntries: React.FC = () => {
                     التالي
                   </button>
                 </div>
-              ) : (selectedCategory || selectedKind) && filteredTotalPages > 1 ? (
+              ) : (selectedCategory || selectedKind || selectedSubcategory) &&
+                filteredTotalPages > 1 ? (
                 // Filtered pagination controls
                 <div className="flex justify-center items-center gap-2 flex-wrap">
                   {/* Previous Button */}
@@ -580,32 +662,35 @@ const AllEntries: React.FC = () => {
                   </button>
 
                   {/* Page Numbers */}
-                  {Array.from({ length: Math.min(5, filteredTotalPages) }, (_, i) => {
-                    let pageNum;
-                    if (filteredTotalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= filteredTotalPages - 2) {
-                      pageNum = filteredTotalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
+                  {Array.from(
+                    { length: Math.min(5, filteredTotalPages) },
+                    (_, i) => {
+                      let pageNum;
+                      if (filteredTotalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= filteredTotalPages - 2) {
+                        pageNum = filteredTotalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
 
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => handlePageChange(pageNum)}
-                        className={`px-3 py-2 border rounded-lg text-sm ${
-                          currentPage === pageNum
-                            ? "bg-olive-green text-white border-olive-green"
-                            : "border-gray-300 hover:bg-gray-50"
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`px-3 py-2 border rounded-lg text-sm ${
+                            currentPage === pageNum
+                              ? "bg-olive-green text-white border-olive-green"
+                              : "border-gray-300 hover:bg-gray-50"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    }
+                  )}
 
                   {/* Next Button */}
                   <button
@@ -616,7 +701,11 @@ const AllEntries: React.FC = () => {
                     التالي
                   </button>
                 </div>
-              ) : activeSearchTerm === "" && !selectedCategory && !selectedKind && totalPages > 1 ? (
+              ) : activeSearchTerm === "" &&
+                !selectedCategory &&
+                !selectedKind &&
+                !selectedSubcategory &&
+                totalPages > 1 ? (
                 // Regular pagination controls
                 <div className="flex justify-center items-center gap-2 flex-wrap">
                   {/* Previous Button */}
@@ -685,6 +774,7 @@ const AllEntries: React.FC = () => {
                   setActiveSearchTerm("");
                   setSelectedCategory("");
                   setSelectedKind("");
+                  setSelectedSubcategory("");
                   setCurrentPage(1);
                   setSearchCurrentPage(1);
                   setSearchResults([]);

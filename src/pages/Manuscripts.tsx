@@ -89,7 +89,9 @@ const Manuscripts: React.FC = () => {
         (item) =>
           item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           item.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.description_header?.toLowerCase().includes(searchQuery.toLowerCase())
+          item.description_header
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase())
       );
     }
 
@@ -136,8 +138,11 @@ const Manuscripts: React.FC = () => {
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-amiri font-bold text-blue-gray mb-4">
-            مخطوطات الموسوعة الشنقيطية
+            مخطوطات
           </h1>
+          <p className="text-lg text-medium-gray max-w-3xl mx-auto">
+            استكشف المخطوطات التي ألفها الشناقطة
+          </p>
         </div>
 
         {/* Search Bar */}

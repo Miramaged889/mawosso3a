@@ -222,7 +222,7 @@ const AdminAddAboutChinguit: React.FC = () => {
 
   const breadcrumbItems = [
     { label: "لوحة التحكم", path: "/admin" },
-    { label: "إدارة مؤلفات عن شنقيط", path: "/admin/about-chinguit" },
+    { label: "إدارة عن شنقيط", path: "/admin/about-chinguit" },
     { label: "إضافة مؤلفة جديدة" },
   ];
 

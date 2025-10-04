@@ -48,7 +48,7 @@ const TahqiqDetail: React.FC = () => {
 
     if (navigator.share) {
       navigator.share({
-        title: item?.title || "تحقيق من الشناقطة",
+        title: item?.title || "تحقيق",
         text: descriptionText,
         url: window.location.href,
       });
@@ -96,7 +96,7 @@ const TahqiqDetail: React.FC = () => {
   }
 
   const breadcrumbItems = [
-    { label: "تحقيقات الشناقطة", path: "/tahqiq" },
+    { label: "تحقيقات", path: "/tahqiq" },
     { label: item.title },
   ];
 

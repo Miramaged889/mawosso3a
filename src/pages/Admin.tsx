@@ -38,7 +38,11 @@ const Admin: React.FC = () => {
               <div className="text-center mb-8">
                 <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="font-amiri font-bold text-2xl">
-                   <img src="log.png" alt="logo" className="w-24 h-24 rounded-full" />
+                    <img
+                      src="log.png"
+                      alt="logo"
+                      className="w-24 h-24 rounded-full"
+                    />
                   </span>
                 </div>
                 <h1 className="text-2xl font-amiri font-bold text-blue-gray mb-2">
@@ -162,7 +166,7 @@ const Admin: React.FC = () => {
       link: "/admin/investigations",
     },
     {
-      title: "مؤلفات عن شنقيط",
+      title: "عن شنقيط",
       description: "إضافة وتعديل وحذف مؤلفات عن شنقيط",
       icon: "🏛️",
       link: "/admin/about-chinguit",

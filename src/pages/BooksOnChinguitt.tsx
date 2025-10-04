@@ -36,7 +36,9 @@ const BooksOnChinguitt: React.FC = () => {
         (item: ContentEntry) =>
           item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           item.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.description_header?.toLowerCase().includes(searchQuery.toLowerCase())
+          item.description_header
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase())
       );
     }
     return filtered;
@@ -52,7 +54,7 @@ const BooksOnChinguitt: React.FC = () => {
     setSearchQuery(query);
   };
 
-  const breadcrumbItems = [{ label: "مؤلفات عن شنقيط" }];
+  const breadcrumbItems = [{ label: "مؤلفات" }];
 
   return (
     <div className="min-h-screen bg-ivory">
@@ -62,8 +64,11 @@ const BooksOnChinguitt: React.FC = () => {
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-amiri font-bold text-blue-gray mb-4">
-            مؤلفات عن شنقيط
+            مؤلفات
           </h1>
+          <p className="text-lg text-medium-gray max-w-3xl mx-auto">
+            استكشف الكتب والبحوث التي ألفها الشناقطة
+          </p>
         </div>
 
         {/* Search Bar */}

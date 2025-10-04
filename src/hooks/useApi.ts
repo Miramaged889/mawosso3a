@@ -133,7 +133,7 @@ export const useCategories = () => {
 // Hook for subcategories
 export const useSubcategories = () => {
   return useApiData(
-    () => apiClient.getSubcategories(),
+    () => apiClient.getAllSubcategories(),
     () => {
       const subcategories: Subcategory[] = [];
       localCategories.forEach((category) => {

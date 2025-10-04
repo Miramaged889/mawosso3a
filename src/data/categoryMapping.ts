@@ -8,8 +8,8 @@ export const CATEGORY_IDS = {
   SCIENTIFIC_NEWS: "4", // الأخبار العلمية
   FORMAL_EDUCATION: "5", // مكتبة التعليم النظامي
   BENEFITS: "6", // فوائد
-  BOOKS_ON_CHINGUITT: "7", // مؤلفات عن شنقيط
-  TAHQIQ: "8", // تحقيقات الشناقطة
+  BOOKS_ON_CHINGUITT: "7", // مؤلفات
+  TAHQIQ: "8", // تحقيقات
   VARIETIES: "9", // المنوعات
   MANUSCRIPTS: "10", // المخطوطات
 } as const;
@@ -21,8 +21,8 @@ export const CATEGORY_NAMES = {
   [CATEGORY_IDS.SCIENTIFIC_NEWS]: "الأخبار العلمية",
   [CATEGORY_IDS.FORMAL_EDUCATION]: "مكتبة التعليم النظامي",
   [CATEGORY_IDS.BENEFITS]: "فوائد",
-  [CATEGORY_IDS.BOOKS_ON_CHINGUITT]: "مؤلفات عن شنقيط",
-  [CATEGORY_IDS.TAHQIQ]: "تحقيقات الشناقطة",
+  [CATEGORY_IDS.BOOKS_ON_CHINGUITT]: "مؤلفات",
+  [CATEGORY_IDS.TAHQIQ]: "تحقيقات",
   [CATEGORY_IDS.VARIETIES]: "المنوعات",
   [CATEGORY_IDS.MANUSCRIPTS]: "المخطوطات",
 } as const;

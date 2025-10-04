@@ -84,12 +84,16 @@ const AboutChinguit: React.FC = () => {
 
     // Apply search filter
     if (searchQuery) {
-      filtered = filtered.filter(
-        (item) =>
+      filtered = filtered.filter((item) => {
+        const descText = Array.isArray(item.description)
+          ? item.description.join(" ")
+          : item.description || "";
+        return (
           item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           item.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.description?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+          descText.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      });
     }
 
     return filtered;
@@ -130,7 +134,7 @@ const AboutChinguit: React.FC = () => {
     setSelectedSubcategory(subcategory);
   };
 
-  const breadcrumbItems = [{ label: "مؤلفات عن شنقيط" }];
+  const breadcrumbItems = [{ label: "عن شنقيط" }];
 
   return (
     <div className="min-h-screen bg-ivory">
@@ -142,13 +146,16 @@ const AboutChinguit: React.FC = () => {
           <h1 className="text-4xl md:text-5xl font-amiri font-bold text-blue-gray mb-4">
             عن شنقيط
           </h1>
+          <p className="text-lg text-medium-gray max-w-3xl mx-auto">
+            استكشف الكتب والبحوث التي ألفها غير الشناقطة عن شنقيط
+          </p>
         </div>
 
         {/* Search Bar */}
         <div className="max-w-2xl mx-auto mb-8">
           <SearchBar
             onSearch={handleSearch}
-            placeholder="ابحث في المؤلفات عن شنقيط..."
+            placeholder="ابحث في عن شنقيط..."
           />
         </div>
 

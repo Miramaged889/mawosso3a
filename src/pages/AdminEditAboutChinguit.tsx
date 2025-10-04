@@ -247,7 +247,7 @@ const AdminEditAboutChinguit: React.FC = () => {
 
   const breadcrumbItems = [
     { label: "لوحة التحكم", path: "/admin" },
-    { label: "إدارة مؤلفات عن شنقيط", path: "/admin/about-chinguit" },
+    { label: "إدارة عن شنقيط", path: "/admin/about-chinguit" },
     { label: "تعديل المؤلفة" },
   ];
 
@@ -272,7 +272,7 @@ const AdminEditAboutChinguit: React.FC = () => {
             onClick={() => navigate("/admin/about-chinguit")}
             className="mt-4 bg-olive-green text-white px-6 py-2 rounded-lg"
           >
-            العودة إلى إدارة مؤلفات عن شنقيط
+            العودة إلى إدارة عن شنقيط
           </button>
         </div>
       </div>

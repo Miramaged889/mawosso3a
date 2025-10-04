@@ -101,7 +101,7 @@ const AboutChinguitDetail: React.FC = () => {
             to="/about-chinguit"
             className="bg-olive-green text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
           >
-            العودة إلى مؤلفات عن شنقيط
+            العودة إلى عن شنقيط
           </Link>
         </div>
       </div>
@@ -123,7 +123,7 @@ const AboutChinguitDetail: React.FC = () => {
   }
 
   const breadcrumbItems = [
-    { label: "مؤلفات عن شنقيط", path: "/about-chinguit" },
+    { label: "عن شنقيط", path: "/about-chinguit" },
     { label: entry.title },
   ];
 

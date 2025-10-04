@@ -96,7 +96,7 @@ const BooksOnChinguittDetail: React.FC = () => {
   }
 
   const breadcrumbItems = [
-    { label: "مؤلفات عن شنقيط", path: "/books-on-chinguitt" },
+    { label: "مؤلفات", path: "/books-on-chinguitt" },
     { label: book.title },
   ];
 

@@ -107,7 +107,7 @@ const AdminAboutChinguit: React.FC = () => {
 
   const breadcrumbItems = [
     { label: "لوحة التحكم", path: "/admin" },
-    { label: "إدارة مؤلفات عن شنقيط" },
+    { label: "إدارة عن شنقيط" },
   ];
 
   return (
@@ -119,10 +119,10 @@ const AdminAboutChinguit: React.FC = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-amiri font-bold text-blue-gray mb-2">
-              إدارة مؤلفات عن شنقيط
+              إدارة عن شنقيط
             </h1>
             <p className="text-medium-gray">
-              عرض وإدارة جميع المؤلفات عن شنقيط المضافة (
+              عرض وإدارة جميع مؤلفات عن شنقيط المضافة (
               {paginatedData?.count || 0} إدخال إجمالي -{" "}
               {allAboutChinguit.length} مؤلفة في هذه الصفحة)
             </p>
@@ -140,7 +140,7 @@ const AdminAboutChinguit: React.FC = () => {
           <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700 mr-2"></div>
-              جاري تحميل مؤلفات عن شنقيط من الخادم... صفحة {currentPage}
+              جاري تحميل عن شنقيط من الخادم... صفحة {currentPage}
             </div>
           </div>
         )}
@@ -275,10 +275,10 @@ const AdminAboutChinguit: React.FC = () => {
           <div className="text-center py-16">
             <div className="text-6xl mb-4">🏛️</div>
             <h3 className="text-2xl font-amiri font-bold text-blue-gray mb-4">
-              لا توجد مؤلفات عن شنقيط
+              لا توجد مؤلفات
             </h3>
             <p className="text-medium-gray mb-8">
-              لم يتم إضافة أي مؤلفات عن شنقيط بعد. ابدأ بإضافة مؤلفة جديدة.
+              لم يتم إضافة أي مؤلفات بعد. ابدأ بإضافة مؤلفة جديدة.
             </p>
             <Link
               to="/admin/about-chinguit/add"
