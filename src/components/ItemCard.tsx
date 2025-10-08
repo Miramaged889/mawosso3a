@@ -285,16 +285,17 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
       <div className="p-6">
         <div className="flex flex-wrap items-center justify-between mb-3 gap-2">
           <div className="flex flex-wrap gap-2">
-            {/* Category Badge */}
-            <span className="bg-heritage-gold text-white px-3 py-1 rounded-full text-sm font-semibold">
-              {getCategoryName()}
-            </span>
             {/* Kind Badge - only show for books (kind 1) */}
             {getKindName() && (
               <span className="bg-olive-green text-white px-3 py-1 rounded-full text-sm font-semibold">
                 {getKindName()}
               </span>
             )}
+            {/* Category Badge */}
+            <span className="bg-heritage-gold text-white px-3 py-1 rounded-full text-sm font-semibold">
+              {getCategoryName()}
+            </span>
+
             {/* Subcategory Badge */}
             {getSubcategoryName() && (
               <span className="bg-blue-gray text-white px-3 py-1 rounded-full text-sm">

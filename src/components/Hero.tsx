@@ -72,7 +72,7 @@ const Hero = () => {
               to="/books-on-chinguitt"
               className="bg-olive-green text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
-              تصفح المؤلفات
+              تصفح مؤلفات الشناقطة
             </Link>
             <Link
               to="/about-chinguit"

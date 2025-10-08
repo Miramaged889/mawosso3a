@@ -15,7 +15,7 @@ const LatestProjects = () => {
               آخر المنشورات
             </h2>
             <p className="text-lg text-medium-gray max-w-2xl mx-auto">
-              أحدث الإضافات من المخطوطات والتحقيقات والمؤلفات في الموسوعة
+              أحدث الإضافات في الموسوعة
             </p>
           </div>
         </div>
@@ -32,7 +32,7 @@ const LatestProjects = () => {
               آخر المنشورات
             </h2>
             <p className="text-lg text-medium-gray max-w-2xl mx-auto">
-              أحدث الإضافات من المخطوطات والتحقيقات والمؤلفات في الموسوعة
+              أحدث الإضافات في الموسوعة
             </p>
           </div>
           <div className="text-center py-8">
@@ -51,7 +51,7 @@ const LatestProjects = () => {
             آخر المنشورات
           </h2>
           <p className="text-lg text-medium-gray max-w-2xl mx-auto">
-            أحدث الإضافات من المخطوطات والتحقيقات والمؤلفات في الموسوعة
+            أحدث الإضافات  في الموسوعة
           </p>
         </div>
 
