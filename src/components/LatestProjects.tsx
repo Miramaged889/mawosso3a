@@ -51,7 +51,7 @@ const LatestProjects = () => {
             آخر المنشورات
           </h2>
           <p className="text-lg text-medium-gray max-w-2xl mx-auto">
-            أحدث الإضافات  في الموسوعة
+            أحدث الإضافات في الموسوعة
           </p>
         </div>
 
