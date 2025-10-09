@@ -172,7 +172,7 @@ const BooksOnChinguittDetail: React.FC = () => {
                 <img
                   src={coverImageUrl}
                   alt={book.title}
-                  fetchPriority="high"
+                  fetchpriority="high"
                   width="800"
                   height="600"
                   decoding="async"

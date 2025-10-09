@@ -188,7 +188,7 @@ const ManuscriptDetail: React.FC = () => {
                 <img
                   src={coverImageUrl}
                   alt={manuscript.title}
-                  fetchPriority="high"
+                  fetchpriority="high"
                   width="800"
                   height="600"
                   decoding="async"

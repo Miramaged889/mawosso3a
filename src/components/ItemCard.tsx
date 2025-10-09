@@ -1,60 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ContentEntry, Subcategory } from "../services/api";
+import { ContentEntry } from "../services/api";
+import { useSubcategories } from "../contexts/SubcategoriesContext";
 
 interface ItemCardProps {
   item: ContentEntry;
 }
 
-// Cache for subcategories to avoid multiple API calls
-let subcategoriesCache: Subcategory[] | null = null;
-let subcategoriesPromise: Promise<Subcategory[]> | null = null;
-
 const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
-  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
-
-  // Fetch subcategories on component mount with caching
-  useEffect(() => {
-    const fetchSubcategories = async () => {
-      if (subcategoriesCache) {
-        setSubcategories(subcategoriesCache);
-        return;
-      }
-      if (subcategoriesPromise) {
-        try {
-          const data = await subcategoriesPromise;
-          setSubcategories(data);
-        } catch (error) {
-          console.error("Error fetching subcategories:", error);
-        }
-        return;
-      }
-      subcategoriesPromise = (async () => {
-        try {
-          let allSubcategories: Subcategory[] = [];
-          let nextUrl = "api/subcategories/?limit=100";
-          while (nextUrl) {
-            const response = await fetch(nextUrl);
-            const data = await response.json();
-            allSubcategories = [...allSubcategories, ...(data.results || [])];
-            nextUrl = data.next
-              ? data.next.replace(/^https?:\/\/[^\/]+/, "")
-              : null;
-          }
-          subcategoriesCache = allSubcategories;
-          setSubcategories(allSubcategories);
-          return allSubcategories;
-        } catch (error) {
-          console.error("Error fetching subcategories:", error);
-          throw error;
-        }
-      })();
-      try {
-        await subcategoriesPromise;
-      } catch {}
-    };
-    fetchSubcategories();
-  }, []);
+  const { subcategories } = useSubcategories();
 
   // Get category name safely
   const getCategoryName = () => {
@@ -111,8 +65,6 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   const getPageCount = () => {
     return item.pages || item.page_count || 0;
   };
-
-
 
   // Check if author should be displayed (hide if "Unknown Author")
   const shouldShowAuthor = () => {
@@ -233,22 +185,22 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
     return `/books-on-chinguitt/${item.id}`;
   };
 
-    const coverImageUrl = item.cover_image_link || null;
-    const detailRoute = getDetailRoute();
+  const coverImageUrl = item.cover_image_link || null;
+  const detailRoute = getDetailRoute();
 
-    useEffect(() => {
-      if (coverImageUrl) {
-        const link = document.createElement("link");
-        link.rel = "preload";
-        link.as = "image";
-        link.href = coverImageUrl;
-        link.fetchPriority = "high";
-        document.head.appendChild(link);
-        return () => {
-          document.head.removeChild(link);
-        };
-      }
-    }, [coverImageUrl]);
+  useEffect(() => {
+    if (coverImageUrl) {
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
+      link.href = coverImageUrl;
+      (link as any).fetchPriority = "high"; // TypeScript doesn't recognize fetchPriority yet
+      document.head.appendChild(link);
+      return () => {
+        document.head.removeChild(link);
+      };
+    }
+  }, [coverImageUrl]);
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
@@ -258,7 +210,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
             <img
               src={coverImageUrl}
               alt={item.title}
-              fetchPriority="high"
+              fetchpriority="high"
               width="800"
               height="600"
               decoding="async"

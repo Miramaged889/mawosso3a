@@ -165,7 +165,7 @@ const AboutChinguitDetail: React.FC = () => {
                 <img
                   src={coverImageUrl}
                   alt={entry.title}
-                  fetchPriority="high"
+                  fetchpriority="high"
                   width="800"
                   height="600"
                   decoding="async"

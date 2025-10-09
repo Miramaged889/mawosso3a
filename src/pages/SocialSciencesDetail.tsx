@@ -172,7 +172,7 @@ const SocialSciencesDetail: React.FC = () => {
                 <img
                   src={coverImageUrl}
                   alt={item.title}
-                  fetchPriority="high"
+                  fetchpriority="high"
                   width="800"
                   height="600"
                   decoding="async"
