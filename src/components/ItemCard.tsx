@@ -16,13 +16,10 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   // Fetch subcategories on component mount with caching
   useEffect(() => {
     const fetchSubcategories = async () => {
-      // Return cached data if available
       if (subcategoriesCache) {
         setSubcategories(subcategoriesCache);
         return;
       }
-
-      // Return existing promise if one is in progress
       if (subcategoriesPromise) {
         try {
           const data = await subcategoriesPromise;
@@ -32,27 +29,18 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
         }
         return;
       }
-
-      // Create new promise and cache it
       subcategoriesPromise = (async () => {
         try {
-          // Fetch all subcategories with pagination
           let allSubcategories: Subcategory[] = [];
-          let nextUrl = "api/subcategories/?limit=100"; // Start with high limit
-
-          // Fetch all pages
+          let nextUrl = "api/subcategories/?limit=100";
           while (nextUrl) {
             const response = await fetch(nextUrl);
             const data = await response.json();
-            const results = data.results || [];
-            allSubcategories = [...allSubcategories, ...results];
-
-            // Check if there's a next page
+            allSubcategories = [...allSubcategories, ...(data.results || [])];
             nextUrl = data.next
               ? data.next.replace(/^https?:\/\/[^\/]+/, "")
               : null;
           }
-
           subcategoriesCache = allSubcategories;
           setSubcategories(allSubcategories);
           return allSubcategories;
@@ -61,14 +49,10 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
           throw error;
         }
       })();
-
       try {
         await subcategoriesPromise;
-      } catch (error) {
-        // Error already logged above
-      }
+      } catch {}
     };
-
     fetchSubcategories();
   }, []);
 
@@ -128,12 +112,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
     return item.pages || item.page_count || 0;
   };
 
-  // Enhanced image URL formatting
-  const getImageUrl = (url: string | null | undefined) => {
-    if (!url) return null;
 
-    return `${url}`;
-  };
 
   // Check if author should be displayed (hide if "Unknown Author")
   const shouldShowAuthor = () => {
@@ -254,8 +233,22 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
     return `/books-on-chinguitt/${item.id}`;
   };
 
-  const coverImageUrl = getImageUrl(item.cover_image_link);
-  const detailRoute = getDetailRoute();
+    const coverImageUrl = item.cover_image_link || null;
+    const detailRoute = getDetailRoute();
+
+    useEffect(() => {
+      if (coverImageUrl) {
+        const link = document.createElement("link");
+        link.rel = "preload";
+        link.as = "image";
+        link.href = coverImageUrl;
+        link.fetchPriority = "high";
+        document.head.appendChild(link);
+        return () => {
+          document.head.removeChild(link);
+        };
+      }
+    }, [coverImageUrl]);
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
