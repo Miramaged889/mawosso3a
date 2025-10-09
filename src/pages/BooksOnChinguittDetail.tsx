@@ -172,6 +172,10 @@ const BooksOnChinguittDetail: React.FC = () => {
                 <img
                   src={coverImageUrl}
                   alt={book.title}
+                  fetchPriority="high"
+                  width="800"
+                  height="600"
+                  decoding="async"
                   className="w-full h-full object-contain bg-gray-50 group-hover:scale-105 transition-transform duration-300"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
