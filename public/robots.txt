@@ -1,0 +1,11 @@
+# Allow all search engines to crawl everything
+User-agent: *
+Allow: /
+
+# Disallow admin or private routes (لو عندك صفحات داخلية)
+Disallow: /admin/
+Disallow: /dashboard/
+
+# Sitemap (يُفضل إنشاءه أو ربطه لو عندك)
+Sitemap: https://chinguitipedia.com//sitemap.xml
+
