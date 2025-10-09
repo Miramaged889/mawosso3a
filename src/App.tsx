@@ -90,117 +90,123 @@ function App() {
             >
               <Routes>
                 <Route path="/" element={<Home />} />
-              <Route path="/manuscripts" element={<Manuscripts />} />
-              <Route path="/manuscripts/:id" element={<ManuscriptDetail />} />
-              <Route path="/tahqiq" element={<Tahqiq />} />
-              <Route path="/tahqiq/:id" element={<TahqiqDetail />} />
-              <Route
-                path="/books-on-chinguitt"
-                element={<BooksOnChinguitt />}
-              />
-              <Route
-                path="/books-on-chinguitt/:id"
-                element={<BooksOnChinguittDetail />}
-              />
-              <Route path="/about-chinguit" element={<AboutChinguit />} />
-              <Route
-                path="/about-chinguit/:id"
-                element={<AboutChinguitDetail />}
-              />
+                <Route path="/manuscripts" element={<Manuscripts />} />
+                <Route path="/manuscripts/:id" element={<ManuscriptDetail />} />
+                <Route path="/tahqiq" element={<Tahqiq />} />
+                <Route path="/tahqiq/:id" element={<TahqiqDetail />} />
+                <Route
+                  path="/books-on-chinguitt"
+                  element={<BooksOnChinguitt />}
+                />
+                <Route
+                  path="/books-on-chinguitt/:id"
+                  element={<BooksOnChinguittDetail />}
+                />
+                <Route path="/about-chinguit" element={<AboutChinguit />} />
+                <Route
+                  path="/about-chinguit/:id"
+                  element={<AboutChinguitDetail />}
+                />
 
-              <Route path="/search" element={<Search />} />
-              <Route path="/all-entries" element={<AllEntries />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/contact" element={<Contact />} />
+                <Route path="/search" element={<Search />} />
+                <Route path="/all-entries" element={<AllEntries />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/contact" element={<Contact />} />
 
-              {/* Category Pages */}
-              <Route path="/sharia-sciences" element={<ShariaSciences />} />
-              <Route
-                path="/sharia-sciences/:id"
-                element={<ShariaSciencesDetail />}
-              />
-              <Route
-                path="/linguistic-sciences"
-                element={<LinguisticSciences />}
-              />
-              <Route
-                path="/linguistic-sciences/:id"
-                element={<LinguisticSciencesDetail />}
-              />
-              <Route path="/social-sciences" element={<SocialSciences />} />
-              <Route
-                path="/social-sciences/:id"
-                element={<SocialSciencesDetail />}
-              />
-              <Route path="/varieties" element={<Varieties />} />
-              <Route path="/varieties/:id" element={<VarietiesDetail />} />
-              <Route path="/benefits" element={<Benefits />} />
-              <Route path="/benefits/:id" element={<BenefitsDetail />} />
-              <Route
-                path="/formal-education-library"
-                element={<FormalEducationLibrary />}
-              />
-              <Route
-                path="/formal-education-library/:id"
-                element={<FormalEducationLibraryDetail />}
-              />
-              <Route path="/scientific-news" element={<ScientificNews />} />
-              <Route
-                path="/scientific-news/:id"
-                element={<ScientificNewsDetail />}
-              />
+                {/* Category Pages */}
+                <Route path="/sharia-sciences" element={<ShariaSciences />} />
+                <Route
+                  path="/sharia-sciences/:id"
+                  element={<ShariaSciencesDetail />}
+                />
+                <Route
+                  path="/linguistic-sciences"
+                  element={<LinguisticSciences />}
+                />
+                <Route
+                  path="/linguistic-sciences/:id"
+                  element={<LinguisticSciencesDetail />}
+                />
+                <Route path="/social-sciences" element={<SocialSciences />} />
+                <Route
+                  path="/social-sciences/:id"
+                  element={<SocialSciencesDetail />}
+                />
+                <Route path="/varieties" element={<Varieties />} />
+                <Route path="/varieties/:id" element={<VarietiesDetail />} />
+                <Route path="/benefits" element={<Benefits />} />
+                <Route path="/benefits/:id" element={<BenefitsDetail />} />
+                <Route
+                  path="/formal-education-library"
+                  element={<FormalEducationLibrary />}
+                />
+                <Route
+                  path="/formal-education-library/:id"
+                  element={<FormalEducationLibraryDetail />}
+                />
+                <Route path="/scientific-news" element={<ScientificNews />} />
+                <Route
+                  path="/scientific-news/:id"
+                  element={<ScientificNewsDetail />}
+                />
 
-              {/* Admin Routes */}
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/admin/manuscripts" element={<AdminManuscripts />} />
-              <Route
-                path="/admin/manuscripts/add"
-                element={<AdminAddManuscript />}
-              />
-              <Route
-                path="/admin/manuscripts/edit/:id"
-                element={<AdminEditManuscript />}
-              />
-              <Route path="/admin/posts" element={<AdminPosts />} />
-              <Route path="/admin/posts/add" element={<AdminAddPost />} />
-              <Route path="/admin/posts/edit/:id" element={<AdminEditPost />} />
-              <Route path="/admin/authors" element={<AdminAuthors />} />
-              <Route
-                path="/admin/investigations"
-                element={<AdminInvestigations />}
-              />
-              <Route
-                path="/admin/about-chinguit"
-                element={<AdminAboutChinguit />}
-              />
-              <Route path="/admin/authors/add" element={<AdminAddAuthor />} />
-              <Route
-                path="/admin/authors/edit/:id"
-                element={<AdminEditAuthor />}
-              />
-              <Route
-                path="/admin/investigations/add"
-                element={<AdminAddInvestigation />}
-              />
-              <Route
-                path="/admin/investigations/edit/:id"
-                element={<AdminEditInvestigation />}
-              />
-              <Route
-                path="/admin/about-chinguit/add"
-                element={<AdminAddAboutChinguit />}
-              />
-              <Route
-                path="/admin/about-chinguit/edit/:id"
-                element={<AdminEditAboutChinguit />}
-              />
-            </Routes>
-          </Suspense>
-        </main>
-        <Footer />
-        <WhatsAppButton />
-      </div>
+                {/* Admin Routes */}
+                <Route path="/admin" element={<Admin />} />
+                <Route
+                  path="/admin/manuscripts"
+                  element={<AdminManuscripts />}
+                />
+                <Route
+                  path="/admin/manuscripts/add"
+                  element={<AdminAddManuscript />}
+                />
+                <Route
+                  path="/admin/manuscripts/edit/:id"
+                  element={<AdminEditManuscript />}
+                />
+                <Route path="/admin/posts" element={<AdminPosts />} />
+                <Route path="/admin/posts/add" element={<AdminAddPost />} />
+                <Route
+                  path="/admin/posts/edit/:id"
+                  element={<AdminEditPost />}
+                />
+                <Route path="/admin/authors" element={<AdminAuthors />} />
+                <Route
+                  path="/admin/investigations"
+                  element={<AdminInvestigations />}
+                />
+                <Route
+                  path="/admin/about-chinguit"
+                  element={<AdminAboutChinguit />}
+                />
+                <Route path="/admin/authors/add" element={<AdminAddAuthor />} />
+                <Route
+                  path="/admin/authors/edit/:id"
+                  element={<AdminEditAuthor />}
+                />
+                <Route
+                  path="/admin/investigations/add"
+                  element={<AdminAddInvestigation />}
+                />
+                <Route
+                  path="/admin/investigations/edit/:id"
+                  element={<AdminEditInvestigation />}
+                />
+                <Route
+                  path="/admin/about-chinguit/add"
+                  element={<AdminAddAboutChinguit />}
+                />
+                <Route
+                  path="/admin/about-chinguit/edit/:id"
+                  element={<AdminEditAboutChinguit />}
+                />
+              </Routes>
+            </Suspense>
+          </main>
+          <Footer />
+          <WhatsAppButton />
+        </div>
       </SubcategoriesProvider>
     </Router>
   );

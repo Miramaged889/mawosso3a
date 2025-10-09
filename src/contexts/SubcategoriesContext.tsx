@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface Subcategory {
   id: number;
@@ -17,10 +17,12 @@ const SubcategoriesContext = createContext<SubcategoriesContextType>({
   isLoading: true,
 });
 
-const CACHE_KEY = 'subcategories_cache';
+const CACHE_KEY = "subcategories_cache";
 const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
 
-export const SubcategoriesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const SubcategoriesProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,7 +34,7 @@ export const SubcategoriesProvider: React.FC<{ children: React.ReactNode }> = ({
         if (cached) {
           const { data, timestamp } = JSON.parse(cached);
           const age = Date.now() - timestamp;
-          
+
           if (age < CACHE_DURATION) {
             setSubcategories(data);
             setIsLoading(false);
@@ -42,13 +44,15 @@ export const SubcategoriesProvider: React.FC<{ children: React.ReactNode }> = ({
 
         // Fetch all subcategories
         let allSubcategories: Subcategory[] = [];
-        let nextUrl = '/api/subcategories/?limit=100';
+        let nextUrl = "/api/subcategories/?limit=100";
 
         while (nextUrl) {
           const response = await fetch(nextUrl);
           const data = await response.json();
           allSubcategories = [...allSubcategories, ...(data.results || [])];
-          nextUrl = data.next ? data.next.replace(/^https?:\/\/[^\/]+/, '') : null;
+          nextUrl = data.next
+            ? data.next.replace(/^https?:\/\/[^\/]+/, "")
+            : null;
         }
 
         // Cache the results
@@ -62,7 +66,7 @@ export const SubcategoriesProvider: React.FC<{ children: React.ReactNode }> = ({
 
         setSubcategories(allSubcategories);
       } catch (err) {
-        console.error('Error fetching subcategories:', err);
+        console.error("Error fetching subcategories:", err);
       } finally {
         setIsLoading(false);
       }
@@ -81,8 +85,9 @@ export const SubcategoriesProvider: React.FC<{ children: React.ReactNode }> = ({
 export const useSubcategories = () => {
   const context = useContext(SubcategoriesContext);
   if (!context) {
-    throw new Error('useSubcategories must be used within SubcategoriesProvider');
+    throw new Error(
+      "useSubcategories must be used within SubcategoriesProvider"
+    );
   }
   return context;
 };
-
