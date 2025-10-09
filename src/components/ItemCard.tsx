@@ -292,13 +292,13 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
               </span>
             )}
             {/* Category Badge */}
-            <span className="bg-heritage-gold text-white px-3 py-1 rounded-full text-sm font-semibold">
+            <span className="bg-heritage-gold-dark text-white px-3 py-1 rounded-full text-sm font-semibold">
               {getCategoryName()}
             </span>
 
             {/* Subcategory Badge */}
             {getSubcategoryName() && (
-              <span className="bg-blue-gray text-white px-3 py-1 rounded-full text-sm">
+              <span className="bg-blue-gray text-white px-3 py-1 rounded-full text-sm font-semibold">
                 {getSubcategoryName()}
               </span>
             )}

@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: "dist",
+    sourcemap: true,
   },
   server: {
     proxy: {
@@ -18,9 +19,7 @@ export default defineConfig({
           proxy.on("error", (err, _req, _res) => {
             console.log("proxy error", err);
           });
-          proxy.on("proxyReq", (proxyReq, req, _res) => {
-            
-          });
+          proxy.on("proxyReq", (proxyReq, req, _res) => {});
         },
       },
     },

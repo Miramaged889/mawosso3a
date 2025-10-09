@@ -191,7 +191,7 @@ const BooksOnChinguittDetail: React.FC = () => {
               {/* Header */}
               <div className="flex flex-wrap items-center justify-between mb-6">
                 <div className="flex flex-wrap gap-2">
-                  <span className="bg-heritage-gold text-white px-4 py-2 rounded-full text-sm font-semibold">
+                  <span className="bg-heritage-gold-dark text-white px-4 py-2 rounded-full text-sm font-semibold">
                     {getCategoryName()}
                   </span>
                   {getSubcategoryName() && (

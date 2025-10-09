@@ -22,7 +22,7 @@ const Header = () => {
               <img
                 src="img/log.png"
                 alt="Chinguitipedia Logo"
-                className="w-20 h-20"
+                className="w-20 h-20 object-contain"
               />
               <h1 className="text-xl font-louguiya font-bold text-blue-gray">
                 الموسوعة الشنقيطية

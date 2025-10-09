@@ -8,6 +8,7 @@ export default {
         "dark-gray": "#333333",
         "blue-gray": "#2A3A3F",
         "heritage-gold": "#A68C5D",
+        "heritage-gold-dark": "#8B7355", // Darker variant for better contrast
         "olive-green": "#3B6E3B",
         "medium-gray": "#6C757D",
         "hover-beige": "#EADAC0",
