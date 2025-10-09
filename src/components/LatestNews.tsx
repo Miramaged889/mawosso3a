@@ -25,7 +25,10 @@ const LatestNews = () => {
   ];
 
   return (
-    <section className="py-16 bg-ivory islamic-pattern">
+    <section
+      className="py-16 bg-ivory islamic-pattern"
+      style={{ minHeight: "600px" }}
+    >
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-louguiya font-bold text-blue-gray mb-4">
@@ -38,6 +41,7 @@ const LatestNews = () => {
             <article
               key={index}
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              style={{ minHeight: "250px" }}
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-3">

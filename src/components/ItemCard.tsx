@@ -203,7 +203,10 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   }, [coverImageUrl]);
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+    <div
+      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+      style={{ minHeight: "450px" }}
+    >
       {coverImageUrl ? (
         <div className="h-48 overflow-hidden relative group">
           <Link to={detailRoute}>

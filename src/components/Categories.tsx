@@ -49,7 +49,7 @@ const Categories = () => {
   }, []);
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-white" style={{ minHeight: "500px" }}>
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-amiri font-bold text-blue-gray mb-4">
@@ -66,6 +66,7 @@ const Categories = () => {
               to={category.link}
               key={index}
               className="bg-ivory rounded-lg p-6 text-center hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer group hover:bg-hover-beige"
+              style={{ minHeight: "150px" }}
             >
               <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
                 {category.icon}

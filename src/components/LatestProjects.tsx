@@ -8,7 +8,7 @@ const LatestProjects = () => {
 
   if (loading) {
     return (
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white" style={{ minHeight: "700px" }}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-louguiya font-bold text-blue-gray mb-4">
@@ -18,6 +18,24 @@ const LatestProjects = () => {
               أحدث الإضافات في الموسوعة
             </p>
           </div>
+          {/* Skeleton loader with fixed heights */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-white rounded-lg shadow-md overflow-hidden"
+                style={{ height: "450px" }}
+              >
+                <div className="h-48 bg-gray-200 loading-skeleton"></div>
+                <div className="p-6">
+                  <div className="h-4 bg-gray-200 loading-skeleton mb-3 w-3/4"></div>
+                  <div className="h-6 bg-gray-200 loading-skeleton mb-3"></div>
+                  <div className="h-4 bg-gray-200 loading-skeleton mb-2 w-5/6"></div>
+                  <div className="h-4 bg-gray-200 loading-skeleton w-4/6"></div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     );
@@ -25,7 +43,7 @@ const LatestProjects = () => {
 
   if (error) {
     return (
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white" style={{ minHeight: "700px" }}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-louguiya font-bold text-blue-gray mb-4">
@@ -44,7 +62,7 @@ const LatestProjects = () => {
   }
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-white" style={{ minHeight: "700px" }}>
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-louguiya font-bold text-blue-gray mb-4">
@@ -60,15 +78,15 @@ const LatestProjects = () => {
             <ItemCard key={item.id} item={item} />
           ))}
         </div>
+      </div>
 
-        <div className="text-center mt-12">
-          <Link
-            to="/all-entries"
-            className="bg-olive-green text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-all duration-300"
-          >
-            استكشف المزيد
-          </Link>
-        </div>
+      <div className="text-center mt-12">
+        <Link
+          to="/all-entries"
+          className="bg-olive-green text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-all duration-300"
+        >
+          استكشف المزيد
+        </Link>
       </div>
     </section>
   );
