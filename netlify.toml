@@ -6,7 +6,10 @@
   from = "/api/*"
   to = "https://mawso3a.pythonanywhere.com/api/:splat"
   status = 200
+  force = true
   headers = {X-From = "Netlify"}
+  [redirects.conditions]
+    Role = ["*"]
 
 [[headers]]
   for = "/api/*"

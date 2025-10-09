@@ -165,6 +165,13 @@ class ApiClient {
     if (!response.ok) {
       let errorData: any = {};
       try {
+        // Check if response is HTML instead of JSON
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("text/html")) {
+          throw new Error(
+            "Received HTML instead of JSON - API endpoint not accessible"
+          );
+        }
         errorData = await response.json();
       } catch (e) {
         // If JSON parsing fails, create a generic error object
@@ -231,6 +238,14 @@ class ApiClient {
       console.error(`🚨 API Error (${response.status}):`, errorData);
       throw new Error(errorMessage);
     }
+
+    // Check if response is HTML before parsing as JSON
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("text/html")) {
+      console.error("Received HTML instead of JSON from API");
+      throw new Error("API returned HTML instead of JSON");
+    }
+
     return response.json();
   }
 
