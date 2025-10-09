@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && cp _redirects dist/_redirects",
+    "build": "vite build && node scripts/optimize-html.cjs && node -e \"require('fs').copyFileSync('_redirects', 'dist/_redirects')\"",
+    "build:win": "vite build && node scripts/optimize-html.cjs && copy _redirects dist\\_redirects",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -4,27 +4,113 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="موقعك يقدم أفضل المنتجات والخدمات في مجاله. اكتشف الآن المميزات والعروض الحصرية.">
-    <meta name="keywords" content="موقع, تراث, علماء, شنقيط, موقع تراثي, موقع علمي, موقع تاريخي, موقع تراثي, موقع علمي, موقع تاريخي, موقع تراثي, موقع علمي, موقع تاريخي">
-    <meta name="author" content="Chinguitipedia">
-    <meta name="robots" content="index, follow">
-    <meta name="googlebot" content="index, follow">
-    <meta name="bingbot" content="index, follow">
-    <meta name="yandexbot" content="index, follow">
-    <meta name="duckduckbot" content="index, follow">
-    <meta name="slurp" content="index, follow">
-    <meta name="ia_archive" content="index, follow">
-    <meta name="ia_archiver" content="index, follow">
-    <meta name="ia_archiver" content="index, follow">
+    <meta
+      name="description"
+      content="موقعك يقدم أفضل المنتجات والخدمات في مجاله. اكتشف الآن المميزات والعروض الحصرية."
+    />
+    <meta
+      name="keywords"
+      content="موقع, تراث, علماء, شنقيط, موقع تراثي, موقع علمي, موقع تاريخي, موقع تراثي, موقع علمي, موقع تاريخي, موقع تراثي, موقع علمي, موقع تاريخي"
+    />
+    <meta name="author" content="Chinguitipedia" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    <meta name="bingbot" content="index, follow" />
+    <meta name="yandexbot" content="index, follow" />
+    <meta name="duckduckbot" content="index, follow" />
+    <meta name="slurp" content="index, follow" />
+    <meta name="ia_archive" content="index, follow" />
+    <meta name="ia_archiver" content="index, follow" />
+    <meta name="ia_archiver" content="index, follow" />
     <title>
       Chinguitipedia - موقع يهتم بجمع التراث العلمي لعلماء وكتاب بلاد شنقيط
     </title>
+
+    <!-- DNS Prefetch for faster connections -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    <link rel="dns-prefetch" href="https://chinguitipedia.net" />
+    <link rel="dns-prefetch" href="https://mawso3a.pythonanywhere.com" />
+
+    <!-- Preconnect to font providers -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Critical inline CSS to prevent layout shifts -->
+    <style>
+      /* Critical CSS - Must be inline */
+      *,
+      ::before,
+      ::after {
+        box-sizing: border-box;
+        border-width: 0;
+        border-style: solid;
+        border-color: #e5e7eb;
+      }
+      html {
+        line-height: 1.5;
+        -webkit-text-size-adjust: 100%;
+        -moz-tab-size: 4;
+        tab-size: 4;
+        font-family: Cairo, ui-sans-serif, system-ui, -apple-system,
+          BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+          "Noto Sans", sans-serif;
+        font-feature-settings: normal;
+        font-variation-settings: normal;
+      }
+      body {
+        margin: 0;
+        line-height: inherit;
+      }
+      #root {
+        min-height: 100vh;
+      }
+      img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+
+      /* Prevent FOIT (Flash of Invisible Text) */
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+      }
+
+      /* Loading skeleton animation */
+      .loading-skeleton {
+        background: linear-gradient(
+          90deg,
+          #f0f0f0 25%,
+          #e0e0e0 50%,
+          #f0f0f0 75%
+        );
+        background-size: 200% 100%;
+        animation: loading 1.5s ease-in-out infinite;
+      }
+      @keyframes loading {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+    </style>
+
+    <!-- Async load fonts - non-blocking -->
     <link
+      rel="preload"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
       href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Amiri:wght@400;700&display=swap"
-      rel="stylesheet"
     />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Amiri:wght@400;700&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
   </head>
   <body>
     <div id="root"></div>
