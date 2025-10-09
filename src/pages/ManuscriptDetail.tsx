@@ -322,7 +322,7 @@ const ManuscriptDetail: React.FC = () => {
                 )}
                 <button
                   onClick={handleShare}
-                  className="bg-heritage-gold text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 flex items-center space-x-2 space-x-reverse"
+                  className="bg-heritage-gold-dark text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 flex items-center space-x-2 space-x-reverse font-semibold"
                 >
                   <span>مشاركة</span>
                   <svg

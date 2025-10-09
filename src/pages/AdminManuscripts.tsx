@@ -194,7 +194,7 @@ const AdminManuscripts: React.FC = () => {
                           {manuscript.author}
                         </td>
                         <td className="px-4 py-4">
-                          <span className="bg-heritage-gold text-white px-4 py-1 rounded-full text-sm">
+                          <span className="bg-heritage-gold-dark text-white px-4 py-1 rounded-full text-sm font-semibold shadow-sm">
                             {typeof manuscript.category === "object"
                               ? manuscript.category?.name
                               : typeof manuscript.category === "number"

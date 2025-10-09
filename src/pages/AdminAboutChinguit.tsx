@@ -230,7 +230,7 @@ const AdminAboutChinguit: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="bg-heritage-gold text-white px-3 py-1 rounded-full text-sm">
+                        <span className="bg-heritage-gold-dark text-white px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
                           {getCategoryName(item.category, item.tags)}
                         </span>
                         {item.subcategory &&

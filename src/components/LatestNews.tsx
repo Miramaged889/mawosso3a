@@ -41,7 +41,7 @@ const LatestNews = () => {
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="bg-heritage-gold text-white px-3 py-1 rounded-full text-sm">
+                  <span className="bg-heritage-gold-dark text-white px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
                     {item.category}
                   </span>
                   <span className="text-medium-gray text-sm">{item.date}</span>
