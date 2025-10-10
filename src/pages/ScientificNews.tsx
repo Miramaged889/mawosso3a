@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from "react";
 import {
   useEntriesPaginated,
-  useSubcategoriesByCategorySlug,
 } from "../hooks/useApi";
 import { ContentEntry } from "../services/api";
 import ItemCard from "../components/ItemCard";
@@ -11,30 +10,21 @@ import Pagination from "../components/Pagination";
 
 const ScientificNews: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSubcategory, setSelectedSubcategory] = useState("الكل");
-  const [selectedSubcategorySlug, setSelectedSubcategorySlug] = useState<
-    string | null
-  >(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
 
-  // Fetch paginated entries for Scientific News from API using kind slug
+  // Fetch paginated entries for Scientific News from API using category slug
   const {
     data: paginatedData,
     loading,
     error,
   } = useEntriesPaginated(
     {
-      kind: "mnshor", // Kind slug for أخبار
-      subcategory: selectedSubcategorySlug || undefined,
+      category: "aلaخبaر-aلعلمية", // Category slug for Scientific News
     },
     currentPage,
     itemsPerPage
   );
-
-  // Fetch subcategories for Scientific News (using kind-based approach)
-  const { data: subcategories, loading: subcategoriesLoading } =
-    useSubcategoriesByCategorySlug("aلaخبaر-aلعلمية");
 
   const items = paginatedData?.results || [];
   const totalItems = paginatedData?.count || 0;
@@ -79,15 +69,6 @@ const ScientificNews: React.FC = () => {
     setSearchQuery(query);
   };
 
-  const handleSubcategoryFilter = (
-    subcategory: string,
-    subcategorySlug?: string
-  ) => {
-    setSelectedSubcategory(subcategory);
-    setSelectedSubcategorySlug(subcategorySlug || null);
-    setCurrentPage(1); // Reset to first page when changing subcategory
-  };
-
   const breadcrumbItems = [{ label: "آخر الأخبار العلمية" }];
 
   return (
@@ -109,44 +90,6 @@ const ScientificNews: React.FC = () => {
             placeholder="ابحث في الأخبار العلمية..."
           />
         </div>
-
-        {/* Subcategory Filter - Only show if subcategories are available */}
-        {subcategories && subcategories.length > 0 && !subcategoriesLoading && (
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold text-center mb-3 text-olive-green">
-              التصنيفات الفرعية
-            </h3>
-            <div className="flex flex-wrap justify-center gap-3">
-              <button
-                key="all-subcategories"
-                onClick={() => handleSubcategoryFilter("الكل")}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                  selectedSubcategory === "الكل"
-                    ? "bg-olive-green text-white shadow-md"
-                    : "bg-white text-olive-green border border-olive-green hover:bg-olive-green hover:text-white"
-                }`}
-              >
-                الكل
-              </button>
-
-              {subcategories.map((subcategory) => (
-                <button
-                  key={subcategory.id}
-                  onClick={() =>
-                    handleSubcategoryFilter(subcategory.name, subcategory.slug)
-                  }
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                    selectedSubcategory === subcategory.name
-                      ? "bg-olive-green text-white shadow-md"
-                      : "bg-white text-olive-green border border-olive-green hover:bg-olive-green hover:text-white"
-                  }`}
-                >
-                  {subcategory.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Results Count */}
         {!loading && !error && (

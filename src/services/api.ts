@@ -460,8 +460,9 @@ class ApiClient {
     categorySlug: string
   ): Promise<Subcategory[]> {
     try {
+      const encodedSlug = encodeURIComponent(categorySlug);
       const response = await this.fetchWithFallback(
-        `${this.baseURL}/subcategories/?category=${categorySlug}`,
+        `${this.baseURL}/subcategories/?category=${encodedSlug}`,
         {
           headers: this.getHeaders(),
           mode: "cors",
@@ -472,7 +473,7 @@ class ApiClient {
       // If 403 error, try without authentication
       if (response.status === 403) {
         const publicResponse = await this.fetchWithFallback(
-          `${this.baseURL}/subcategories/?category=${categorySlug}`,
+          `${this.baseURL}/subcategories/?category=${encodedSlug}`,
           {
             headers: this.getPublicHeaders(),
             mode: "cors",
