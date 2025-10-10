@@ -1,5 +1,3 @@
-
-
 const About = () => {
   return (
     <>
@@ -11,16 +9,16 @@ const About = () => {
                 من نحن
               </h1>
               <p className="text-lg text-medium-gray mb-8 leading-relaxed">
-                نحن فريق متخصص في التراث الإسلامي والعلوم الشرعية، نعمل على جمع
-                وحفظ ونشر التراث العلمي لعلماء وكتاب بلاد شنقيط (موريتانيا).
+                موقع الموسوعة الشنقيطية موقع علمي، يعمل على جمع ونشر التراث
+                العلمي لعلماء وكتاب بلاد شنقيط (موريتانيا).
               </p>
 
               <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
                 <div className="flex items-center justify-center mb-6">
                   <div className="w-32 h-32 bg-heritage-gold rounded-full flex items-center justify-center">
-                    <img 
-                      src="img/log.png" 
-                      alt="الموسوعة الشنقيطية" 
+                    <img
+                      src="img/log.png"
+                      alt="الموسوعة الشنقيطية"
                       className="w-32 h-32 rounded-full object-cover"
                     />
                   </div>
@@ -29,22 +27,24 @@ const About = () => {
                   رؤيتنا
                 </h2>
                 <p className="text-medium-gray leading-relaxed mt-4">
-                  نسعى إلى أن نكون المصدر الأول والأشمل للتراث العلمي الشنقيطي،
-                  ونعمل على توفير منصة رقمية متطورة تتيح للباحثين والدارسين
-                  الوصول إلى هذا التراث الثمين بسهولة ويسر.
+                  أن نكون المرجع الرقمي الأول والأشمل للتراث العلمي الشنقيطي،
+                  ونقطة انطلاق لكل باحث ومهتم بتاريخ وعلوم بلاد شنقيط، مع الحفاظ
+                  على هذا الإرث الثمين للأجيال القادمة.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="bg-white rounded-lg shadow-lg p-6">
                   <h3 className="text-xl font-louguiya font-bold text-blue-gray mb-4">
-                    مهمتنا
+                    ماذا ننشر
                   </h3>
                   <ul className="text-medium-gray space-y-2">
-                    <li>• جمع وحفظ المخطوطات والكتب التراثية</li>
-                    <li>• تحقيق ونشر النصوص العلمية</li>
-                    <li>• توفير منصة رقمية للباحثين</li>
-                    <li>• الحفاظ على التراث العلمي الشنقيطي</li>
+                    <li>• الكتب والأبحاث التي ليست عليها حقوق ملكية فكرية</li>
+                    <li>
+                      • الكتب والأبحاث المنشورة، ونبين المصدر الذي جلبت منه
+                    </li>
+                    <li>• الدراسات المنشورة عن بلاد شنقيط</li>
+                    <li>• أهم الملفات العلمية الصوتية للشناقطة</li>
                   </ul>
                 </div>
 
@@ -53,10 +53,10 @@ const About = () => {
                     قيمنا
                   </h3>
                   <ul className="text-medium-gray space-y-2">
-                    <li>• الدقة العلمية في التحقيق والنشر</li>
-                    <li>• الشمولية في جمع التراث</li>
-                    <li>• سهولة الوصول للجميع</li>
-                    <li>• الحفاظ على الأصالة</li>
+                    <li>• حفظ حقوق الملكية الفكرية للمؤلفين</li>
+                    <li>• الشمولية في جمع التراث العلمي للشناقطة</li>
+                    <li>• تيسير الوصول للتراث الشنقيطي</li>
+                    <li>• مواكبة العصر لخدمة التراث الشنقيطي</li>
                   </ul>
                 </div>
               </div>
