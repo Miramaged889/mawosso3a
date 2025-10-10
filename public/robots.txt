@@ -2,10 +2,9 @@
 User-agent: *
 Allow: /
 
-# Disallow admin or private routes (لو عندك صفحات داخلية)
+# Disallow admin or private routes
 Disallow: /admin/
 Disallow: /dashboard/
 
-# Sitemap (يُفضل إنشاءه أو ربطه لو عندك)
-Sitemap: https://chinguitipedia.com//sitemap.xml
-
+# Sitemap
+Sitemap: https://chinguitipedia.com/sitemap.xml
