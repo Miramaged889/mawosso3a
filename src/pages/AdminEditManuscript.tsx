@@ -1,6 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect} from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useCategories, useAuth, useEntry, useKinds } from "../hooks/useApi";
+import {
+  useCategories,
+  useAuth,
+  useEntry,
+  useKinds,
+  useSubcategories,
+} from "../hooks/useApi";
 import { apiClient } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
@@ -10,6 +16,7 @@ const AdminEditManuscript: React.FC = () => {
   const { isAuthenticated, initialized, validateToken } = useAuth();
   const { data: categories } = useCategories();
   const { data: kinds } = useKinds();
+  const { data: subcategories } = useSubcategories();
   const {
     data: manuscript,
     loading: manuscriptLoading,
@@ -20,6 +27,7 @@ const AdminEditManuscript: React.FC = () => {
     title: "",
     author: "",
     category: 0,
+    subcategory: 0, // التصنيف الفرعي
     date: "2024-01-01",
     description_header: "",
     description: [""],
@@ -41,6 +49,8 @@ const AdminEditManuscript: React.FC = () => {
   // Filter kinds for manuscripts (مخطوط - kind 16)
   const availableKinds = kinds?.filter((kind) => kind.id === 16) || [];
 
+
+
   useEffect(() => {
     if (initialized && !isAuthenticated) {
       navigate("/admin");
@@ -58,6 +68,11 @@ const AdminEditManuscript: React.FC = () => {
           manuscript.category !== null
             ? manuscript.category.id
             : (manuscript.category as number) || 0,
+        subcategory:
+          typeof manuscript.subcategory === "object" &&
+          manuscript.subcategory !== null
+            ? manuscript.subcategory.id
+            : (manuscript.subcategory as number) || 0,
         date: manuscript.date || "2024-01-01",
         description_header: manuscript.description_header || "",
         description: Array.isArray(manuscript.description)
@@ -84,12 +99,30 @@ const AdminEditManuscript: React.FC = () => {
     >
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        name === "category" || name === "kind" ? parseInt(value) || 0 : value,
-    }));
+
+    // If category changes, reset subcategory
+    if (name === "category") {
+      setFormData((prev) => ({
+        ...prev,
+        category: parseInt(value) || 0,
+        subcategory: 0, // Reset subcategory when category changes
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]:
+          name === "subcategory" || name === "kind"
+            ? parseInt(value) || 0
+            : value,
+      }));
+    }
   };
+
+  // Filter subcategories to exclude those belonging to category 10
+  const availableSubcategories =
+    subcategories?.filter(
+      (sub) => sub.category === formData.category && sub.category !== 10
+    ) || [];
 
   const handleDescriptionChange = (index: number, value: string) => {
     setFormData((prev) => ({
@@ -137,8 +170,6 @@ const AdminEditManuscript: React.FC = () => {
         return;
       }
 
-      console.log("Starting submission with valid token");
-
       // معالجة حقل page_count بشكل صحيح
       const pageCount =
         formData.page_count.trim() === ""
@@ -150,6 +181,7 @@ const AdminEditManuscript: React.FC = () => {
         author: formData.author.trim(),
         entry_type: "manuscript" as const,
         category: formData.category,
+        subcategory: formData.subcategory || null, // Add subcategory
         date: formData.date,
         description_header: formData.description_header.trim(),
         description: JSON.stringify(
@@ -181,13 +213,6 @@ const AdminEditManuscript: React.FC = () => {
       if (formData.pdf_file_link.trim()) {
         entryData.pdf_file_link = formData.pdf_file_link.trim();
       }
-
-      // إضافة معلومات تصحيح
-      console.log("Entry data:", entryData);
-      console.log("Links:", {
-        cover_image_link: formData.cover_image_link || "none",
-        pdf_file_link: formData.pdf_file_link || "none",
-      });
 
       try {
         await apiClient.updateEntry(parseInt(id || "0"), entryData);
@@ -300,6 +325,24 @@ const AdminEditManuscript: React.FC = () => {
                 ))}
               </select>
             </div>
+            {availableSubcategories.length > 0 && (
+              <div>
+                <label className="block mb-2">التصنيف الفرعي</label>
+                <select
+                  name="subcategory"
+                  value={formData.subcategory}
+                  onChange={handleChange}
+                  className="w-full border p-3 rounded text-right"
+                >
+                  <option value="">اختر التصنيف الفرعي (اختياري)</option>
+                  {availableSubcategories.map((sub) => (
+                    <option key={sub.id} value={sub.id}>
+                      {sub.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div>
               <label className="block mb-2">النوع *</label>
               <select

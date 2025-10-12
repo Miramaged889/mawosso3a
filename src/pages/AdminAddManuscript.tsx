@@ -1,6 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCategories, useAuth, useKinds } from "../hooks/useApi";
+import {
+  useCategories,
+  useAuth,
+  useKinds,
+  useSubcategories,
+} from "../hooks/useApi";
 import { apiClient } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
@@ -9,10 +14,12 @@ const AdminAddManuscript: React.FC = () => {
   const { isAuthenticated, initialized, validateToken } = useAuth();
   const { data: categories } = useCategories();
   const { data: kinds } = useKinds();
+  const { data: subcategories } = useSubcategories();
   const [formData, setFormData] = useState({
     title: "",
     author: "",
     category: 0, // تعيين القيمة الافتراضية للتصنيف إلى المخطوطات (10)
+    subcategory: 0, // التصنيف الفرعي
     date: "2024-01-01", // تعيين التاريخ الافتراضي
     description_header: "",
     description: [""],
@@ -32,8 +39,13 @@ const AdminAddManuscript: React.FC = () => {
   const allCategories = categories || [];
 
   // Filter kinds for manuscripts (المخطوطات)
-  const availableKinds =
-    kinds?.filter((kind) => kind.name === "المخطوطات") || [];
+  const availableKinds = kinds?.filter((kind) => kind.name === "مخطوطات") || [];
+
+  // Filter subcategories based on selected category
+  const filteredSubcategories = useMemo(() => {
+    if (!subcategories || !formData.category) return [];
+    return subcategories.filter((sub) => sub.category === formData.category);
+  }, [subcategories, formData.category]);
 
   useEffect(() => {
     if (initialized && !isAuthenticated) {
@@ -47,11 +59,23 @@ const AdminAddManuscript: React.FC = () => {
     >
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        name === "category" || name === "kind" ? parseInt(value) || 0 : value,
-    }));
+
+    // If category changes, reset subcategory
+    if (name === "category") {
+      setFormData((prev) => ({
+        ...prev,
+        category: parseInt(value) || 0,
+        subcategory: 0, // Reset subcategory when category changes
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]:
+          name === "subcategory" || name === "kind"
+            ? parseInt(value) || 0
+            : value,
+      }));
+    }
   };
 
   const handleDescriptionChange = (index: number, value: string) => {
@@ -100,8 +124,6 @@ const AdminAddManuscript: React.FC = () => {
         return;
       }
 
-      console.log("Starting submission with valid token");
-
       // معالجة حقل page_count بشكل صحيح
       const pageCount =
         formData.page_count.trim() === ""
@@ -113,6 +135,7 @@ const AdminAddManuscript: React.FC = () => {
         author: formData.author.trim(),
         entry_type: "manuscript" as const,
         category: formData.category,
+        subcategory: formData.subcategory || null, // Add subcategory
         date: formData.date,
         description_header: formData.description_header.trim(),
         description: JSON.stringify(
@@ -147,26 +170,15 @@ const AdminAddManuscript: React.FC = () => {
         entryData.pdf_file_link = formData.pdf_file_link.trim();
       }
 
-      // إضافة معلومات تصحيح
-      console.log("Entry data:", entryData);
-      console.log("Links:", {
-        cover_image_link: formData.cover_image_link || "none",
-        pdf_file_link: formData.pdf_file_link || "none",
-      });
-
       // إرسال البيانات
-      console.log("Submitting entry data with links");
-
       try {
         await apiClient.createEntry(entryData);
         alert("تم حفظ المخطوطة بنجاح!");
         navigate("/admin/manuscripts");
       } catch (apiError) {
-        console.error("API Error:", apiError);
         throw apiError;
       }
     } catch (error) {
-      console.error("Submission error:", error);
       const errorMessage =
         error instanceof Error ? error.message : "حدث خطأ غير متوقع";
 
@@ -236,6 +248,31 @@ const AdminAddManuscript: React.FC = () => {
                 {allCategories?.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block mb-2">التصنيف الفرعي</label>
+              <select
+                name="subcategory"
+                value={formData.subcategory}
+                onChange={handleChange}
+                className="w-full border p-3 rounded text-right"
+                disabled={
+                  !formData.category || filteredSubcategories.length === 0
+                }
+              >
+                <option value="0">
+                  {!formData.category
+                    ? "اختر التصنيف الرئيسي أولاً"
+                    : filteredSubcategories.length === 0
+                    ? "لا توجد تصنيفات فرعية"
+                    : "اختر التصنيف الفرعي (اختياري)"}
+                </option>
+                {filteredSubcategories.map((sub) => (
+                  <option key={sub.id} value={sub.id}>
+                    {sub.name}
                   </option>
                 ))}
               </select>

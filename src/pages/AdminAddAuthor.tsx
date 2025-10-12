@@ -31,7 +31,7 @@ const AdminAddAuthor: React.FC = () => {
     tags: "",
     page_count: "",
     size: "",
-    kind: 0,
+    kind: 15,
     cover_image_link: "",
     pdf_file_link: "",
   });
@@ -47,9 +47,12 @@ const AdminAddAuthor: React.FC = () => {
   // Filter out manuscripts category (ID 10) from available categories
   const availableCategories = categories?.filter((cat) => cat.id !== 10) || [];
 
-  // Filter kinds for authors (المولفات)
+  // Filter kinds to show "المؤلفات" (kind 15)
   const availableKinds =
-    kinds?.filter((kind) => kind.name === "المولفات") || [];
+    kinds?.filter(
+      (kind) =>
+        kind.name === "المؤلفات" || kind.name.includes("مؤلف") || kind.id === 15
+    ) || [];
 
   // Redirect if not authenticated
   React.useEffect(() => {

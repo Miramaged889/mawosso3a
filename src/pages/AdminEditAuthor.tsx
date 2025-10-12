@@ -37,7 +37,7 @@ const AdminEditAuthor: React.FC = () => {
     tags: "",
     page_count: "",
     size: "",
-    kind: 0,
+    kind: 15,
     cover_image_link: "",
     pdf_file_link: "",
   });
@@ -55,7 +55,7 @@ const AdminEditAuthor: React.FC = () => {
 
   // Filter kinds for authors (المولفات)
   const availableKinds =
-    kinds?.filter((kind) => kind.name === "المولفات") || [];
+    kinds?.filter((kind) => kind.name === "المولفات" || kind.id === 15) || [];
 
   // Redirect if not authenticated
   React.useEffect(() => {
@@ -159,8 +159,6 @@ const AdminEditAuthor: React.FC = () => {
         return;
       }
 
-      console.log("Starting submission with valid token");
-
       // Handle page_count and size properly
       const pageCount =
         formData.page_count.trim() === ""
@@ -210,23 +208,14 @@ const AdminEditAuthor: React.FC = () => {
         entryData.pdf_file_link = formData.pdf_file_link.trim();
       }
 
-      // Debug info
-      console.log("Entry data:", entryData);
-      console.log("Links:", {
-        cover_image_link: formData.cover_image_link || "none",
-        pdf_file_link: formData.pdf_file_link || "none",
-      });
-
       try {
         await apiClient.updateEntry(parseInt(id || "0"), entryData);
         alert("تم تحديث المؤلفة بنجاح!");
         navigate("/admin/authors");
       } catch (apiError) {
-        console.error("API Error:", apiError);
         throw apiError;
       }
     } catch (error) {
-      console.error("Submission error:", error);
       const errorMessage =
         error instanceof Error ? error.message : "حدث خطأ غير متوقع";
 

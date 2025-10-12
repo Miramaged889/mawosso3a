@@ -66,7 +66,6 @@ const AdminPosts: React.FC = () => {
         alert("تم حذف المنشور بنجاح!");
         refetch();
       } catch (error) {
-        console.error("Error deleting entry:", error);
         alert("حدث خطأ أثناء حذف المنشور. يرجى المحاولة مرة أخرى.");
       } finally {
         setDeleting(null);

@@ -31,7 +31,7 @@ const AdminAddAboutChinguit: React.FC = () => {
     tags: "",
     page_count: "",
     size: "",
-    kind: 0,
+    kind: 18,
     cover_image_link: "",
     pdf_file_link: "",
   });
@@ -49,7 +49,7 @@ const AdminAddAboutChinguit: React.FC = () => {
 
   // Filter kinds for about chinguit (عن الشنقيط)
   const availableKinds =
-    kinds?.filter((kind) => kind.name === "عن الشنقيط") || [];
+    kinds?.filter((kind) => kind.name === "عن الشنقيط" || kind.id === 18) || [];
 
   // Redirect if not authenticated
   React.useEffect(() => {

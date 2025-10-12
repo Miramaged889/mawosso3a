@@ -37,7 +37,7 @@ const AdminEditAboutChinguit: React.FC = () => {
     tags: "",
     page_count: "",
     size: "",
-    kind: 0,
+    kind: 18,
     cover_image_link: "",
     pdf_file_link: "",
   });
@@ -158,8 +158,6 @@ const AdminEditAboutChinguit: React.FC = () => {
         return;
       }
 
-      console.log("Starting submission with valid token");
-
       // Handle page_count and size properly
       const pageCount =
         formData.page_count.trim() === ""
@@ -208,13 +206,6 @@ const AdminEditAboutChinguit: React.FC = () => {
       if (formData.pdf_file_link.trim()) {
         entryData.pdf_file_link = formData.pdf_file_link.trim();
       }
-
-      // Debug info
-      console.log("Entry data:", entryData);
-      console.log("Links:", {
-        cover_image_link: formData.cover_image_link || "none",
-        pdf_file_link: formData.pdf_file_link || "none",
-      });
 
       try {
         await apiClient.updateEntry(parseInt(id || "0"), entryData);

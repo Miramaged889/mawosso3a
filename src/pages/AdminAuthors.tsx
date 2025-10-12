@@ -58,13 +58,6 @@ const AdminAuthors: React.FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Debug category data
-  React.useEffect(() => {
-    if (authors.length > 0) {
-      console.log("Sample author category data:", authors[0]?.category);
-    }
-  }, [authors]);
-
   // Helper function to get category name
   const getCategoryName = (category: any, tags?: string): string => {
     if (!category) return tags || "غير محدد";

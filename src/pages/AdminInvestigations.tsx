@@ -58,16 +58,6 @@ const AdminInvestigations: React.FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Debug category data
-  React.useEffect(() => {
-    if (investigations.length > 0) {
-      console.log(
-        "Sample investigation category data:",
-        investigations[0]?.category
-      );
-    }
-  }, [investigations]);
-
   // Helper function to get category name
   const getCategoryName = (category: any, tags?: string): string => {
     if (!category) return tags || "غير محدد";

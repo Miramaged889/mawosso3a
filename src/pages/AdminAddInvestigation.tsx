@@ -31,7 +31,7 @@ const AdminAddInvestigation: React.FC = () => {
     tags: "",
     page_count: "",
     size: "",
-    kind: 0,
+    kind: 17,
     cover_image_link: "",
     pdf_file_link: "",
   });
@@ -49,7 +49,7 @@ const AdminAddInvestigation: React.FC = () => {
 
   // Filter kinds for investigations (التحقيقات)
   const availableKinds =
-    kinds?.filter((kind) => kind.name === "التحقيقات") || [];
+    kinds?.filter((kind) => kind.name === "التحقيقات" || kind.id === 17) || [];
 
   // Redirect if not authenticated
   React.useEffect(() => {
@@ -120,8 +120,6 @@ const AdminAddInvestigation: React.FC = () => {
         return;
       }
 
-      console.log("Starting submission with valid token");
-
       // Handle page_count and size properly
       const pageCount =
         formData.page_count.trim() === ""
@@ -171,23 +169,14 @@ const AdminAddInvestigation: React.FC = () => {
         entryData.pdf_file_link = formData.pdf_file_link.trim();
       }
 
-      // Debug info
-      console.log("Entry data:", entryData);
-      console.log("Links:", {
-        cover_image_link: formData.cover_image_link || "none",
-        pdf_file_link: formData.pdf_file_link || "none",
-      });
-
       try {
         await apiClient.createEntry(entryData);
         alert("تم حفظ التحقيق بنجاح!");
         navigate("/admin/investigations");
       } catch (apiError) {
-        console.error("API Error:", apiError);
         throw apiError;
       }
     } catch (error) {
-      console.error("Submission error:", error);
       const errorMessage =
         error instanceof Error ? error.message : "حدث خطأ غير متوقع";
 

@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAllEntriesPaginated, useAuth } from "../hooks/useApi";
-import { apiClient, ContentEntry } from "../services/api";
+import {
+  useAllEntriesPaginated,
+  useAuth,
+  useCategories,
+} from "../hooks/useApi";
+import { apiClient, ContentEntry, Category } from "../services/api";
 import Breadcrumb from "../components/Breadcrumb";
 
 const AdminManuscripts: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, initialized } = useAuth();
+  const { data: categories } = useCategories();
   const [deleting, setDeleting] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(18);
@@ -26,6 +31,28 @@ const AdminManuscripts: React.FC = () => {
       return item.kind === 16;
     });
   }, [paginatedData]);
+
+  // Helper function to get category name
+  const getCategoryName = (category: Category | number | undefined): string => {
+    if (!category) return "غير محدد";
+
+    // If category is an object with name property
+    if (typeof category === "object" && category.name) {
+      return category.name;
+    }
+
+    // If category is a number (ID), find it in categories list
+    if (typeof category === "number" && categories) {
+      const foundCategory = categories.find(
+        (cat: Category) => cat.id === category
+      );
+      if (foundCategory) {
+        return foundCategory.name;
+      }
+    }
+
+    return "غير محدد";
+  };
 
   // Pagination logic
   const totalPages = paginatedData
@@ -183,7 +210,7 @@ const AdminManuscripts: React.FC = () => {
                             />
                           ) : (
                             <div className="w-20 h-20 bg-gray-50 rounded flex items-center justify-center">
-                              <span className="text-2xl">�</span>
+                              <span className="text-2xl">📜</span>
                             </div>
                           )}
                         </td>
@@ -195,31 +222,7 @@ const AdminManuscripts: React.FC = () => {
                         </td>
                         <td className="px-4 py-4">
                           <span className="bg-heritage-gold-dark text-white px-4 py-1 rounded-full text-sm font-semibold shadow-sm">
-                            {typeof manuscript.category === "object"
-                              ? manuscript.category?.name
-                              : typeof manuscript.category === "number"
-                              ? (() => {
-                                  // Map category IDs to names
-                                  const categoryNames: {
-                                    [key: number]: string;
-                                  } = {
-                                    1: "العلوم الشرعية",
-                                    2: "العلوم اللغوية",
-                                    3: "العلوم الاجتماعية",
-                                    4: "المتنوعات",
-                                    5: "الفوائد",
-                                    6: "مكتبة التعليم النظامي",
-                                    7: "الأخبار العلمية",
-                                    8: "الكتب عن شنقيط",
-                                    9: "التحقيقات",
-                                    10: "المخطوطات",
-                                  };
-                                  return (
-                                    categoryNames[manuscript.category] ||
-                                    "غير محدد"
-                                  );
-                                })()
-                              : manuscript.tags || "غير محدد"}
+                            {getCategoryName(manuscript.category)}
                           </span>
                         </td>
                         <td className="px-6 py-4">

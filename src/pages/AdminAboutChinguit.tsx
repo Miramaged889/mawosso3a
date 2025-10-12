@@ -58,16 +58,6 @@ const AdminAboutChinguit: React.FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Debug category data
-  React.useEffect(() => {
-    if (aboutChinguit.length > 0) {
-      console.log(
-        "Sample about chinguit category data:",
-        aboutChinguit[0]?.category
-      );
-    }
-  }, [aboutChinguit]);
-
   // Helper function to get category name
   const getCategoryName = (category: any, tags?: string): string => {
     if (!category) return tags || "غير محدد";

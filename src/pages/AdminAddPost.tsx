@@ -113,8 +113,6 @@ const AdminAddPost: React.FC = () => {
         return;
       }
 
-      console.log("Starting submission with valid token");
-
       // معالجة حقل page_count و size بشكل صحيح
       const pageCount =
         formData.page_count.trim() === ""
@@ -167,26 +165,15 @@ const AdminAddPost: React.FC = () => {
         entryData.pdf_file_link = formData.pdf_file_link.trim();
       }
 
-      // إضافة معلومات تصحيح
-      console.log("Entry data:", entryData);
-      console.log("Links:", {
-        cover_image_link: formData.cover_image_link || "none",
-        pdf_file_link: formData.pdf_file_link || "none",
-      });
-
       // إرسال البيانات
-      console.log("Submitting entry data with links");
-
       try {
         await apiClient.createEntry(entryData);
         alert("تم حفظ المنشور بنجاح!");
         navigate("/admin/posts");
       } catch (apiError) {
-        console.error("API Error:", apiError);
         throw apiError;
       }
     } catch (error) {
-      console.error("Submission error:", error);
       const errorMessage =
         error instanceof Error ? error.message : "حدث خطأ غير متوقع";
 
