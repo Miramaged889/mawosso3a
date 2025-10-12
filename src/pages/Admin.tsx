@@ -131,12 +131,6 @@ const Admin: React.FC = () => {
                   <li>• تأكد من استخدام بيانات دخول صحيحة</li>
                   <li>• يجب أن يكون لديك حساب مدير صالح</li>
                   <li>• تحقق من اتصالك بالإنترنت</li>
-                  <li>
-                    • الخادم:{" "}
-                    <span className="font-mono bg-blue-100 px-1 rounded">
-                      chinguitipedia.alldev.org
-                    </span>
-                  </li>
                 </ul>
               </div>
             </div>
