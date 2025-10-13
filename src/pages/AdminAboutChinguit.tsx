@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   useAllEntriesPaginated,
@@ -15,6 +15,16 @@ const AdminAboutChinguit: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(18);
 
+  // Search state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeSearchTerm, setActiveSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState<ContentEntry[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [totalSearchCount, setTotalSearchCount] = useState(0);
+  const [searchCurrentPage, setSearchCurrentPage] = useState(1);
+  const [searchItemsPerPage] = useState(18);
+
   const {
     data: paginatedData,
     loading,
@@ -28,6 +38,93 @@ const AdminAboutChinguit: React.FC = () => {
     if (!url) return undefined;
     if (url.startsWith("http")) return url;
     return `https://chinguitipedia.alldev.org${url}`;
+  };
+
+  // Function to fetch search results
+  const fetchSearchResults = useCallback(
+    async (query: string, page: number = 1) => {
+      if (!query.trim()) {
+        setSearchResults([]);
+        setTotalSearchCount(0);
+        return;
+      }
+
+      setSearchLoading(true);
+      setSearchError(null);
+
+      try {
+        // Create a custom API call with page parameter
+        const searchUrl = `/api/entries/?search=${encodeURIComponent(
+          query
+        )}&page=${page}&kind=18`;
+        const response = await fetch(searchUrl, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          mode: "cors",
+          credentials: "omit",
+        });
+
+        let result;
+        if (!response.ok) {
+          // Try fallback URL
+          const fallbackUrl = `https://mawso3a.pythonanywhere.com/api/entries/?search=${encodeURIComponent(
+            query
+          )}&page=${page}`;
+          const fallbackResponse = await fetch(fallbackUrl, {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            mode: "cors",
+            credentials: "omit",
+          });
+
+          if (!fallbackResponse.ok) {
+            throw new Error(`HTTP error! status: ${fallbackResponse.status}`);
+          }
+
+          result = await fallbackResponse.json();
+        } else {
+          result = await response.json();
+        }
+
+        // Filter results to only include about chinguit (kind 18)
+        const filteredResults =
+          result.results?.filter((item: ContentEntry) => item.kind === 18) ||
+          [];
+
+        setSearchResults(filteredResults);
+        setTotalSearchCount(result.count || 0);
+      } catch (error) {
+        console.error("Error fetching search results:", error);
+        setSearchError("فشل في تحميل نتائج البحث");
+        setSearchResults([]);
+        setTotalSearchCount(0);
+      } finally {
+        setSearchLoading(false);
+      }
+    },
+    []
+  );
+
+  // Function to handle search button click
+  const handleSearch = useCallback(() => {
+    setActiveSearchTerm(searchTerm);
+    setSearchCurrentPage(1);
+
+    if (searchTerm.trim()) {
+      fetchSearchResults(searchTerm, 1);
+    } else {
+      setSearchResults([]);
+      setTotalSearchCount(0);
+    }
+  }, [searchTerm, fetchSearchResults]);
+
+  // Function to handle Enter key press in search input
+  const handleSearchKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
   };
 
   // Redirect if not authenticated
@@ -46,15 +143,40 @@ const AdminAboutChinguit: React.FC = () => {
     });
   }, [paginatedData]);
 
+  // Determine which items to show
+  const currentAboutChinguit = useMemo(() => {
+    if (activeSearchTerm !== "") {
+      return searchResults;
+    } else {
+      return allAboutChinguit;
+    }
+  }, [activeSearchTerm, searchResults, allAboutChinguit]);
+
   // Pagination logic
   const totalPages = paginatedData
     ? Math.ceil(paginatedData.count / itemsPerPage)
     : 0;
-  const aboutChinguit = allAboutChinguit;
+
+  // Search pagination logic
+  const searchTotalPages =
+    activeSearchTerm !== "" && totalSearchCount > 0
+      ? Math.ceil(totalSearchCount / searchItemsPerPage)
+      : 0;
+
+  const aboutChinguit = currentAboutChinguit;
 
   // Pagination handlers
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Search pagination handlers
+  const handleSearchPageChange = (page: number) => {
+    setSearchCurrentPage(page);
+    if (activeSearchTerm.trim()) {
+      fetchSearchResults(activeSearchTerm, page);
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -112,9 +234,18 @@ const AdminAboutChinguit: React.FC = () => {
               إدارة عن شنقيط
             </h1>
             <p className="text-medium-gray">
-              عرض وإدارة جميع مؤلفات عن شنقيط المضافة (
-              {paginatedData?.count || 0} إدخال إجمالي -{" "}
-              {allAboutChinguit.length} مؤلفة في هذه الصفحة)
+              {activeSearchTerm ? (
+                <>
+                  نتائج البحث عن "{activeSearchTerm}" - تم العثور على{" "}
+                  {totalSearchCount} مؤلفة
+                </>
+              ) : (
+                <>
+                  عرض وإدارة جميع مؤلفات عن شنقيط المضافة (
+                  {paginatedData?.count || 0} إدخال إجمالي -{" "}
+                  {allAboutChinguit.length} مؤلفة في هذه الصفحة)
+                </>
+              )}
             </p>
           </div>
           <Link
@@ -125,22 +256,76 @@ const AdminAboutChinguit: React.FC = () => {
           </Link>
         </div>
 
+        {/* Search Bar */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <div className="flex gap-4 items-end">
+            <div className="flex-1">
+              <label className="block text-sm font-semibold text-blue-gray mb-3">
+                البحث في مؤلفات عن شنقيط
+              </label>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyPress={handleSearchKeyPress}
+                placeholder="ابحث في العناوين والمؤلفين والمحتوى..."
+                className="w-full py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-green focus:border-transparent text-right"
+              />
+            </div>
+            <button
+              onClick={handleSearch}
+              disabled={searchLoading}
+              className="bg-olive-green text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {searchLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>جاري البحث...</span>
+                </div>
+              ) : (
+                "بحث"
+              )}
+            </button>
+            {(searchTerm || activeSearchTerm) && (
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setActiveSearchTerm("");
+                  setSearchResults([]);
+                  setTotalSearchCount(0);
+                  setSearchCurrentPage(1);
+                }}
+                className="bg-gray-100 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium"
+              >
+                مسح البحث
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Loading State */}
-        {loading && (
+        {(loading || searchLoading) && (
           <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700 mr-2"></div>
-              جاري تحميل عن شنقيط من الخادم... صفحة {currentPage}
+              {searchLoading
+                ? `جاري البحث في مؤلفات عن شنقيط... صفحة ${searchCurrentPage}`
+                : `جاري تحميل عن شنقيط من الخادم... صفحة ${currentPage}`}
             </div>
           </div>
         )}
 
         {/* Error State */}
-        {error && (
+        {(error || searchError) && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-            خطأ في تحميل البيانات: {error}
+            خطأ في تحميل البيانات: {searchError || error}
             <button
-              onClick={refetch}
+              onClick={
+                searchError
+                  ? () =>
+                      fetchSearchResults(activeSearchTerm, searchCurrentPage)
+                  : refetch
+              }
               className="ml-4 underline hover:no-underline"
             >
               إعادة المحاولة
@@ -280,60 +465,134 @@ const AdminAboutChinguit: React.FC = () => {
         )}
 
         {/* Pagination Controls */}
-        {allAboutChinguit && allAboutChinguit.length > itemsPerPage && (
+        {((activeSearchTerm !== "" && searchTotalPages > 1) ||
+          (activeSearchTerm === "" &&
+            allAboutChinguit &&
+            allAboutChinguit.length > itemsPerPage)) && (
           <div className="bg-white rounded-lg shadow-lg border-t border-gray-200 px-6 py-4 mt-8">
             <div className="flex items-center justify-between">
               <div className="text-sm text-medium-gray">
-                صفحة {currentPage} من أصل {totalPages} صفحة - عرض{" "}
-                {allAboutChinguit.length} مؤلفة من أصل{" "}
-                {allAboutChinguit.length || 0} إدخال
+                {activeSearchTerm !== "" ? (
+                  <>
+                    صفحة {searchCurrentPage} من أصل {searchTotalPages} صفحة -
+                    عرض {aboutChinguit.length} مؤلفة من أصل {totalSearchCount}{" "}
+                    نتيجة بحث
+                  </>
+                ) : (
+                  <>
+                    صفحة {currentPage} من أصل {totalPages} صفحة - عرض{" "}
+                    {allAboutChinguit.length} مؤلفة من أصل{" "}
+                    {paginatedData?.count || 0} إدخال
+                  </>
+                )}
               </div>
               <div className="flex items-center gap-2">
-                {/* Previous Button */}
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                >
-                  السابق
-                </button>
-
-                {/* Page Numbers */}
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-
-                  return (
+                {activeSearchTerm !== "" ? (
+                  // Search pagination controls
+                  <>
+                    {/* Previous Button */}
                     <button
-                      key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
-                      className={`px-3 py-2 border rounded-lg text-sm ${
-                        currentPage === pageNum
-                          ? "bg-olive-green text-white border-olive-green"
-                          : "border-gray-300 hover:bg-gray-50"
-                      }`}
+                      onClick={() =>
+                        handleSearchPageChange(searchCurrentPage - 1)
+                      }
+                      disabled={searchCurrentPage === 1}
+                      className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                     >
-                      {pageNum}
+                      السابق
                     </button>
-                  );
-                })}
 
-                {/* Next Button */}
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                >
-                  التالي
-                </button>
+                    {/* Page Numbers */}
+                    {Array.from(
+                      { length: Math.min(5, searchTotalPages) },
+                      (_, i) => {
+                        let pageNum;
+                        if (searchTotalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (searchCurrentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (searchCurrentPage >= searchTotalPages - 2) {
+                          pageNum = searchTotalPages - 4 + i;
+                        } else {
+                          pageNum = searchCurrentPage - 2 + i;
+                        }
+
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => handleSearchPageChange(pageNum)}
+                            className={`px-3 py-2 border rounded-lg text-sm ${
+                              searchCurrentPage === pageNum
+                                ? "bg-olive-green text-white border-olive-green"
+                                : "border-gray-300 hover:bg-gray-50"
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      }
+                    )}
+
+                    {/* Next Button */}
+                    <button
+                      onClick={() =>
+                        handleSearchPageChange(searchCurrentPage + 1)
+                      }
+                      disabled={searchCurrentPage === searchTotalPages}
+                      className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                    >
+                      التالي
+                    </button>
+                  </>
+                ) : (
+                  // Regular pagination controls
+                  <>
+                    {/* Previous Button */}
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                    >
+                      السابق
+                    </button>
+
+                    {/* Page Numbers */}
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`px-3 py-2 border rounded-lg text-sm ${
+                            currentPage === pageNum
+                              ? "bg-olive-green text-white border-olive-green"
+                              : "border-gray-300 hover:bg-gray-50"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+
+                    {/* Next Button */}
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                    >
+                      التالي
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
