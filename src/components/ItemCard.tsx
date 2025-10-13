@@ -39,7 +39,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
     const kindNames: { [key: number]: string } = {
       1: "كتاب",
       14: "أخبار",
-      15: "المؤلفات",
+      15: "مؤلفات",
       16: "مخطوط",
       17: "التحقيقات",
       18: "عن الشنقيط",
