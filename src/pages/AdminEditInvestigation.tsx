@@ -81,7 +81,7 @@ const AdminEditInvestigation: React.FC = () => {
           investigation.subcategory !== null
             ? investigation.subcategory.id
             : (investigation.subcategory as number) || 0,
-        date: investigation.date || "2024-01-01",
+        date: investigation.date || new Date().toISOString().split("T")[0],
         description_header: investigation.description_header || "",
         description: Array.isArray(investigation.description)
           ? investigation.description
@@ -144,7 +144,6 @@ const AdminEditInvestigation: React.FC = () => {
     e.preventDefault();
     if (
       !formData.title.trim() ||
-      !formData.author.trim() ||
       !formData.category ||
       !formData.description_header.trim()
     ) {
@@ -293,14 +292,13 @@ const AdminEditInvestigation: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block mb-2">المحقق *</label>
+              <label className="block mb-2">المحقق</label>
               <input
                 type="text"
                 name="author"
                 value={formData.author}
                 onChange={handleChange}
                 className="w-full border p-3 rounded text-right"
-                required
                 placeholder="أدخل اسم المحقق"
               />
             </div>

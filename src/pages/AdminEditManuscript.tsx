@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   useCategories,
@@ -49,8 +49,6 @@ const AdminEditManuscript: React.FC = () => {
   // Filter kinds for manuscripts (مخطوط - kind 16)
   const availableKinds = kinds?.filter((kind) => kind.id === 16) || [];
 
-
-
   useEffect(() => {
     if (initialized && !isAuthenticated) {
       navigate("/admin");
@@ -73,7 +71,7 @@ const AdminEditManuscript: React.FC = () => {
           manuscript.subcategory !== null
             ? manuscript.subcategory.id
             : (manuscript.subcategory as number) || 0,
-        date: manuscript.date || "2024-01-01",
+        date: manuscript.date || new Date().toISOString().split("T")[0],
         description_header: manuscript.description_header || "",
         description: Array.isArray(manuscript.description)
           ? manuscript.description
@@ -151,7 +149,6 @@ const AdminEditManuscript: React.FC = () => {
     e.preventDefault();
     if (
       !formData.title.trim() ||
-      !formData.author.trim() ||
       !formData.category ||
       !formData.description_header.trim()
     ) {
@@ -297,14 +294,13 @@ const AdminEditManuscript: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block mb-2">المؤلف *</label>
+              <label className="block mb-2">المؤلف</label>
               <input
                 type="text"
                 name="author"
                 value={formData.author}
                 onChange={handleChange}
                 className="w-full border p-3 rounded text-right"
-                required
                 placeholder="أدخل اسم المؤلف"
               />
             </div>

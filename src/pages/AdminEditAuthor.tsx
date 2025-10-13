@@ -55,7 +55,7 @@ const AdminEditAuthor: React.FC = () => {
 
   // Filter kinds for authors (المولفات)
   const availableKinds =
-    kinds?.filter((kind) => kind.name === "المولفات" || kind.id === 15) || [];
+    kinds?.filter((kind) => kind.name === "مؤلفات" || kind.id === 15) || [];
 
   // Redirect if not authenticated
   React.useEffect(() => {
@@ -79,7 +79,7 @@ const AdminEditAuthor: React.FC = () => {
           typeof author.subcategory === "object" && author.subcategory !== null
             ? author.subcategory.id
             : (author.subcategory as number) || 0,
-        date: author.date || "2024-01-01",
+        date: author.date || new Date().toISOString().split("T")[0],
         description_header: author.description_header || "",
         description: Array.isArray(author.description)
           ? author.description
@@ -140,7 +140,6 @@ const AdminEditAuthor: React.FC = () => {
     e.preventDefault();
     if (
       !formData.title.trim() ||
-      !formData.author.trim() ||
       !formData.category ||
       !formData.description_header.trim()
     ) {
@@ -289,14 +288,13 @@ const AdminEditAuthor: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block mb-2">المؤلف *</label>
+              <label className="block mb-2">المؤلف</label>
               <input
                 type="text"
                 name="author"
                 value={formData.author}
                 onChange={handleChange}
                 className="w-full border p-3 rounded text-right"
-                required
                 placeholder="أدخل اسم المؤلف"
               />
             </div>

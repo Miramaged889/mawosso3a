@@ -92,13 +92,8 @@ const AdminAddPost: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (
-      !formData.title.trim() ||
-      !formData.author.trim() ||
-      !formData.category ||
-      !formData.description_header.trim()
-    ) {
-      alert("يرجى ملء جميع الحقول المطلوبة");
+    if (!formData.title.trim()) {
+      alert("يرجى إدخال عنوان المنشور");
       return;
     }
 
@@ -219,25 +214,23 @@ const AdminAddPost: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block mb-2">المؤلف *</label>
+              <label className="block mb-2">المؤلف</label>
               <input
                 type="text"
                 name="author"
                 value={formData.author}
                 onChange={handleChange}
                 className="w-full border p-3 rounded text-right"
-                required
                 placeholder="أدخل اسم المؤلف"
               />
             </div>
             <div>
-              <label className="block mb-2">التصنيف الرئيسي *</label>
+              <label className="block mb-2">التصنيف الرئيسي</label>
               <select
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
                 className="w-full border p-3 rounded text-right"
-                required
               >
                 <option value="">اختر التصنيف</option>
                 {availableCategories?.map((cat) => (
@@ -300,13 +293,12 @@ const AdminAddPost: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block mb-2">النوع *</label>
+              <label className="block mb-2">النوع</label>
               <select
                 name="kind"
                 value={formData.kind}
                 onChange={handleChange}
                 className="w-full border p-3 rounded text-right"
-                required
               >
                 <option value="">اختر النوع</option>
                 {availableKinds.map((kind) => (
@@ -374,14 +366,13 @@ const AdminAddPost: React.FC = () => {
           </div>
 
           <div>
-            <label className="block mb-2">عنوان الوصف *</label>
+            <label className="block mb-2">عنوان الوصف</label>
             <input
               type="text"
               name="description_header"
               value={formData.description_header}
               onChange={handleChange}
               className="w-full border p-3 rounded text-right"
-              required
               placeholder="عنوان الوصف"
             />
           </div>

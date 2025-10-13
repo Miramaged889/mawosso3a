@@ -79,7 +79,7 @@ const AdminEditAboutChinguit: React.FC = () => {
           typeof item.subcategory === "object" && item.subcategory !== null
             ? item.subcategory.id
             : (item.subcategory as number) || 0,
-        date: item.date || "2024-01-01",
+        date: item.date || new Date().toISOString().split("T")[0],
         description_header: item.description_header || "",
         description: Array.isArray(item.description)
           ? item.description
@@ -139,7 +139,6 @@ const AdminEditAboutChinguit: React.FC = () => {
     e.preventDefault();
     if (
       !formData.title.trim() ||
-      !formData.author.trim() ||
       !formData.category ||
       !formData.description_header.trim()
     ) {
@@ -290,14 +289,13 @@ const AdminEditAboutChinguit: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block mb-2">المؤلف *</label>
+              <label className="block mb-2">المؤلف</label>
               <input
                 type="text"
                 name="author"
                 value={formData.author}
                 onChange={handleChange}
                 className="w-full border p-3 rounded text-right"
-                required
                 placeholder="أدخل اسم المؤلف"
               />
             </div>

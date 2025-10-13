@@ -23,7 +23,7 @@ const AdminAddInvestigation: React.FC = () => {
     entry_type: "book" as ContentEntry["entry_type"],
     category: 0,
     subcategory: 0,
-    date: "2024-01-01",
+    date: new Date().toISOString().split("T")[0],
     description_header: "",
     description: [""],
     content: "",
@@ -101,7 +101,6 @@ const AdminAddInvestigation: React.FC = () => {
     e.preventDefault();
     if (
       !formData.title.trim() ||
-      !formData.author.trim() ||
       !formData.category ||
       !formData.description_header.trim()
     ) {
@@ -235,14 +234,13 @@ const AdminAddInvestigation: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block mb-2">المحقق *</label>
+              <label className="block mb-2">المحقق</label>
               <input
                 type="text"
                 name="author"
                 value={formData.author}
                 onChange={handleChange}
                 className="w-full border p-3 rounded text-right"
-                required
                 placeholder="أدخل اسم المحقق"
               />
             </div>

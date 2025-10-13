@@ -148,8 +148,8 @@ const Admin: React.FC = () => {
       link: "/admin/manuscripts",
     },
     {
-      title: "إدارة المؤلفات",
-      description: "إضافة وتعديل وحذف المؤلفات",
+      title: "إدارة مؤلفات",
+      description: "إضافة وتعديل وحذف مؤلفات",
       icon: "✍️",
       link: "/admin/authors",
     },

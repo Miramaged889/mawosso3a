@@ -23,7 +23,7 @@ const AdminAddAuthor: React.FC = () => {
     entry_type: "book" as ContentEntry["entry_type"],
     category: 0,
     subcategory: 0,
-    date: "2024-01-01",
+    date: new Date().toISOString().split('T')[0],
     description_header: "",
     description: [""],
     content: "",
@@ -104,7 +104,6 @@ const AdminAddAuthor: React.FC = () => {
     e.preventDefault();
     if (
       !formData.title.trim() ||
-      !formData.author.trim() ||
       !formData.category ||
       !formData.description_header.trim()
     ) {
@@ -122,8 +121,6 @@ const AdminAddAuthor: React.FC = () => {
         navigate("/admin");
         return;
       }
-
-      console.log("Starting submission with valid token");
 
       // Handle page_count and size properly
       const pageCount =
@@ -174,23 +171,14 @@ const AdminAddAuthor: React.FC = () => {
         entryData.pdf_file_link = formData.pdf_file_link.trim();
       }
 
-      // Debug info
-      console.log("Entry data:", entryData);
-      console.log("Links:", {
-        cover_image_link: formData.cover_image_link || "none",
-        pdf_file_link: formData.pdf_file_link || "none",
-      });
-
       try {
         await apiClient.createEntry(entryData);
         alert("تم حفظ المؤلفة بنجاح!");
         navigate("/admin/authors");
       } catch (apiError) {
-        console.error("API Error:", apiError);
         throw apiError;
       }
     } catch (error) {
-      console.error("Submission error:", error);
       const errorMessage =
         error instanceof Error ? error.message : "حدث خطأ غير متوقع";
 
@@ -249,14 +237,13 @@ const AdminAddAuthor: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block mb-2">المؤلف *</label>
+              <label className="block mb-2">المؤلف</label>
               <input
                 type="text"
                 name="author"
                 value={formData.author}
                 onChange={handleChange}
                 className="w-full border p-3 rounded text-right"
-                required
                 placeholder="أدخل اسم المؤلف"
               />
             </div>

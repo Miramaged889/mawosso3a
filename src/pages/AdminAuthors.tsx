@@ -109,7 +109,7 @@ const AdminAuthors: React.FC = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-amiri font-bold text-blue-gray mb-2">
-              إدارة المؤلفات
+              إدارة مؤلفات
             </h1>
             <p className="text-medium-gray">
               عرض وإدارة جميع المؤلفات المضافة ({paginatedData?.count || 0}{" "}

@@ -20,7 +20,7 @@ const AdminAddManuscript: React.FC = () => {
     author: "",
     category: 0, // تعيين القيمة الافتراضية للتصنيف إلى المخطوطات (10)
     subcategory: 0, // التصنيف الفرعي
-    date: "2024-01-01", // تعيين التاريخ الافتراضي
+    date: new Date().toISOString().split("T")[0], // تعيين التاريخ لليوم
     description_header: "",
     description: [""],
     content: "",
@@ -105,7 +105,6 @@ const AdminAddManuscript: React.FC = () => {
     e.preventDefault();
     if (
       !formData.title.trim() ||
-      !formData.author.trim() ||
       !formData.category ||
       !formData.description_header.trim()
     ) {
@@ -224,14 +223,13 @@ const AdminAddManuscript: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block mb-2">المؤلف *</label>
+              <label className="block mb-2">المؤلف</label>
               <input
                 type="text"
                 name="author"
                 value={formData.author}
                 onChange={handleChange}
                 className="w-full border p-3 rounded text-right"
-                required
                 placeholder="مثال:ادخل المؤلف"
               />
             </div>
