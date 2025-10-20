@@ -164,7 +164,6 @@ const AdminEditPost: React.FC = () => {
         author: formData.author.trim(),
         category: parseInt(formData.category),
         date: formData.date,
-        description_header: formData.description_header.trim(),
         description: JSON.stringify(
           formData.description.filter((item) => item.trim() !== "")
         ),
@@ -176,6 +175,10 @@ const AdminEditPost: React.FC = () => {
         kind: 14, // Set to أخبار (kind 14) for posts
         published: true,
       };
+
+      if (formData.description_header.trim()) {
+        entryData.description_header = formData.description_header.trim();
+      }
 
       // Only add subcategory if it's selected and valid
       if (formData.subcategory && formData.subcategory !== "") {

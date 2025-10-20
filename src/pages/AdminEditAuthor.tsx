@@ -140,8 +140,7 @@ const AdminEditAuthor: React.FC = () => {
     e.preventDefault();
     if (
       !formData.title.trim() ||
-      !formData.category ||
-      !formData.description_header.trim()
+      !formData.category
     ) {
       alert("يرجى ملء جميع الحقول المطلوبة");
       return;
@@ -441,14 +440,13 @@ const AdminEditAuthor: React.FC = () => {
           </div>
 
           <div>
-            <label className="block mb-2">عنوان الوصف *</label>
+            <label className="block mb-2">عنوان الوصف</label>
             <input
               type="text"
               name="description_header"
               value={formData.description_header}
               onChange={handleChange}
               className="w-full border p-3 rounded text-right"
-              required
               placeholder="عنوان الوصف"
             />
           </div>

@@ -1,7 +1,5 @@
 import React, { useState, useMemo } from "react";
-import {
-  useEntriesPaginated,
-} from "../hooks/useApi";
+import { useEntries } from "../hooks/useApi";
 import { ContentEntry } from "../services/api";
 import ItemCard from "../components/ItemCard";
 import SearchBar from "../components/SearchBar";
@@ -13,27 +11,36 @@ const ScientificNews: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
 
-  // Fetch paginated entries for Scientific News from API using category slug
+  // Fetch entries that match kind=mnshor OR category=aلaخبaر-aلعلمية and merge client-side
   const {
-    data: paginatedData,
-    loading,
-    error,
-  } = useEntriesPaginated(
-    {
-      category: "aلaخبaر-aلعلمية", // Category slug for Scientific News
-    },
-    currentPage,
-    itemsPerPage
-  );
+    data: kindData,
+    loading: loadingKind,
+    error: errorKind,
+  } = useEntries({ kind: "mnshor" });
 
-  const items = paginatedData?.results || [];
-  const totalItems = paginatedData?.count || 0;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const {
+    data: categoryData,
+    loading: loadingCategory,
+    error: errorCategory,
+  } = useEntries({ category: "aلaخبaر-aلعلمية" });
+
+  const loading = loadingKind || loadingCategory;
+  const error = errorKind || errorCategory;
+
+  const mergedItems = useMemo(() => {
+    const listA = Array.isArray(kindData) ? kindData : [];
+    const listB = Array.isArray(categoryData) ? categoryData : [];
+    const byId = new Map<number, ContentEntry>();
+    [...listA, ...listB].forEach((item) => {
+      if (!byId.has(item.id)) byId.set(item.id, item);
+    });
+    return Array.from(byId.values());
+  }, [kindData, categoryData]);
 
   const filteredItems = useMemo(() => {
-    if (!items.length) return [];
+    if (!mergedItems.length) return [];
 
-    let filtered = items;
+    let filtered = mergedItems;
     // Apply search filter if there's a query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
@@ -57,7 +64,14 @@ const ScientificNews: React.FC = () => {
       const dateB = new Date(b.date || "");
       return dateB.getTime() - dateA.getTime();
     });
-  }, [items, searchQuery]);
+  }, [mergedItems, searchQuery]);
+
+  // Client-side pagination over merged results
+  const totalItems = filteredItems.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const pagedItems = filteredItems.slice(startIndex, endIndex);
 
   // Handle page change
   const handlePageChange = (page: number) => {
@@ -121,7 +135,7 @@ const ScientificNews: React.FC = () => {
         {/* Items Grid */}
         {!loading && !error && filteredItems.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredItems.map((item: ContentEntry) => (
+            {pagedItems.map((item: ContentEntry) => (
               <ItemCard key={item.id} item={item} />
             ))}
           </div>
@@ -143,7 +157,7 @@ const ScientificNews: React.FC = () => {
         )}
 
         {/* Pagination Controls */}
-        {!loading && !error && totalPages > 1 && !searchQuery && (
+        {!loading && !error && totalPages > 1 && (
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

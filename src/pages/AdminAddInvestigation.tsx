@@ -99,11 +99,7 @@ const AdminAddInvestigation: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (
-      !formData.title.trim() ||
-      !formData.category ||
-      !formData.description_header.trim()
-    ) {
+    if (!formData.title.trim() || !formData.category) {
       alert("يرجى ملء جميع الحقول المطلوبة");
       return;
     }
@@ -140,7 +136,6 @@ const AdminAddInvestigation: React.FC = () => {
         page_count: pageCount,
         size: sizeValue,
         kind: formData.kind,
-        description_header: formData.description_header.trim(),
         description: JSON.stringify(
           formData.description.filter((item) => item.trim() !== "")
         ),
@@ -149,6 +144,10 @@ const AdminAddInvestigation: React.FC = () => {
         tags: formData.tags.trim(),
         published: true,
       };
+
+      if (formData.description_header.trim()) {
+        entryData.description_header = formData.description_header.trim();
+      }
 
       // Add links to data if they exist
       if (formData.cover_image_link.trim()) {

@@ -103,11 +103,7 @@ const AdminAddManuscript: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (
-      !formData.title.trim() ||
-      !formData.category ||
-      !formData.description_header.trim()
-    ) {
+    if (!formData.title.trim() || !formData.category) {
       alert("يرجى ملء جميع الحقول المطلوبة");
       return;
     }
@@ -136,7 +132,6 @@ const AdminAddManuscript: React.FC = () => {
         category: formData.category,
         subcategory: formData.subcategory || null, // Add subcategory
         date: formData.date,
-        description_header: formData.description_header.trim(),
         description: JSON.stringify(
           formData.description.filter((item) => item.trim() !== "")
         ),
@@ -149,6 +144,10 @@ const AdminAddManuscript: React.FC = () => {
         published: true, // تعيين القيمة الافتراضية للنشر إلى true
         // Remove slug - let backend generate it automatically
       };
+
+      if (formData.description_header.trim()) {
+        entryData.description_header = formData.description_header.trim();
+      }
 
       // إضافة روابط إلى البيانات إذا كانت موجودة
       if (formData.cover_image_link.trim()) {
@@ -383,15 +382,14 @@ const AdminAddManuscript: React.FC = () => {
           </div>
 
           <div>
-            <label className="block mb-2">عنوان الوصف *</label>
+            <label className="block mb-2">عنوان الوصف</label>
             <input
               type="text"
               name="description_header"
               value={formData.description_header}
               onChange={handleChange}
               className="w-full border p-3 rounded text-right"
-              required
-              placeholder="عنوان الوصف"
+              placeholder="عنوان الوصف (اختياري)"
             />
           </div>
           <div>

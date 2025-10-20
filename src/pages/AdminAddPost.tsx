@@ -122,7 +122,6 @@ const AdminAddPost: React.FC = () => {
         author: formData.author.trim(),
         category: parseInt(formData.category),
         date: formData.date,
-        description_header: formData.description_header.trim(),
         description: JSON.stringify(
           formData.description.filter((item) => item.trim() !== "")
         ),
@@ -135,6 +134,10 @@ const AdminAddPost: React.FC = () => {
         published: true, // Set to published by default for posts
         // Remove slug - let backend generate it automatically
       };
+
+      if (formData.description_header.trim()) {
+        entryData.description_header = formData.description_header.trim();
+      }
 
       // Only add subcategory if it's selected and valid
       if (formData.subcategory && formData.subcategory !== "") {

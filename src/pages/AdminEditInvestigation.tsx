@@ -144,8 +144,7 @@ const AdminEditInvestigation: React.FC = () => {
     e.preventDefault();
     if (
       !formData.title.trim() ||
-      !formData.category ||
-      !formData.description_header.trim()
+      !formData.category
     ) {
       alert("يرجى ملء جميع الحقول المطلوبة");
       return;
@@ -183,7 +182,6 @@ const AdminEditInvestigation: React.FC = () => {
         page_count: pageCount,
         size: sizeValue,
         kind: formData.kind,
-        description_header: formData.description_header.trim(),
         description: JSON.stringify(
           formData.description.filter((item) => item.trim() !== "")
         ),
@@ -192,6 +190,11 @@ const AdminEditInvestigation: React.FC = () => {
         tags: formData.tags.trim(),
         published: true,
       };
+
+      // Only add description_header if it's not empty
+      if (formData.description_header.trim()) {
+        entryData.description_header = formData.description_header.trim();
+      }
 
       // Add links to data if they exist
       if (formData.cover_image_link.trim()) {
@@ -445,14 +448,13 @@ const AdminEditInvestigation: React.FC = () => {
           </div>
 
           <div>
-            <label className="block mb-2">عنوان الوصف *</label>
+            <label className="block mb-2">عنوان الوصف</label>
             <input
               type="text"
               name="description_header"
               value={formData.description_header}
               onChange={handleChange}
               className="w-full border p-3 rounded text-right"
-              required
               placeholder="عنوان الوصف"
             />
           </div>
