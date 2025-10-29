@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
   useCategories,
   useSubcategories,
@@ -14,6 +14,8 @@ const AdminEditAboutChinguit: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { isAuthenticated, initialized, validateToken } = useAuth();
+  const location = useLocation();
+  const returnPage = new URLSearchParams(location.search).get("page");
   const { data: categories } = useCategories();
   const { data: subcategories } = useSubcategories();
   const { data: kinds } = useKinds();
@@ -53,9 +55,8 @@ const AdminEditAboutChinguit: React.FC = () => {
   // Filter out manuscripts category (ID 10) from available categories
   const availableCategories = categories?.filter((cat) => cat.id !== 10) || [];
 
-  // Filter kinds for about chinguit (عن الشنقيط)
-  const availableKinds =
-    kinds?.filter((kind) => kind.name === "عن الشنقيط") || [];
+  // Use all kinds in dropdown
+  const availableKinds = kinds || [];
 
   // Redirect if not authenticated
   React.useEffect(() => {
@@ -83,7 +84,17 @@ const AdminEditAboutChinguit: React.FC = () => {
         description_header: item.description_header || "",
         description: Array.isArray(item.description)
           ? item.description
-          : [item.description || ""],
+          : (() => {
+              const raw = item.description || "";
+              try {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) return parsed;
+              } catch {}
+              return raw
+                .split("\n")
+                .map((s: string) => s.trim())
+                .filter(Boolean);
+            })(),
         content: item.content || "",
         language: item.language || "العربية",
         tags: item.tags || "",
@@ -137,10 +148,7 @@ const AdminEditAboutChinguit: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (
-      !formData.title.trim() ||
-      !formData.category
-    ) {
+    if (!formData.title.trim() || !formData.category) {
       alert("يرجى ملء جميع الحقول المطلوبة");
       return;
     }
@@ -208,7 +216,9 @@ const AdminEditAboutChinguit: React.FC = () => {
       try {
         await apiClient.updateEntry(parseInt(id || "0"), entryData);
         alert("تم تحديث المؤلفة بنجاح!");
-        navigate("/admin/about-chinguit");
+        navigate(
+          `/admin/about-chinguit${returnPage ? `?page=${returnPage}` : ""}`
+        );
       } catch (apiError) {
         console.error("API Error:", apiError);
         throw apiError;

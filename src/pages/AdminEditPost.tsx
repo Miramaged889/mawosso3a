@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
   useCategories,
   useSubcategories,
@@ -14,6 +14,8 @@ const AdminEditPost: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { isAuthenticated, initialized, validateToken } = useAuth();
+  const location = useLocation();
+  const returnPage = new URLSearchParams(location.search).get("page");
   const { data: categories } = useCategories();
   const { data: subcategories } = useSubcategories();
   const { data: kinds } = useKinds();
@@ -51,8 +53,8 @@ const AdminEditPost: React.FC = () => {
   // Filter out manuscripts category (ID 10) from available categories
   const availableCategories = categories?.filter((cat) => cat.id !== 14) || [];
 
-  // Filter kinds for posts (أخبار - kind 14)
-  const availableKinds = kinds?.filter((kind) => kind.id === 14) || [];
+  // Use all kinds in dropdown
+  const availableKinds = kinds || [];
 
   useEffect(() => {
     if (initialized && !isAuthenticated) {
@@ -82,7 +84,17 @@ const AdminEditPost: React.FC = () => {
         description_header: post.description_header || "",
         description: Array.isArray(post.description)
           ? post.description
-          : [post.description || ""],
+          : (() => {
+              const raw = post.description || "";
+              try {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) return parsed;
+              } catch {}
+              return raw
+                .split("\n")
+                .map((s: string) => s.trim())
+                .filter(Boolean);
+            })(),
         content: post.content || "",
         language: post.language || "العربية",
         tags: post.tags || "",
@@ -206,7 +218,7 @@ const AdminEditPost: React.FC = () => {
       try {
         await apiClient.updateEntry(parseInt(id || "0"), entryData);
         alert("تم تحديث المنشور بنجاح!");
-        navigate("/admin/posts");
+        navigate(`/admin/posts${returnPage ? `?page=${returnPage}` : ""}`);
       } catch (apiError) {
         throw apiError;
       }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
   useCategories,
   useSubcategories,
@@ -14,6 +14,8 @@ const AdminEditAuthor: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { isAuthenticated, initialized, validateToken } = useAuth();
+  const location = useLocation();
+  const returnPage = new URLSearchParams(location.search).get("page");
   const { data: categories } = useCategories();
   const { data: subcategories } = useSubcategories();
   const { data: kinds } = useKinds();
@@ -53,9 +55,8 @@ const AdminEditAuthor: React.FC = () => {
   // Filter out manuscripts category (ID 10) from available categories
   const availableCategories = categories?.filter((cat) => cat.id !== 10) || [];
 
-  // Filter kinds for authors (المولفات)
-  const availableKinds =
-    kinds?.filter((kind) => kind.name === "مؤلفات" || kind.id === 15) || [];
+  // Use all kinds in dropdown
+  const availableKinds = kinds || [];
 
   // Redirect if not authenticated
   React.useEffect(() => {
@@ -83,7 +84,17 @@ const AdminEditAuthor: React.FC = () => {
         description_header: author.description_header || "",
         description: Array.isArray(author.description)
           ? author.description
-          : [author.description || ""],
+          : (() => {
+              const raw = author.description || "";
+              try {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) return parsed;
+              } catch {}
+              return raw
+                .split("\n")
+                .map((s: string) => s.trim())
+                .filter(Boolean);
+            })(),
         content: author.content || "",
         language: author.language || "العربية",
         tags: author.tags || "",
@@ -138,10 +149,7 @@ const AdminEditAuthor: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (
-      !formData.title.trim() ||
-      !formData.category
-    ) {
+    if (!formData.title.trim() || !formData.category) {
       alert("يرجى ملء جميع الحقول المطلوبة");
       return;
     }
@@ -209,7 +217,7 @@ const AdminEditAuthor: React.FC = () => {
       try {
         await apiClient.updateEntry(parseInt(id || "0"), entryData);
         alert("تم تحديث المؤلفة بنجاح!");
-        navigate("/admin/authors");
+        navigate(`/admin/authors${returnPage ? `?page=${returnPage}` : ""}`);
       } catch (apiError) {
         throw apiError;
       }

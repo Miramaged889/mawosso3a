@@ -130,7 +130,7 @@ const BooksOnChinguittDetail: React.FC = () => {
       const kindNames: { [key: number]: string } = {
         1: "كتاب",
         14: "منشور",
-        15: "المولفات",
+        15: "مؤلفات",
         16: "المخطوطات",
         17: "التحقيقات",
         18: "عن الشنقيط",
@@ -195,6 +195,9 @@ const BooksOnChinguittDetail: React.FC = () => {
               {/* Header */}
               <div className="flex flex-wrap items-center justify-between mb-6">
                 <div className="flex flex-wrap gap-2">
+                  <span className="bg-olive-green text-white px-4 py-2 rounded-full text-sm font-semibold">
+                    {getKindName()}
+                  </span>
                   <span className="bg-heritage-gold-dark text-white px-4 py-2 rounded-full text-sm font-semibold">
                     {getCategoryName()}
                   </span>
@@ -203,9 +206,6 @@ const BooksOnChinguittDetail: React.FC = () => {
                       {getSubcategoryName()}
                     </span>
                   )}
-                  <span className="bg-olive-green text-white px-4 py-2 rounded-full text-sm font-semibold">
-                    {getKindName()}
-                  </span>
                 </div>
                 <span className="text-medium-gray">{book.date}</span>
               </div>
@@ -236,12 +236,6 @@ const BooksOnChinguittDetail: React.FC = () => {
                   </div>
                   <div className="text-medium-gray text-sm">الحجم</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-xl font-bold text-olive-green">
-                    {book.language || "غير محدد"}
-                  </div>
-                  <div className="text-medium-gray text-sm">اللغة</div>
-                </div>
               </div>
 
               {/* Additional Details */}
@@ -249,12 +243,6 @@ const BooksOnChinguittDetail: React.FC = () => {
                 <div>
                   <h4 className="font-semibold text-blue-gray mb-2">التصنيف</h4>
                   <p className="text-medium-gray">{getCategoryName()}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-blue-gray mb-2">الحالة</h4>
-                  <p className="text-medium-gray">
-                    {book.published ? "منشور" : "غير منشور"}
-                  </p>
                 </div>
               </div>
 
@@ -266,22 +254,24 @@ const BooksOnChinguittDetail: React.FC = () => {
                   </h3>
                 )}
                 <div className="space-y-4">
-                  {Array.isArray(book.description) ? (
-                    book.description.map((desc, index) => (
-                      <p
-                        key={index}
-                        className="text-medium-gray leading-relaxed"
-                      >
-                        {makeUrlsClickable(desc)}
-                      </p>
-                    ))
-                  ) : (
-                    <p className="text-medium-gray leading-relaxed">
-                      {makeUrlsClickable(
-                        book.content || book.description || ""
-                      )}
+                  {(Array.isArray(book.description)
+                    ? book.description
+                    : (() => {
+                        const raw = book.description || book.content || "";
+                        try {
+                          const parsed = JSON.parse(raw as any);
+                          if (Array.isArray(parsed)) return parsed as string[];
+                        } catch {}
+                        return raw
+                          .split("\n")
+                          .map((s: string) => s.trim())
+                          .filter(Boolean);
+                      })()
+                  ).map((desc, index) => (
+                    <p key={index} className="text-medium-gray leading-relaxed">
+                      {makeUrlsClickable(desc)}
                     </p>
-                  )}
+                  ))}
                 </div>
               </div>
 

@@ -266,21 +266,31 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
           <p className="text-heritage-gold font-semibold mb-2">{item.author}</p>
         )}
         <p className="text-medium-gray leading-relaxed mb-4 line-clamp-3">
-          {item.description}
+          {(() => {
+            // Show only the first description index
+            if (Array.isArray(item.description)) {
+              return item.description[0] || "";
+            }
+            const raw =
+              (item.description as unknown as string) || item.content || "";
+            try {
+              const parsed = JSON.parse(raw as any);
+              if (Array.isArray(parsed)) return parsed[0] || "";
+            } catch {}
+            const first = raw
+              .split("\n")
+              .map((s) => s.trim())
+              .filter(Boolean)[0];
+            return first || "";
+          })()}
         </p>
         {/* Metadata Section */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
             <span className="text-sm text-medium-gray flex items-center gap-1">
               <span className="text-gray-400">📄</span>
-              {getPageCount()} صفحة
+              {getPageCount()} ماده
             </span>
-            {item.language && (
-              <span className="text-sm text-medium-gray flex items-center gap-1">
-                <span className="text-gray-400">🌐</span>
-                {item.language}
-              </span>
-            )}
           </div>
           {/* Action Button */}
           <div className="flex justify-end">

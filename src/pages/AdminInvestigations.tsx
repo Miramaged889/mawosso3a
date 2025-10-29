@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   useAllEntriesPaginated,
   useAuth,
@@ -12,7 +12,9 @@ const AdminInvestigations: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, initialized } = useAuth();
   const [deleting, setDeleting] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialPage = parseInt(searchParams.get("page") || "1") || 1;
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [itemsPerPage] = useState(18);
 
   // Search state
@@ -168,6 +170,7 @@ const AdminInvestigations: React.FC = () => {
   // Pagination handlers
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    setSearchParams({ page: String(page) });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -428,7 +431,7 @@ const AdminInvestigations: React.FC = () => {
                       <td className="px-6 py-4">
                         <div className="flex space-x-2 space-x-reverse">
                           <Link
-                            to={`/admin/investigations/edit/${investigation.id}`}
+                            to={`/admin/investigations/edit/${investigation.id}?page=${currentPage}`}
                             className="bg-blue-gray text-white px-3 py-1 rounded text-sm hover:bg-opacity-90 transition-colors"
                           >
                             تعديل

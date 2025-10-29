@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
   useCategories,
   useAuth,
@@ -14,6 +14,8 @@ const AdminEditManuscript: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { isAuthenticated, initialized, validateToken } = useAuth();
+  const location = useLocation();
+  const returnPage = new URLSearchParams(location.search).get("page");
   const { data: categories } = useCategories();
   const { data: kinds } = useKinds();
   const { data: subcategories } = useSubcategories();
@@ -46,8 +48,8 @@ const AdminEditManuscript: React.FC = () => {
   // Use all categories
   const allCategories = categories || [];
 
-  // Filter kinds for manuscripts (مخطوط - kind 16)
-  const availableKinds = kinds?.filter((kind) => kind.id === 16) || [];
+  // Use all kinds in dropdown
+  const availableKinds = kinds || [];
 
   useEffect(() => {
     if (initialized && !isAuthenticated) {
@@ -75,7 +77,17 @@ const AdminEditManuscript: React.FC = () => {
         description_header: manuscript.description_header || "",
         description: Array.isArray(manuscript.description)
           ? manuscript.description
-          : [manuscript.description || ""],
+          : (() => {
+              const raw = manuscript.description || "";
+              try {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) return parsed;
+              } catch {}
+              return raw
+                .split("\n")
+                .map((s: string) => s.trim())
+                .filter(Boolean);
+            })(),
         content: manuscript.content || "",
         language: manuscript.language || "العربية",
         tags: manuscript.tags || "",
@@ -213,7 +225,9 @@ const AdminEditManuscript: React.FC = () => {
       try {
         await apiClient.updateEntry(parseInt(id || "0"), entryData);
         alert("تم تحديث المخطوطة بنجاح!");
-        navigate("/admin/manuscripts");
+        navigate(
+          `/admin/manuscripts${returnPage ? `?page=${returnPage}` : ""}`
+        );
       } catch (apiError) {
         console.error("API Error:", apiError);
         throw apiError;
